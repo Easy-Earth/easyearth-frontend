@@ -1,0 +1,18 @@
+export const COLORS = {
+    GRAY_50: "#F9FAFB",
+    GRAY_100: "#F3F4F6",
+    GRAY_300: "#D1D5DB",
+    GRAY_500: "#6B7280",
+    GRAY_700: "#374151",
+    GRAY_900: "#111827",
+    GREEN: "#22C55E",
+    GREEN_DARK: "#16A34A",
+
+    BTN_POSITIVE: "#1ed8e2",
+    BTN_NEGATIVE: "#EF4444",
+
+    TEXT_PRIMARY: "#111827",
+    TEXT_SECONDARY: "#6B7280",
+
+    BACKGROUND: "#FFFFFF",
+};
