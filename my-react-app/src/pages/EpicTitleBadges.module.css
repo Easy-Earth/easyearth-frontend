@@ -1,0 +1,212 @@
+.wrap {
+  padding: 18px;
+  max-width: 980px;
+  margin: 0 auto;
+  font-family: Pretendard, "Noto Sans KR", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+.header {
+  margin-bottom: 14px;
+}
+
+.headerTitle {
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.headerDesc {
+  margin-top: 6px;
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .grid { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+}
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.badge {
+  position: relative;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: transparent;
+  text-align: left;
+  transform: translateZ(0);
+}
+
+.badgeContent {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 14px 14px 12px;
+  min-height: 86px;
+  z-index: 3;
+}
+
+.left {
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.right {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: rgba(255, 255, 255, 0.96);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.25;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badgeGlow {
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(180, 90, 255, 0.55), transparent 40%),
+    radial-gradient(circle at 70% 40%, rgba(65, 255, 186, 0.45), transparent 45%),
+    radial-gradient(circle at 50% 90%, rgba(255, 210, 90, 0.32), transparent 55%),
+    linear-gradient(135deg, rgba(48, 12, 88, 0.95), rgba(12, 70, 52, 0.95));
+  filter: blur(0px);
+}
+
+.badgeFrame {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.30),
+    inset 0 0 0 1px rgba(255,255,255,0.18);
+}
+
+.sparkles {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sparkles span {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.75);
+  filter: blur(0.2px);
+  opacity: 0.6;
+  animation: twinkle 2.4s infinite ease-in-out;
+}
+
+.sparkles span:nth-child(1) { top: 18%; left: 12%; animation-delay: 0.0s; }
+.sparkles span:nth-child(2) { top: 28%; right: 16%; animation-delay: 0.6s; }
+.sparkles span:nth-child(3) { bottom: 22%; left: 44%; animation-delay: 1.2s; }
+.sparkles span:nth-child(4) { bottom: 18%; right: 10%; animation-delay: 1.8s; }
+
+@keyframes twinkle {
+  0%, 100% { transform: scale(0.7); opacity: 0.25; }
+  50% { transform: scale(1.4); opacity: 0.9; }
+}
+
+.badge:hover {
+  transform: translateY(-1px);
+}
+
+.badgeSelected .badgeFrame {
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.34),
+    inset 0 0 0 2px rgba(255,255,255,0.32);
+}
+
+.icon {
+  width: 34px;
+  height: 34px;
+  fill: rgba(255, 255, 255, 0.92);
+}
+
+.iconSoft {
+  fill: rgba(255, 255, 255, 0.35);
+}
+
+.iconLeaf {
+  fill: rgba(90, 255, 190, 0.9);
+}
+
+.iconStrike {
+  stroke: rgba(255, 90, 90, 0.9);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.iconStroke {
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 2;
+  stroke-linecap: round;
+  fill: none;
+}
+
+.preview {
+  margin-top: 14px;
+}
+
+.previewLabel {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-bottom: 8px;
+}
+
+.previewBox {
+  border-radius: 16px;
+  padding: 14px;
+  background: rgba(0,0,0,0.06);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+}
+
+.previewTitle {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.previewSub {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.72;
+}

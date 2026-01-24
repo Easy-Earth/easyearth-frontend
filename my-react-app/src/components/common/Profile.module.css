@@ -1,0 +1,261 @@
+.profile {
+  --g1: rgba(120,255,210,.22);
+  --g2: rgba(120,190,255,.18);
+  --g3: rgba(255,255,255,.06);
+  --b1: rgba(190,255,235,.10);
+  --b2: rgba(120,255,210,.10);
+  --ring: rgba(200,245,255,.22);
+  --fx: 0.2;
+
+  width: 340px;
+  height: 140px;
+  border: none;
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-sizing: border-box;
+  transform: translateZ(0);
+}
+
+.normal { --fx: 0.20; }
+.rare { --fx: 0.55; }
+.epic { --fx: 0.85; }
+.legendary { --fx: 1.25; }
+
+.bgGlow {
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 20% 30%, var(--g1), transparent 55%),
+    radial-gradient(circle at 80% 35%, var(--g2), transparent 60%),
+    radial-gradient(circle at 50% 95%, var(--g3), transparent 70%),
+    linear-gradient(135deg, rgba(12, 18, 28, 0.96), rgba(8, 30, 34, 0.94));
+  transform: translate3d(0,0,0);
+  filter: saturate(calc(1 + 0.22 * var(--fx))) contrast(calc(1 + 0.06 * var(--fx)));
+}
+
+.frame {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.04));
+  box-shadow:
+    0 10px 24px rgba(0,0,0, calc(0.26 + 0.10 * var(--fx))),
+    inset 0 0 0 1px rgba(255,255,255, calc(0.14 + 0.10 * var(--fx)));
+}
+
+.content {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.left {
+  width: 84px;
+  flex: 0 0 84px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profileImage {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255, calc(0.18 + 0.08 * var(--fx))),
+    0 14px 30px rgba(0,0,0, calc(0.18 + 0.10 * var(--fx)));
+}
+
+.right {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+.title {
+  width: 100%;
+  max-width: 240px;
+  height: 44px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.bottomRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.badge {
+  height: 56px;
+  width: auto;
+  max-width: 140px;
+  flex-shrink: 0;
+  object-fit: contain;
+  object-position: left center;
+  filter:
+    drop-shadow(0 4px 14px rgba(0,0,0,0.28))
+    drop-shadow(0 0 calc(16px * var(--fx)) rgba(255,255,255, calc(0.10 + 0.10 * var(--fx))));
+}
+
+.userName {
+  font-size: 16px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shimmer {
+  position: absolute;
+  inset: -50%;
+  z-index: 3;
+  background: linear-gradient(
+    120deg,
+    transparent 35%,
+    rgba(255,255,255, calc(0.10 + 0.18 * var(--fx))) 48%,
+    rgba(255,255,255, calc(0.16 + 0.26 * var(--fx))) 50%,
+    rgba(255,255,255, calc(0.10 + 0.18 * var(--fx))) 52%,
+    transparent 65%
+  );
+  transform: translateX(-45%) rotate(10deg);
+  opacity: calc(0.08 + 0.18 * var(--fx));
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: shimmerMove calc(6s - 2.2s * var(--fx)) linear infinite;
+}
+
+@keyframes shimmerMove {
+  0% { transform: translateX(-55%) rotate(10deg); }
+  100% { transform: translateX(55%) rotate(10deg); }
+}
+
+.epic .bgGlow,
+.legendary .bgGlow {
+  animation: glowFlow calc(10s - 3.2s * var(--fx)) ease-in-out infinite;
+}
+
+@keyframes glowFlow {
+  0%, 100% { transform: translate3d(0,0,0); }
+  50% { transform: translate3d(-1.4%, -1.0%, 0); }
+}
+
+.sparkles {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: calc(0.02 + 0.34 * var(--fx));
+}
+
+.sparkles span {
+  position: absolute;
+  width: calc(4px + 2px * var(--fx));
+  height: calc(4px + 2px * var(--fx));
+  border-radius: 999px;
+  background: rgba(255,255,255, calc(0.35 + 0.45 * var(--fx)));
+  filter: blur(0.25px);
+  animation: twinkle calc(3.2s - 1.0s * var(--fx)) infinite ease-in-out;
+}
+
+.sparkles span:nth-child(1) { top: 18%; left: 12%; animation-delay: 0.0s; }
+.sparkles span:nth-child(2) { top: 28%; right: 16%; animation-delay: 0.6s; }
+.sparkles span:nth-child(3) { bottom: 22%; left: 44%; animation-delay: 1.2s; }
+.sparkles span:nth-child(4) { bottom: 18%; right: 10%; animation-delay: 1.8s; }
+
+@keyframes twinkle {
+  0%, 100% { transform: scale(calc(0.6 + 0.2 * var(--fx))); opacity: calc(0.12 + 0.18 * var(--fx)); }
+  50% { transform: scale(calc(1.1 + 0.6 * var(--fx))); opacity: calc(0.55 + 0.40 * var(--fx)); }
+}
+
+.normal .sparkles { opacity: 0.06; }
+
+.rays, .ring { display: none; }
+
+.legendary .rays {
+  display: block;
+  position: absolute;
+  inset: -50%;
+  z-index: 1;
+  background: conic-gradient(
+    from 180deg,
+    transparent 0deg,
+    rgba(255,255,255,0.14) 18deg,
+    transparent 36deg,
+    rgba(255,255,255,0.10) 60deg,
+    transparent 78deg,
+    var(--ring) 102deg,
+    transparent 140deg,
+    rgba(255,255,255,0.12) 162deg,
+    transparent 200deg,
+    var(--ring) 236deg,
+    transparent 292deg,
+    rgba(255,255,255,0.10) 324deg,
+    transparent 360deg
+  );
+  opacity: calc(0.28 + 0.30 * var(--fx));
+  filter: blur(0.6px);
+  animation: spin calc(11s - 3.8s * var(--fx)) linear infinite;
+  pointer-events: none;
+}
+
+.legendary .ring {
+  display: block;
+  position: absolute;
+  inset: 6px;
+  z-index: 4;
+  border-radius: 16px;
+  background: conic-gradient(
+    from 0deg,
+    rgba(255,255,255,0.00),
+    rgba(255,255,255,0.22),
+    var(--ring),
+    rgba(255,255,255,0.00)
+  );
+  mask: radial-gradient(transparent 60%, #000 66%);
+  opacity: calc(0.45 + 0.22 * var(--fx));
+  mix-blend-mode: screen;
+  animation: spin calc(7.2s - 1.8s * var(--fx)) linear infinite;
+  pointer-events: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.legendary .bgGlow {
+  animation: legendPulse 1.55s ease-in-out infinite, glowFlow 7.0s ease-in-out infinite;
+}
+
+@keyframes legendPulse {
+  0%, 100% { filter: brightness(1.00) saturate(1.08); }
+  50% { filter: brightness(1.22) saturate(1.28); }
+}
+
+.titlePlaceholder {
+  width: 200px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+}
+
+.badgePlaceholder {
+  height: 56px;
+  width: 120px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.10);
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.12);
+}

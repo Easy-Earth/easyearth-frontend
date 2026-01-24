@@ -1,0 +1,26 @@
+/* src/components/common/Button.module.css */
+
+.button {
+  border: none;
+  border-radius: 8px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  cursor: pointer;
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.button:not(:disabled):hover {
+  transform: translateY(-1px);
+  background-color: var(--btn-hover, var(--gray-300)) !important;
+}
