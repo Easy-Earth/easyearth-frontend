@@ -1,0 +1,116 @@
+.panel {
+  background: var(--bg-primary);
+  border: 1px solid var(--gray-200);
+  border-radius: 18px;
+  padding: 14px;
+  box-shadow: 0 10px 24px rgba(17, 24, 39, 0.06);
+}
+
+.header {
+  margin-bottom: 12px;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 950;
+  letter-spacing: -0.02em;
+}
+
+.sub {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--gray-200);
+  background: linear-gradient(180deg, var(--bg-primary), var(--gray-50));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.itemTitle {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.itemMeta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.diaryItem {
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--gray-200);
+  background: var(--bg-earth);
+}
+
+.diaryDate {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--earth-700);
+  margin-bottom: 8px;
+}
+
+.diaryText {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.itemGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 520px) {
+  .itemGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.itemChip {
+  border-radius: 14px;
+  border: 1px solid var(--gray-200);
+  background: linear-gradient(180deg, var(--bg-eco-soft), var(--bg-primary));
+  padding: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.itemChip:hover {
+  filter: brightness(0.99);
+}
+
+.itemType {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 950;
+  color: var(--text-eco);
+  background: var(--green-100);
+  border: 1px solid var(--green-200);
+  padding: 4px 8px;
+  border-radius: 999px;
+}
+
+.itemName {
+  display: block;
+  margin-top: 10px;
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--text-primary);
+}
