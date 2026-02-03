@@ -1,11 +1,11 @@
 import "./App.css";
-import TestPage from "./Test/TestPage";
+import MyPage from "./pages/MyPage/MyPage";
 
 function App() {
   return (
     <div>
-      <h1>메인 페이지</h1>
-      <TestPage />
+      <MyPage></MyPage>
+      {/* <TestPage /> */}
     </div>
   );
 }
