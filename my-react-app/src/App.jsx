@@ -1,7 +1,7 @@
 import "./App.css";
 
-import MyPage from "./pages/MyPage/MyPage";
-import ItemRouter from "./router/ItemRouter";
+import MapPage from "./pages/MapPage/MapPage";
+
 function App() {
   return (
     <div>
