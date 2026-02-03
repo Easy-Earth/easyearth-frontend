@@ -1,0 +1,40 @@
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.modal {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 400px;
+  max-width: 90%;
+}
+
+.modal.sm { width: 300px; }
+.modal.md { width: 500px; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.closeBtn {
+  border: none;
+  background: transparent;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.body {
+  margin-top: 10px;
+}
