@@ -4,6 +4,7 @@ import TestPage from "./Test/TestPage";
 import QuizPage from "./pages/QuizPage";
 import QuestPage from "./pages/QuestPage";
 import AttendancePage from "./pages/AttendancePage";
+import MapPage from "./pages/MapPage/MapPage";
 
 function App() {
   return (
@@ -15,6 +16,8 @@ function App() {
             <TestPage />
           </div>
         } />
+        {/* ** 지도 테스트 페이지 ** */}
+        <Route path="/map" element={<MapPage />} />
         {/* ** 테스트용 퀴즈 페이지 라우트 추가 ** */}
         <Route path="/test/quiz" element={<QuizPage />} />
         {/* ** 테스트용 퀘스트 페이지 라우트 추가 ** */}
