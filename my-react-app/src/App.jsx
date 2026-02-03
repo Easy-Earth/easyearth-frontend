@@ -5,6 +5,7 @@ import QuizPage from "./pages/QuizPage";
 import QuestPage from "./pages/QuestPage";
 import AttendancePage from "./pages/AttendancePage";
 import MapPage from "./pages/MapPage/MapPage";
+
 function App() {
   return (
     <Router>
