@@ -1,44 +1,25 @@
-
-
-//인증된 사용자만 접근 가능한 라우트
-
+// src/router/PrivateRouter.jsx
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-//인증 사용자만 접근 가능 라우트 (로그인 한 회원)
-export function PrivateRoute({children}) {
+export function PrivateRoute({ children }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const location = useLocation();
 
-    const {isAuthenticated,isLoading} = useAuth();
-    const location = useLocation();
+  if (isLoading) return <div>데이터 로딩 중...</div>;
 
-
-    if(isLoading){
-        return <div>로딩 중....</div>;
-    }
-
-    if(!isAuthenticated){
-        //로그인 후 원래 페이지로 돌아가기 위한 위치저장
-        alert('로그인 후 사용해주세요');
-        return <Navigate to="/" state={{from : location}} replace/>
-    }
-
-
-    return children;
+  return isAuthenticated ? (
+    children
+  ) : (
+    <Navigate to="/" state={{ from: location }} replace />
+  );
 }
 
-//비인증 사용자만 접근 가능한 라우트 (로그인 안한 회원 접근)
-export function PublicRoute({children}){
-    const {isAuthenticated,isLoading} = useAuth();
-    
-    if(isLoading){
-        return <div>로딩 중..</div>;
-    }
+export function PublicRoute({ children }) {
+  const { isAuthenticated, isLoading } = useAuth();
 
-    if(isAuthenticated) {
-        return <Navigate to="/" replace/>
-    }
+  if (isLoading) return <div>로딩 중...</div>;
 
-    return children;
+  // 이미 로그인했다면 메인으로 튕겨냄 (회원가입 페이지 방지)
+  return isAuthenticated ? <Navigate to="/" replace /> : children;
 }
-
-export default PrivateRoute;
