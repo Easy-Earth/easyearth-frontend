@@ -1,0 +1,65 @@
+.footer {
+  width: 100%; /* 화면 끝까지 확장 */
+  background-color: #1a1a2e; /* 헤더와 동일한 배경색 */
+  color: #e0e0e0;
+  padding: 50px 0 30px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.container {
+  width: 100%;
+  max-width: 1200px; /* 내부 콘텐츠는 중앙에 정렬되도록 */
+  margin: 0 auto;
+  padding: 0 40px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #4cc9f0;
+  margin-bottom: 15px;
+}
+
+.description {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  opacity: 0.7;
+  margin-bottom: 30px;
+}
+
+.linkSection {
+  margin-bottom: 40px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 30px;
+}
+
+.footerLinks {
+  display: flex;
+  justify-content: center;
+  list-style: none;
+  gap: 30px;
+  padding: 0;
+  flex-wrap: wrap;
+}
+
+.footerLinks a {
+  text-decoration: none;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.footerLinks a:hover {
+  color: #4cc9f0;
+}
+
+.bottomSection {
+  margin-top: 20px;
+}
+
+.copyright {
+  font-size: 0.8rem;
+  opacity: 0.5;
+}

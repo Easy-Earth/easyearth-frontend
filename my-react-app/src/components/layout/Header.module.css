@@ -1,0 +1,77 @@
+.header {
+  /* 화면 전체 너비 고정 */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw; /* Viewport Width 100% */
+  height: 70px;
+  
+  /* 배경 및 스타일 */
+  background-color: #1a1a2e; /* 다크 네이비 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 50px; /* 양 끝 여백 */
+  box-sizing: border-box;
+  z-index: 9999; /* 지도보다 위에 표시 */
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+}
+
+.logo a {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-decoration: none;
+  color: #4cc9f0; /* 하늘색 포인트 */
+  letter-spacing: -0.5px;
+}
+
+.nav {
+  /* 메뉴를 부모 중앙으로 보내기 위한 설정 */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.menuList {
+  display: flex;
+  list-style: none;
+  gap: 45px;
+  margin: 0;
+  padding: 0;
+}
+
+.menuItem a {
+  text-decoration: none;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.menuItem a:hover {
+  color: #4cc9f0;
+  opacity: 1;
+}
+
+.auth {
+  /* 로고와 대칭을 이루는 공간 */
+}
+
+.loginBtn {
+  background: transparent;
+  border: 1px solid rgba(76, 201, 240, 0.5);
+  color: #ffffff;
+  padding: 6px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.3s;
+}
+
+.loginBtn:hover {
+  background: #4cc9f0;
+  border-color: #4cc9f0;
+  color: #1a1a2e;
+}
+
