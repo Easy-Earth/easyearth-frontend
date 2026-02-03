@@ -1,5 +1,4 @@
 import "./App.css";
-import Footer from "./components/layout/Footer";
 import Header from "./components/layout/Header";
 import MapPage from "./pages/MapPage/MapPage";
 
@@ -10,7 +9,7 @@ function App() {
       <main className="main-content">
         <MapPage />
       </main>
-      <Footer />
+      {/* <Footer /> */}
     </div>
   );
 }
