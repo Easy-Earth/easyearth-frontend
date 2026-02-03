@@ -1,0 +1,224 @@
+.page { width: 100%; min-height: 100vh; position: relative; 
+  overflow: hidden;background: #f8fafc; }
+.mapWrap { position: relative; width: 100%; height: 100vh; }
+.mapEl { width: 100%; height: 100%; }
+
+.panel {
+  position: absolute; top: 16px; right: 16px; width: 360px;
+  background: rgba(255, 255, 255, 0.95); border: 1px solid #e2e8f0;
+  border-radius: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  overflow: hidden; backdrop-filter: blur(8px); z-index: 1000;
+}
+
+.panelHeader { padding: 16px; display: flex; align-items: center; justify-content: space-between; }
+.panelTitle { font-size: 16px; font-weight: 900; }
+.panelToggle { border: 1px solid #e2e8f0; background: #fff; padding: 8px 12px; border-radius: 20px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.closed .panelBody { max-height: 0; padding: 0; opacity: 0; pointer-events: none; }
+.panelBody { padding: 0 16px 16px; max-height: 80vh; overflow-y: auto; transition: all 0.3s ease; }
+
+.meRow { display: flex; justify-content: space-between; padding: 8px 0; }
+.meLabel { font-size: 12px; color: #64748b; font-weight: 700; }
+.meValue { font-size: 12px; color: #1e293b; font-weight: 700; }
+
+.ghostBtn {
+  width: 100%; height: 40px; border: 2px solid var(--eco-teal);
+  background: #fff; color: var(--eco-teal); border-radius: 20px;
+  font-weight: 900; cursor: pointer; margin-bottom: 12px;
+}
+
+.section { margin-top: 16px; }
+.sectionTitle { font-size: 13px; font-weight: 900; margin-bottom: 10px; }
+.searchInput { width: 100%; height: 40px; border-radius: 10px; border: 1px solid #e2e8f0; padding: 0 12px; margin-bottom: 10px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 6px 14px; border-radius: 15px; border: 1px solid #e2e8f0; background: #fff; font-size: 12px; font-weight: 800; cursor: pointer; }
+.chipActive { border-color: var(--eco-teal); color: var(--eco-teal); background: rgba(20, 184, 166, 0.05); }
+
+.themeList { display: grid; gap: 4px; }
+.themeRow { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border: 1px solid #f1f5f9; border-radius: 10px; cursor: pointer; background: #fff; }
+.colorIndicator { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.themeLabel { font-size: 13px; font-weight: 800; flex: 1; color: #334155; }
+
+.primaryBtn { width: 100%; height: 48px; background: #0f172a; color: #fff; border-radius: 24px; border: none; font-weight: 900; margin-top: 16px; cursor: pointer; }
+.error { color: #ef4444; font-size: 12px; margin-top: 8px; font-weight: 800; }
+.count { font-size: 12px; margin-top: 10px; color: #64748b; font-weight: 800; }
+
+
+.themeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* 이름은 왼쪽, 체크박스는 오른쪽 */
+  padding: 14px 18px;
+  background: white;
+  border: 1px solid var(--gray-100);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.themeRow:hover {
+  border-color: var(--green-300);
+  background: var(--green-50);
+}
+
+.themeInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.colorIndicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.themeLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+/* ✅ 체크박스 초록색 스타일링 */
+.greenCheckbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  /* 최신 브라우저에서 체크박스 색상 변경 */
+  accent-color: var(--green-500); 
+  border: 2px solid var(--gray-300);
+  border-radius: 4px;
+}
+
+/* 검색하기 버튼 등 텍스트 강조 */
+.primaryBtnText {
+  color: white;
+  font-size: 16px;
+  font-weight: 700;
+}
+.btnContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.themeHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.themeRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-100);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.themeRow:hover { border-color: var(--green-200); background: white; }
+
+/* ✅ 흰색 V 체크박스 커스텀 */
+.checkboxWrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
+
+.hiddenCheckbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+}
+
+.customCheck {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 2px solid var(--gray-300);
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+/* 체크되었을 때 배경색 변경 및 V 표시 생성 */
+.hiddenCheckbox:checked + .customCheck {
+  background: var(--green-300);
+  border-color: var(--green-300);
+}
+
+.hiddenCheckbox:checked + .customCheck::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg);
+}
+
+.themeInfo { display: flex; align-items: center; gap: 10px; }
+.colorIndicator { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+.themeLabel { font-size: 13px; font-weight: 600; color: var(--gray-700); }
+
+.myLocationBtn {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: all 0.2s;
+}
+
+.myLocationBtn:hover { background: #f8fafc; transform: scale(1.05); }
+.locationInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.locationLabel {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.locationCoords {
+  font-size: 14px;
+  color: #1e293b;
+  font-weight: 700;
+  font-family: monospace;
+}
