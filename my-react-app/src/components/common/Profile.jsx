@@ -1,91 +1,62 @@
 import { memo, useMemo } from "react";
-import { getBadgeAsset } from "../../shared/constants/badgeAssets";
-import { TITLE_BG_PRESETS } from "../../shared/constants/profileBackgrounds";
-import { getTitleAsset } from "../../shared/constants/titleAssets";
+import { getTitleBgPresetById } from "../../shared/constants/profileBackgrounds";
 import styles from "./Profile.module.css";
 
-function findPresetById(presetId) {
-  if (!presetId) return null;
-  const all = [
-    ...(TITLE_BG_PRESETS.normal ?? []),
-    ...(TITLE_BG_PRESETS.rare ?? []),
-    ...(TITLE_BG_PRESETS.epic ?? []),
-    ...(TITLE_BG_PRESETS.legendary ?? []),
-  ];
-  return all.find((p) => p.id === presetId) ?? null;
-}
-
-function getGradeFromPresetId(presetId) {
-  if (!presetId) return "normal";
-  if (presetId.startsWith("legendary-")) return "legendary";
-  if (presetId.startsWith("epic-")) return "epic";
-  if (presetId.startsWith("rare-")) return "rare";
-  return "normal";
-}
-
-const Profile = ({
-  presetId = "normal-1",
-  profileImage,
-  titleId,
-  badgeId,
-  userName,
+const Profile = ({ 
+  presetId = "normal-1", 
+  userName = "Name", 
+  profileImage, 
+  badgeImage,   
+  titleImage    
 }) => {
-  const preset = useMemo(() => findPresetById(presetId), [presetId]);
-  const grade = useMemo(() => getGradeFromPresetId(presetId), [presetId]);
+  const result = useMemo(() => getTitleBgPresetById(presetId), [presetId]);
+  if (!result) return null;
 
-  const styleVars = useMemo(() => {
-    const p = preset ?? TITLE_BG_PRESETS.normal?.[0];
-    return {
-      "--g1": p?.g1,
-      "--g2": p?.g2,
-      "--g3": p?.g3,
-      "--b1": p?.b1,
-      "--b2": p?.b2,
-      "--ring": p?.ring,
-    };
-  }, [preset]);
+  const { grade, preset } = result;
+  
+  const fxValues = { normal: 0.20, rare: 0.55, epic: 0.85, legendary: 1.25 };
+  const currentFx = fxValues[grade] || 0.2;
 
-  const titleImage = useMemo(() => getTitleAsset(titleId), [titleId]);
-  const badgeImage = useMemo(() => getBadgeAsset(badgeId), [badgeId]);
+  const styleVars = {
+    "--g1": preset.g1, "--g2": preset.g2, "--g3": preset.g3,
+    "--b1": preset.b1, "--b2": preset.b2, "--ring": preset.ring,
+    "--fx": currentFx,
+  };
 
   return (
-    <div className={`${styles.profile} ${styles[grade]}`} style={styleVars}>
-      <div className={styles.bgGlow} aria-hidden="true" />
-      <div className={styles.frame} aria-hidden="true" />
-      <div className={styles.shimmer} aria-hidden="true" />
-      <div className={styles.rays} aria-hidden="true" />
-      <div className={styles.ring} aria-hidden="true" />
-
-      <div className={styles.sparkles} aria-hidden="true">
-        <span />
-        <span />
-        <span />
-        <span />
+    <div className={`${styles.badgeCard} ${styles[grade]} ${styles.badgeSelected}`} style={styleVars}>
+      {/* 배경 특수효과 레이어 (님 코드 이식) */}
+      <div className={styles.badgeGlow} />
+      <div className={styles.rays} />
+      <div className={styles.shimmer} />
+      <div className={styles.ring} />
+      <div className={styles.badgeFrame} />
+      
+      <div className={styles.sparkles}>
+        {[...Array(6)].map((_, i) => <span key={i} />)}
       </div>
 
-      <div className={styles.content}>
-        <div className={styles.left}>
-          <img
-            src={profileImage}
-            alt="profile"
-            className={styles.profileImage}
-          />
+      <div className={styles.badgeContent}>
+        {/* 왼쪽 프로필 (고정 크기) */}
+        <div className={styles.leftSide}>
+          <div className={styles.profileCircle}>
+            {profileImage ? <img src={profileImage} alt="" /> : <span>{userName[0]}</span>}
+          </div>
         </div>
 
-        <div className={styles.right}>
-          {titleImage ? (
-            <img src={titleImage} alt="title" className={styles.title} />
-          ) : (
-            <div className={styles.titlePlaceholder} />
-          )}
-
-          <div className={styles.bottomRow}>
-            {badgeImage ? (
-              <img src={badgeImage} alt="badge" className={styles.badge} />
-            ) : (
-              <div className={styles.badgePlaceholder} />
-            )}
-            <div className={styles.userName}>{userName}</div>
+        {/* 오른쪽 칭호 + [대형 배지 & 이름] */}
+        <div className={styles.rightSide}>
+          <div className={styles.titleArea}>
+            {titleImage && <img src={titleImage} className={styles.titleImg} alt="" />}
+          </div>
+          
+          <div className={styles.userRow}>
+            {/* 모든 등급 공통: 대형 배지 (72px) */}
+            <div className={styles.massiveBadgeContainer}>
+              {badgeImage && <img src={badgeImage} className={styles.massiveBadge} alt="" />}
+              <div className={styles.badgeBackLight} />
+            </div>
+            <span className={styles.userName}>{userName}</span>
           </div>
         </div>
       </div>
