@@ -1,0 +1,96 @@
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 70px;
+  background-color: #1a1a2e; /* 네이비 유지 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 50px;
+  box-sizing: border-box;
+  z-index: 9999;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.4);
+}
+
+.logo a {
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-decoration: none;
+  /* 포인트 색상: eco-mint 적용 */
+  color: var(--eco-mint); 
+  letter-spacing: -0.5px;
+}
+
+.nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.menuList {
+  display: flex;
+  list-style: none;
+  gap: 45px;
+  margin: 0;
+  padding: 0;
+}
+
+.menuItem a {
+  text-decoration: none;
+  /* 텍스트 색상: gray-100 (부드러운 화이트) */
+  color: var(--gray-100);
+  font-size: 0.95rem;
+  font-weight: 500;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.menuItem a:hover {
+  /* 호버 시 색상: green-400 */
+  color: var(--green-400);
+  opacity: 1;
+}
+
+.auth {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* 기본 버튼 스타일 */
+.loginBtn, .registerBtn {
+  font-family: inherit;
+  padding: 6px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s;
+}
+
+/* Login: 테두리 버튼 형태 */
+.loginBtn {
+  background: transparent;
+  border: 1px solid var(--gray-400);
+  color: var(--gray-100);
+}
+
+.loginBtn:hover {
+  border-color: var(--green-400);
+  color: var(--green-400);
+  background: rgba(74, 222, 128, 0.1); /* green-400의 아주 연한 투명색 */
+}
+
+/* Register: 꽉 찬 버튼 형태 (성공/에코 테마) */
+.registerBtn {
+  background-color: var(--btn-primary); /* green-500 */
+  border: 1px solid var(--btn-primary);
+  color: white;
+}
+
+.registerBtn:hover {
+  background-color: var(--btn-primary-hover); /* green-600 */
+  border-color: var(--btn-primary-hover);
+}
