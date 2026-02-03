@@ -4,7 +4,7 @@ import MyPage from "./pages/MyPage/MyPage";
 function App() {
   return (
     <div>
-      <MyPage></MyPage>
+      <MapPage></MapPage>
       {/* <TestPage /> */}
     </div>
   );
