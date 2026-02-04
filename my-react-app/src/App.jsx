@@ -13,6 +13,7 @@ import ShopPage from "./pages/ShopPage/ShopPage";
 import MyPage from "./pages/MyPage/MyPage";
 import SignupPage from "./pages/SignupPage/SignupPage";
 import SuggestionPage from "./pages/SuggestionPage/SuggestionPage";
+import QuizPage from "./pages/QuizPage";
 
 import { PrivateRoute, PublicRoute } from "./router/PrivateRouter";
 import PasswordFindPage from "./components/member/PasswordFindPage";
@@ -64,6 +65,7 @@ function App() {
               <Route path="/suggestions" element={<SuggestionPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/find-password" element={<PasswordFindPage />} />
+              <Route path="/test/quiz" element={<QuizPage />} />
               
               <Route path="/join" element={
                 <PublicRoute>

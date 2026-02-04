@@ -12,12 +12,16 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // ✅ 중요: 현재 요청 URL이 /spring으로 시작하므로 이 설정을 추가합니다.
-      '/spring': {
-        target: 'http://localhost:8080', // Spring Boot 서버 주소
+      "/api": {
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        rewrite: (path) => "/spring" + path,
+      },
+      // 현재 요청 URL이 /spring으로 시작하는 경우
+      "/spring": {
+        target: "http://localhost:8080",
         changeOrigin: true,
         secure: false,
-        // 필요하다면 rewrite는 사용하지 않습니다. (Spring이 /spring을 가지고 있으므로)
       },
     },
   },
