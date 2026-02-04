@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import seoulApi from "../../apis/seoulApi";
 import Button from "../../components/common/Button";
+import MapModal from "../../components/map/MapModal";
 import { SEOUL_THEMES, THEME_COLOR_MAP } from "../../shared/constants/seoulThemes";
 import styles from "./MapPage.module.css";
 
@@ -32,6 +33,7 @@ function MapPage() {
   const [loading, setLoading] = useState(false);        
   const [error, setError] = useState("");               
   const [items, setItems] = useState([]);               
+  const [selectedItem, setSelectedItem] = useState(null); // ✅ 클릭된 마커 상태 추가
 
   const ecoTeal = useMemo(() => getCssVar("--eco-teal", "#14b8a6"), []);
 
@@ -164,6 +166,12 @@ function MapPage() {
         },
       });
 
+      // ✅ 마커 클릭 시 모달 데이터 설정 로직 추가
+      naver.maps.Event.addListener(marker, "click", () => {
+        setSelectedItem(it);
+        mapRef.current.panTo(position);
+      });
+
       naver.maps.Event.addListener(marker, "mouseover", async () => {
         try {
           const res = await seoulApi.getDetail({
@@ -270,6 +278,15 @@ function MapPage() {
     <div className={styles.page}>
       <div className={styles.mapWrap}>
         <div ref={mapElRef} className={styles.mapEl} />
+        
+        {/* ✅ MapModal 추가 */}
+        {selectedItem && (
+          <MapModal 
+            item={selectedItem} 
+            onClose={() => setSelectedItem(null)} 
+          />
+        )}
+
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>내 주변 검색</div>
