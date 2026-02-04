@@ -66,9 +66,9 @@ function LoginModal({ isOpen, onClose }) {
         />
         {error && <p className={styles.error}>{error}</p>}
         <div className={styles.buttons}>
-          <Button type="submit" variant="primary" fullWidth loading={isLoading}>
+          <button type="submit" variant="primary" fullWidth loading={isLoading}>
             로그인
-          </Button>
+          </button>
           <Button type="button" variant="danger" fullWidth onClick={handleClose}>
             취소
           </Button>
