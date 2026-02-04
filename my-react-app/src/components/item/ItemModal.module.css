@@ -1,0 +1,124 @@
+.modalOverlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: white;
+  width: 90%;
+  max-width: 550px;
+  border-radius: 25px;
+  position: relative;
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+/* ✨ 전설 등급 빛나는 효과 추가 */
+.legendaryContent {
+  border: 2px solid #f59e0b;
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.5), 0 0 40px rgba(245, 158, 11, 0.2);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(50px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.closeBtn {
+  position: absolute;
+  top: 15px; right: 20px;
+  background: none; border: none;
+  font-size: 30px; color: #cbd5e1;
+  cursor: pointer; z-index: 10;
+}
+
+.modalBody { display: flex; flex-direction: column; }
+
+.modalImageSection {
+  background: #f8fafc;
+  padding: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 등급별 배경색 */
+.common { background-color: #f1f5f9; }
+.rare { background-color: #eff6ff; }
+.epic { background-color: #f5f3ff; }
+.legendary { background-color: #fffbeb; }
+
+.modalImageSection img {
+  max-width: 180px;
+  height: auto;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+}
+
+/* ✨ 전설 아이템 이미지 펄싱 효과 */
+.legendary img {
+  animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.2)); }
+  50% { transform: scale(1.05); filter: drop-shadow(0 0 20px rgba(245, 158, 11, 0.6)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px rgba(245, 158, 11, 0.2)); }
+}
+
+.modalInfoSection { padding: 30px; }
+
+.modalRarity { font-weight: 800; font-size: 14px; margin-bottom: 8px; display: block; }
+
+.modalItemName { font-size: 26px; font-weight: 900; margin: 10px 0; color: #1e293b; }
+
+.modalCategoryBadge {
+  padding: 4px 12px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.modalDescriptionBox { margin: 20px 0; min-height: 80px; }
+
+.modalItemDesc { color: #64748b; line-height: 1.6; font-size: 15px; }
+
+.modalItemFooter {
+  border-top: 1px solid #f1f5f9;
+  padding-top: 20px;
+}
+
+.modalPriceContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.modalPriceLabel { color: #94a3b8; font-weight: 600; font-size: 14px; }
+
+.modalPriceValue {
+  font-size: 24px;
+  font-weight: 900;
+  color: #0d9488;
+  display: flex;
+  align-items: center;
+}
+
+.coinIcon {
+  display: flex;
+  align-items: center; justify-content: center;
+  width: 24px; height: 24px;
+  background: #fbbf24;
+  color: white; border-radius: 50%;
+  font-size: 14px; margin-right: 8px;
+  font-style: normal; font-weight: 900;
+}
