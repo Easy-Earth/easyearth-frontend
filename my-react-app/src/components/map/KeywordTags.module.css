@@ -1,0 +1,21 @@
+.tagContainer {
+  display: flex;
+  flex-wrap: wrap; /* 태그가 많으면 다음 줄로 넘어가게 함 */
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tag {
+  padding: 4px 10px;
+  background-color: var(--blue-200);
+  color: var(--earth-50);
+  border-radius: 100px; /* 둥근 캡슐 형태 */
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tag:hover {
+  background-color: #e2e8f0;
+  color: #475569;
+}
