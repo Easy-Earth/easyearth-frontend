@@ -20,6 +20,7 @@ function AppRouter() {
       <Route path="/community" element={<CommunityPage />} />
       <Route path="/suggestions" element={<SuggestionPage />} />
       <Route path="/shop" element={<ShopPage />} />
+      <Route path="/find-password" element={<PasswordFindPage />} />
 
       {/* 2. 로그인 안 한 유저만 접근 가능 (회원가입/로그인 등) */}
       <Route

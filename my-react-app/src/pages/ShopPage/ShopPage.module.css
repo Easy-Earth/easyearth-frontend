@@ -29,7 +29,7 @@
   border-radius: 30px;
   padding: 45px 20px; 
   display: flex; 
-  flex-direction: column; /* 수직 정렬 */
+  flex-direction: column; 
   justify-content: center; 
   align-items: center; 
   text-align: center;
@@ -93,6 +93,7 @@
   color: #94a3b8;
   font-size: 14px; 
   transition: all 0.2s ease;
+  line-height: 1.2; /* 텍스트 쏠림 방지 */
 }
 
 .categoryTab:hover {
@@ -125,6 +126,13 @@
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
   cursor: pointer;
   position: relative;
+  /* 필터링 시 자연스럽게 나타나도록 애니메이션 추가 */
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .itemCard:hover { 
@@ -167,18 +175,6 @@
   margin-bottom: 8px; 
 }
 
-.itemDesc { 
-  font-size: 13.5px; 
-  color: #64748b; 
-  margin-bottom: 20px; 
-  line-height: 1.5; 
-  height: 40px; 
-  overflow: hidden;
-  display: -webkit-box; 
-  -webkit-line-clamp: 2; 
-  -webkit-box-orient: vertical;
-}
-
 .itemFooter { 
   margin-top: auto; 
   display: flex; 
@@ -211,6 +207,23 @@
   font-style: normal;
 }
 
+/* ✨ 구매 버튼 텍스트 중앙 정렬 해결 */
+.buttonWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.buttonWrapper button {
+  display: flex !important;       /* 내부 flex 적용 */
+  align-items: center !important;  /* 수직 중앙 */
+  justify-content: center !important; /* 수평 중앙 */
+  padding: 0 !important;          /* 패딩에 의한 밀림 방지 */
+  line-height: 1 !important;      /* 행간 초기화 */
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .rarityBadge {
   position: absolute; 
   top: 15px; 
@@ -225,20 +238,18 @@
 }
 
 /* ---------------------------------------------------------
-   5. 랜덤 뽑기 애니메이션 연출 (오버레이 & 카드)
+   5. 랜덤 뽑기 애니메이션 연출
 --------------------------------------------------------- */
 .pullOverlay {
   position: fixed; 
-  top: 0; 
-  left: 0; 
-  width: 100%; 
-  height: 100%;
+  top: 0; left: 0; 
+  width: 100%; height: 100%;
   background: rgba(0, 0, 0, 0.9); 
   z-index: 3000;
   display: flex; 
   justify-content: center; 
   align-items: center;
-  perspective: 1200px; /* 3D 회전 깊이감 */
+  perspective: 1200px;
 }
 
 .pullCard {
@@ -249,7 +260,6 @@
   transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* 뒤집기 전 흔들리는 애니메이션 */
 .pullCard:not(.isFlipped) { 
   animation: shake 0.6s infinite; 
 }
@@ -260,111 +270,66 @@
   75% { transform: rotateY(10deg) rotateX(-5deg); }
 }
 
-/* 결과가 나왔을 때 180도 회전 */
 .isFlipped { 
   transform: rotateY(180deg); 
 }
 
 .cardFront, .cardBack {
   position: absolute; 
-  width: 100%; 
-  height: 100%;
-  backface-visibility: hidden; /* 뒤집혔을 때 뒷면 안보이게 함 */
+  width: 100%; height: 100%;
+  backface-visibility: hidden;
   border-radius: 25px;
   display: flex; 
   flex-direction: column; 
   justify-content: center; 
   align-items: center;
-  box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
 }
 
-/* --- 카드 앞면 (물음표 상태) --- */
 .cardFront { 
   background: linear-gradient(135deg, #14b8a6, #0f766e); 
   color: white; 
 }
 
-.questionMark { 
-  font-size: 100px; 
-  font-weight: 900; 
-  margin-bottom: 20px; 
-  text-shadow: 0 10px 20px rgba(0,0,0,0.2);
-}
-
-.pulseText { 
-  animation: textPulse 1s infinite alternate; 
-  opacity: 0.8; 
-  font-weight: 600; 
-  font-size: 18px;
-}
-
-@keyframes textPulse { 
-  from { opacity: 0.4; transform: scale(0.95); } 
-  to { opacity: 1; transform: scale(1.05); } 
-}
-
-/* --- 카드 뒷면 (결과 공개 상태) --- */
 .cardBack { 
   background: white; 
-  transform: rotateY(180deg); /* 기본적으로 뒤집혀 있음 */
+  transform: rotateY(180deg);
   padding: 30px; 
   text-align: center; 
 }
 
 .resultImage {
-  width: 150px;
-  height: 150px;
+  width: 150px; height: 150px;
   margin-bottom: 20px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.resultImage img {
+  max-width: 100%; max-height: 100%;
+  object-fit: contain;
+}
+
+/* ---------------------------------------------------------
+   6. 기타 상태 메시지 및 정보
+--------------------------------------------------------- */
+.ownedText {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  background-color: #f1f5f9;
+  padding: 6px 12px;
+  border-radius: 10px;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.resultImage img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
+.notForSaleLabel, .notForSaleText {
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.resultRarity { 
-  font-size: 32px; 
-  font-weight: 900; 
-  margin-bottom: 5px; 
-  color: #1e293b; 
-}
-
-.resultName { 
-  font-size: 20px;
-  font-weight: 700;
-  color: #64748b; 
-  margin-bottom: 30px; 
-}
-
-/* 등급별 뒷면 특수 효과 */
-.cardBack.legendary { 
-  border: 5px solid #f59e0b; 
-  box-shadow: 0 0 60px rgba(245, 158, 11, 0.4); 
-}
-.cardBack.epic { border: 5px solid #8b5cf6; }
-.cardBack.rare { border: 5px solid #3b82f6; }
-
-.confetti { 
-  position: absolute; 
-  top: 30px; 
-  color: #f59e0b; 
-  font-weight: 800; 
-  font-size: 20px; 
-  animation: bounce 0.8s infinite; 
-}
-
-@keyframes bounce { 
-  0%, 100% { transform: translateY(0); } 
-  50% { transform: translateY(-15px); } 
-}
-
-/* ---------------------------------------------------------
-   6. 기타 상태 메시지
---------------------------------------------------------- */
 .statusMsg { 
   grid-column: 1 / -1; 
   text-align: center; 
