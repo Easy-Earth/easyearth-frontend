@@ -49,15 +49,28 @@ const QuizPage = () => {
     };
 
     const getOptionLabel = (index) => String.fromCharCode(65 + index); // 0->A, 1->B ...
+    const getDifficultyButtonStyle = (level) => {
+        const isActive = difficulty === level;
+        return {
+            marginRight: level !== "Hard" ? "10px" : undefined,
+            padding: "8px 16px",
+            borderRadius: "6px",
+            border: isActive ? "2px solid #007bff" : "1px solid #ddd",
+            backgroundColor: isActive ? "#e7f1ff" : "#fff",
+            color: isActive ? "#0056b3" : "#333",
+            fontWeight: isActive ? "600" : "400",
+            cursor: "pointer"
+        };
+    };
 
     return (
         <div style={{ padding: "20px", maxWidth: "800px", margin: "0 auto" }}>
             <h2>퀴즈 테스트 페이지 (난이도: {difficulty})</h2>
 
             <div style={{ marginBottom: "20px" }}>
-                <button onClick={() => setDifficulty("Easy")} style={{ marginRight: "10px" }}>Easy</button>
-                <button onClick={() => setDifficulty("Normal")} style={{ marginRight: "10px" }}>Normal</button>
-                <button onClick={() => setDifficulty("Hard")}>Hard</button>
+                <button onClick={() => setDifficulty("Easy")} style={getDifficultyButtonStyle("Easy")}>Easy</button>
+                <button onClick={() => setDifficulty("Normal")} style={getDifficultyButtonStyle("Normal")}>Normal</button>
+                <button onClick={() => setDifficulty("Hard")} style={getDifficultyButtonStyle("Hard")}>Hard</button>
             </div>
 
             {loading && <p>로딩 중...</p>}
