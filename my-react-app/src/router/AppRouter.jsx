@@ -1,13 +1,13 @@
 // src/router/AppRouter.jsx
-import { Routes, Route } from "react-router-dom";
-import MainPage from "../pages/MainPage/MainPage";
-import SignupPage from "../pages/SignupPage/SignupPage";
-import MapPage from "../pages/MapPage/MapPage";
+import { Route, Routes } from "react-router-dom";
 import CommunityPage from "../pages/CommunityPage/CommunityPage";
-import SuggestionPage from "../pages/SuggestionPage/SuggestionPage";
-import ShopPage from "../pages/ShopPage/ShopPage";
-import MyPage from "../pages/MyPage/MyPage";
 import DashboardPage from "../pages/DashboardPage";
+import MainPage from "../pages/MainPage/MainPage";
+import MapPage from "../pages/MapPage/MapPage";
+import MyPage from "../pages/MyPage/MyPage";
+import ShopPage from "../pages/ShopPage/ShopPage";
+import SignupPage from "../pages/SignupPage/SignupPage";
+import SuggestionPage from "../pages/SuggestionPage/SuggestionPage";
 
 import { PrivateRoute, PublicRoute } from "./PrivateRouter";
 
