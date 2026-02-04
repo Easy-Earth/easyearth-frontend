@@ -128,16 +128,19 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes shimmerMove { 0% { transform: translateX(-55%) rotate(10deg); } 100% { transform: translateX(55%) rotate(10deg); } }
 /* 전설(Legendary) 배경 색상 무지개 변환 애니메이션 */
+/* Profile.module.css */
+
+/* 전설 등급: 색상 무지개 변환 애니메이션 */
 @keyframes legendaryRainbow {
-  0% { filter: hue-rotate(0deg) saturate(1.5); }
+  0% { filter: hue-rotate(0deg) saturate(1.4); }
   50% { filter: hue-rotate(180deg) saturate(2); }
-  100% { filter: hue-rotate(360deg) saturate(1.5); }
+  100% { filter: hue-rotate(360deg) saturate(1.4); }
 }
 
-/* 에픽(Epic)용 펄스 효과 */
+/* 에픽 등급: 몽환적인 오로라 펄스 */
 @keyframes epicGlow {
-  0% { opacity: 0.6; transform: scale(1); }
-  100% { opacity: 0.9; transform: scale(1.1); }
+  0% { transform: scale(1); opacity: 0.7; filter: saturate(1.5); }
+  100% { transform: scale(1.15); opacity: 1; filter: saturate(2.5) contrast(1.2); }
 }
 
 .badgeCard {
@@ -153,12 +156,12 @@
 }
 
 /* 등급별 변수 */
-.normal { --fx: 0.2; }
-.rare { --fx: 0.5; }
-.epic { --fx: 1.0; }
-.legendary { --fx: 1.8; }
+.normal { --fx: 0.20; }
+.rare { --fx: 0.55; }
+.epic { --fx: 1.0; }       /* 에픽 강도 상향 */
+.legendary { --fx: 1.8; }  /* 전설 강도 대폭 상향 */
 
-/* 배경 글로우: 전설은 여기서 색이 계속 변함 */
+/* 배경 글로우 */
 .badgeGlow {
   position: absolute;
   inset: -20%;
@@ -169,17 +172,17 @@
     linear-gradient(135deg, rgba(12, 18, 28, 0.96), rgba(8, 30, 34, 0.94));
 }
 
+/* ★ 전설 등급: 배경색이 실시간으로 변함 */
 .legendary .badgeGlow {
-  animation: legendaryRainbow 8s linear infinite; /* 전설의 색상 변환 핵심 */
+  animation: legendaryRainbow 8s linear infinite;
 }
 
-/* 에픽 전용 강렬한 흐름 */
+/* ★ 에픽 등급: 배경이 일렁거리며 강렬해짐 */
 .epic .badgeGlow {
   animation: epicGlow 3s ease-in-out infinite alternate;
-  filter: saturate(2) contrast(1.2);
 }
 
-/* 전설 광선: 더 빠르고 화려하게 */
+/* 전설 전용 광선 (더 빠르고 다채롭게) */
 .legendary .rays {
   display: block;
   position: absolute;
@@ -187,19 +190,25 @@
   z-index: 1;
   background: conic-gradient(
     from 0deg,
-    transparent, var(--ring), transparent 30deg,
-    var(--g1), transparent 60deg,
-    var(--ring), transparent 120deg
+    transparent 0deg,
+    var(--ring) 45deg,
+    transparent 90deg,
+    var(--g1) 135deg,
+    transparent 180deg,
+    var(--ring) 225deg,
+    transparent 270deg,
+    var(--g2) 315deg,
+    transparent 360deg
   );
   opacity: 0.7;
   animation: spin 4s linear infinite, legendaryRainbow 8s linear infinite;
 }
 
-/* 전설 링: 이중으로 겹쳐서 역회전 */
+/* 전설 전용 링 (역회전으로 입체감 추가) */
 .legendary .ring {
   display: block;
   position: absolute;
-  inset: 4px;
+  inset: 6px;
   z-index: 2;
   border-radius: 18px;
   background: conic-gradient(from 0deg, var(--ring), transparent, var(--g2), transparent);
@@ -208,26 +217,43 @@
   animation: spin 2.5s linear infinite reverse;
 }
 
-/* 에픽은 링 대신 날카로운 테두리 광채 */
-.epic .badgeFrame {
-  box-shadow: inset 0 0 15px var(--ring), 0 0 10px var(--g1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+/* 콘텐츠 배치 */
+.badgeContent {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  padding: 0 18px;
+  gap: 15px;
+  width: 100%;
+  align-items: center;
 }
 
-/* 콘텐츠 배치 */
-.badgeContent { position: relative; z-index: 10; display: flex; padding: 0 18px; gap: 15px; width: 100%; align-items: center; }
+.leftSide { flex-shrink: 0; }
+.profileCircle {
+  width: 72px; height: 72px;
+  border-radius: 50%; border: 3px solid #fff;
+  background: var(--b1); overflow: hidden;
+  box-shadow: 0 0 calc(12px * var(--fx)) var(--ring);
+}
+.profileCircle img { width: 100%; height: 100%; object-fit: cover; }
 
-/* 거대 배지: 72px 고정 */
+.rightSide { display: flex; flex-direction: column; flex: 1; align-items: center; gap: 2px; }
+.titleArea { height: 42px; display: flex; align-items: center; }
+.titleImg { height: 100%; object-fit: contain; filter: drop-shadow(0 0 10px var(--ring)); }
+
+.userRow { display: flex; align-items: center; gap: 12px; }
+
+/* 배지 크기 (72px 고정 및 깔끔 유지) */
 .massiveBadgeContainer {
-  width: 72px; height: 72px; flex-shrink: 0;
+  width: 72px; height: 72px;
   display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .massiveBadge { width: 100%; height: 100%; object-fit: contain; }
 
-/* 닉네임 */
 .userName {
   font-size: 24px; font-weight: 900; color: #fff;
-  text-shadow: 0 0 calc(12px * var(--fx)) var(--ring);
+  text-shadow: 0 0 calc(10px * var(--fx)) var(--ring), 0 2px 8px rgba(0,0,0,0.8);
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
