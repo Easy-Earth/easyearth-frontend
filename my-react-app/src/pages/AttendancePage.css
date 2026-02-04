@@ -1,0 +1,160 @@
+/* AttendancePage.css */
+
+.attendance-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Inter', sans-serif;
+    color: #333;
+}
+
+.intro-section {
+    text-align: center;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #e0f2f1 0%, #b9f6ca 100%);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.intro-section h2 {
+    color: #2e7d32;
+    margin-bottom: 10px;
+    font-size: 2rem;
+}
+
+.intro-section p {
+    font-size: 1.1rem;
+    color: #558b2f;
+}
+
+.status-card {
+    background: white;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+    display: inline-block;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.point-highlight {
+    font-weight: bold;
+    color: #f57c00;
+    font-size: 1.2em;
+}
+
+.calendar-section {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.calendar-header h3 {
+    margin: 0;
+    color: #1b5e20;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    text-align: center;
+}
+
+.day-name {
+    font-weight: bold;
+    color: #666;
+    padding: 10px 0;
+}
+
+.calendar-day {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background-color: #f9fbe7;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.calendar-day:hover {
+    transform: scale(1.05);
+    background-color: #f0f4c3;
+}
+
+.calendar-day.empty {
+    background-color: transparent;
+    cursor: default;
+}
+
+.calendar-day.attended {
+    background-color: #a5d6a7;
+    border: 2px solid #2e7d32;
+    color: #1b5e20;
+    font-weight: bold;
+}
+
+.calendar-day.today {
+    border: 2px dashed #ff9800;
+}
+
+.stamp {
+    font-size: 1.5rem;
+    position: absolute;
+    opacity: 0.8;
+}
+
+.check-btn {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    margin-top: 30px;
+    background: linear-gradient(45deg, #43a047, #66bb6a);
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(67, 160, 71, 0.3);
+}
+
+.check-btn:hover {
+    background: linear-gradient(45deg, #2e7d32, #43a047);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(67, 160, 71, 0.4);
+}
+
+.check-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.rules-section {
+    margin-top: 40px;
+    background-color: #f1f8e9;
+    padding: 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.6;
+}
+
+.rules-section h4 {
+    margin-top: 0;
+    color: #33691e;
+}
