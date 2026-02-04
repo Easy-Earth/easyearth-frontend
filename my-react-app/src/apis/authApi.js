@@ -45,6 +45,19 @@ const authApi = {
     const res = await api.get(`/${memberId}`);
     return res.data;
   },
+
+  // 🚀 비밀번호 찾기 추가
+  findPassword: async (data) => {
+    // 서버의 엔드포인트가 /findPassword 라고 가정 (백엔드 설계에 맞게 수정 필요)
+    const res = await api.post("/findPassword", data); 
+    return res.data;
+  },
+
+  // (선택) 비밀번호 재설정
+  resetPassword: async (data) => {
+    const res = await api.post("/resetPassword", data);
+    return res.data;
+  }
 };
 
 export default authApi;

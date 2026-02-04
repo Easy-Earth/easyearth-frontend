@@ -1,118 +1,108 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom"; 
 import * as itemApi from "../../apis/itemApi"; 
-import { useAuth } from "../../context/AuthContext"; // ✨ AuthContext 사용
+import { useAuth } from "../../context/AuthContext"; 
 import Button from "../../components/common/Button";
 import ItemModal from "../../components/item/ItemModal"; 
 import styles from "./ShopPage.module.css";
 
 const ShopPage = () => {
   const navigate = useNavigate();
-  const { user } = useAuth(); // ✨ 로그인된 유저 정보 직접 추출
-  
-  // 프로젝트 DB 설계에 따라 user.id 또는 user.memberId 등을 사용하세요.
-  // 보통 PK값인 숫자가 들어갑니다.
+  const { user } = useAuth();
   const memberId = user?.memberNo || user?.memberId || user?.id;
 
-  const [items, setItems] = useState([]);
-  const [filterMode, setFilterMode] = useState("CATEGORY");
-  const [currentFilter, setCurrentFilter] = useState("ALL");
+  const [allItems, setAllItems] = useState([]);      
+  const [myItems, setMyItems] = useState([]);        
   const [loading, setLoading] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullResult, setPullResult] = useState(null);
+  const [isDuplicate, setIsDuplicate] = useState(false); 
   const [selectedItem, setSelectedItem] = useState(null);
+
+  const [categoryFilter, setCategoryFilter] = useState("ALL");
+  const [rarityFilter, setRarityFilter] = useState("ALL");
 
   const categoryMenu = [
     { label: "전체", value: "ALL" },
-    { label: "일반", value: "NORMAL" },
-    { label: "레어 기어", value: "RARE_GEAR" },
-    { label: "에픽 기어", value: "EPIC_GEAR" },
-    { label: "레전드", value: "LEGEND" },
+    { label: "뱃지", value: "BADGE" },
+    { label: "칭호", value: "TITLE" },
+    { label: "배경", value: "BACKGROUND" },
   ];
 
   const rarityMenu = [
+    { label: "전체", value: "ALL" },
     { label: "COMMON", value: "COMMON" },
     { label: "RARE", value: "RARE" },
     { label: "EPIC", value: "EPIC" },
     { label: "LEGENDARY", value: "LEGENDARY" },
   ];
 
-  useEffect(() => {
-    fetchItems();
-  }, [filterMode, currentFilter]);
-
-  const fetchItems = async () => {
+  const fetchInitialData = useCallback(async () => {
     setLoading(true);
     try {
-      let data;
-      if (currentFilter === "ALL") {
-        data = await itemApi.getStoreItems();
-      } else if (filterMode === "CATEGORY") {
-        data = await itemApi.getItemsByCategory(currentFilter);
-      } else if (filterMode === "RARITY") {
-        data = await itemApi.getItemsByRarity(currentFilter);
-      }
-      setItems(Array.isArray(data) ? data : []);
+      const [storeData, myDataResponse] = await Promise.all([
+        itemApi.getStoreItems(),
+        memberId ? itemApi.getMyItems(memberId) : Promise.resolve([])
+      ]);
+      setAllItems(Array.isArray(storeData) ? storeData : []);
+      const myData = Array.isArray(myDataResponse) ? myDataResponse : (myDataResponse?.data || []);
+      setMyItems(myData.map(item => String(item.itemId || item.ITEM_ID || "")));
     } catch (error) {
-      console.error("아이템 로드 실패:", error);
-      setItems([]);
+      console.error("데이터 로드 실패:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [memberId]);
 
-  const handleFilterChange = (mode, value) => {
-    setFilterMode(mode);
-    setCurrentFilter(value);
-  };
+  useEffect(() => {
+    fetchInitialData();
+  }, [fetchInitialData]);
 
-  // 💰 일반 아이템 구매
+  const filteredItems = useMemo(() => {
+    return allItems.filter(item => {
+      const itemCat = item.itemCategory || item.category || "";
+      const itemRar = item.rarity || item.RARITY || "";
+      const matchCategory = categoryFilter === "ALL" || itemCat === categoryFilter;
+      const matchRarity = rarityFilter === "ALL" || itemRar === rarityFilter;
+      return matchCategory && matchRarity;
+    });
+  }, [allItems, categoryFilter, rarityFilter]);
+
   const handleBuy = async (item) => {
-    if (!memberId) {
-      alert("로그인이 필요한 서비스입니다.");
-      return;
-    }
-
-    if (!window.confirm(`[${item.name || item.itemName}] 아이템을 구매하시겠습니까?`)) return;
+    if (!memberId) return alert("로그인이 필요한 서비스입니다.");
+    const itemId = item.itemId || item.ITEM_ID;
+    const price = item.price || item.PRICE;
+    if (!window.confirm(`[${item.name || item.itemName}] 구매하시겠습니까?`)) return;
 
     try {
-      await itemApi.buyItem({
-        memberId: memberId,
-        itemId: item.itemId,
-        price: item.price
-      });
-
+      await itemApi.buyItem({ userId: memberId, itemId, price });
+      setMyItems(prev => [...prev, String(itemId)]);
       setSelectedItem(null);
-      if (window.confirm("🎉 구매 완료! 인벤토리 페이지로 이동하여 확인하시겠습니까?")) {
-        navigate("/inventory");
-      } else {
-        fetchItems();
-      }
+      alert("🎉 구매 완료되었습니다!");
     } catch (error) {
       alert(error.response?.data || "구매 중 오류가 발생했습니다.");
     }
   };
 
-  // 🎰 랜덤 뽑기 실행 (memberId 자동 연동)
   const handleRandomPull = async () => {
-    if (!memberId) {
-      alert("로그인이 필요한 서비스입니다.");
-      return;
-    }
-
+    if (!memberId) return alert("로그인이 필요합니다.");
     if (!window.confirm("1,000P를 사용하여 랜덤 뽑기를 진행하시겠습니까?")) return;
     
     setIsPulling(true);
     setPullResult(null);
+    setIsDuplicate(false);
 
     try {
       const result = await itemApi.randomPull(memberId);
-      
-      // 결과 공개 전 1.5초간 긴장감 연출
       setTimeout(() => {
         setPullResult(result);
+        const newItemId = String(result.itemId || result.ITEM_ID || "");
+        if (myItems.includes(newItemId)) {
+          setIsDuplicate(true);
+        } else {
+          setMyItems(prev => [...prev, newItemId]);
+        }
       }, 1500);
-
     } catch (error) {
       setIsPulling(false);
       alert(error.response?.data || "포인트가 부족하거나 오류가 발생했습니다.");
@@ -122,11 +112,7 @@ const ShopPage = () => {
   const closePullResult = () => {
     setIsPulling(false);
     setPullResult(null);
-    if (window.confirm("인벤토리로 이동하여 당첨된 아이템을 확인하시겠습니까?")) {
-      navigate("/inventory");
-    } else {
-      fetchItems(); 
-    }
+    setIsDuplicate(false);
   };
 
   return (
@@ -153,11 +139,9 @@ const ShopPage = () => {
               {categoryMenu.map((menu) => (
                 <button
                   key={menu.value}
-                  className={`${styles.categoryTab} ${filterMode === "CATEGORY" && currentFilter === menu.value ? styles.active : ""}`}
-                  onClick={() => handleFilterChange("CATEGORY", menu.value)}
-                >
-                  {menu.label}
-                </button>
+                  className={`${styles.categoryTab} ${categoryFilter === menu.value ? styles.active : ""}`}
+                  onClick={() => setCategoryFilter(menu.value)}
+                >{menu.label}</button>
               ))}
             </div>
           </div>
@@ -167,11 +151,9 @@ const ShopPage = () => {
               {rarityMenu.map((menu) => (
                 <button
                   key={menu.value}
-                  className={`${styles.categoryTab} ${filterMode === "RARITY" && currentFilter === menu.value ? styles.active : ""}`}
-                  onClick={() => handleFilterChange("RARITY", menu.value)}
-                >
-                  {menu.label}
-                </button>
+                  className={`${styles.categoryTab} ${rarityFilter === menu.value ? styles.active : ""}`}
+                  onClick={() => setRarityFilter(menu.value)}
+                >{menu.label}</button>
               ))}
             </div>
           </div>
@@ -179,80 +161,99 @@ const ShopPage = () => {
       </header>
 
       {loading ? (
-        <div className={styles.statusMsg}>아이템 목록을 가져오는 중...</div>
+        <div className={styles.statusMsg}>아이템 로드 중...</div>
       ) : (
         <div className={styles.itemGrid}>
-          {items.map((item) => (
-            <div 
-              key={item.itemId} 
-              className={`${styles.itemCard} ${styles[item.rarity?.toLowerCase() || 'common']}`}
-              onClick={() => setSelectedItem(item)}
-            >
-              <span className={styles.rarityBadge}>{item.rarity}</span>
-              <div className={styles.itemImage}>
-                <img src={item.itemImage || "/default-item.png"} alt={item.name || item.itemName} />
-              </div>
-              <div className={styles.itemContent}>
-                <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
-                <p className={styles.itemDesc}>{item.itemDescription}</p>
-                <div className={styles.itemFooter}>
-                  <span className={styles.price}>
-                    <i className={styles.coinIcon}>P</i> {item.price?.toLocaleString()}
-                  </span>
-                  <div className={styles.buttonWrapper}>
-                    <Button 
-                      color="#14b8a6" 
-                      onClick={(e) => { e.stopPropagation(); handleBuy(item); }} 
-                      width="70px" height="34px"
-                    >
-                      구매
-                    </Button>
+          {filteredItems.map((item) => {
+            const itemId = String(item.itemId || item.ITEM_ID || "");
+            const isOwned = myItems.includes(itemId);
+            const isOnSale = (item.isOnSale || item.IS_ON_SALE) === 'Y';
+            const rarity = (item.rarity || item.RARITY || 'COMMON').toLowerCase();
+
+            return (
+              <div 
+                key={itemId} 
+                className={`${styles.itemCard} ${styles[rarity]}`}
+                onClick={() => setSelectedItem(item)}
+              >
+                <span className={styles.rarityBadge}>{item.rarity || item.RARITY}</span>
+                <div className={styles.itemImage}>
+                  <img src={item.itemImage || "/default-item.png"} alt={item.name} />
+                </div>
+                <div className={styles.itemContent}>
+                  <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
+                  {/* ✨ 설명(Description) 제거: 상세 정보는 모달에서 확인 */}
+                  <div className={styles.itemFooter}>
+                    <span className={styles.price}>
+                      {isOnSale ? (
+                        <>
+                          <i className={styles.coinIcon}>P</i> {(item.price || item.PRICE)?.toLocaleString()}
+                        </>
+                      ) : (
+                        <span className={styles.notForSaleLabel}>비매품</span>
+                      )}
+                    </span>
+                    <div className={styles.buttonWrapper}>
+                      {isOwned ? (
+                        <span className={styles.ownedText}>보유 중</span>
+                      ) : isOnSale ? (
+                        <Button 
+                          color="#14b8a6" 
+                          onClick={(e) => { e.stopPropagation(); handleBuy(item); }} 
+                          width="70px" height="34px"
+                        >구매</Button>
+                      ) : (
+                        <span className={styles.notForSaleText}>획득 전용</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {/* 🎰 뽑기 연출 오버레이 */}
+      {/* 뽑기 결과 모달 */}
       {isPulling && (
         <div className={styles.pullOverlay}>
           <div className={`${styles.pullCard} ${pullResult ? styles.isFlipped : ""}`}>
-            {/* 카드 앞면 */}
             <div className={styles.cardFront}>
               <div className={styles.questionMark}>?</div>
               <p className={styles.pulseText}>과연 무엇이 나올까요?</p>
             </div>
-            
-            {/* 카드 뒷면 (결과 공개) */}
             <div className={`${styles.cardBack} ${pullResult?.rarity ? styles[pullResult.rarity.toLowerCase()] : ""}`}>
-              {/* 중복 당첨 문자열 처리 */}
-              {typeof pullResult === "string" ? (
-                <div className={styles.duplicateWrapper}>
-                  <p className={styles.resultName}>{pullResult}</p>
-                </div>
-              ) : (
+              {pullResult && (
                 <>
-                  {pullResult?.rarity === "LEGENDARY" && <div className={styles.confetti}>✨ 전설 획득! ✨</div>}
+                  {isDuplicate && (
+                    <div className={styles.refundBadge}>
+                      <span className={styles.refundIcon}></span>
+                      이미 보유한 아이템입니다!<br/>
+                      <strong>500P 반환 완료</strong>
+                    </div>
+                  )}
                   <div className={styles.resultImage}>
-                     <img src={pullResult?.itemImage || "/default-item.png"} alt="result" />
+                    <img src={pullResult.itemImage || "/default-item.png"} alt="result" />
                   </div>
-                  <h3 className={styles.resultRarity}>{pullResult?.rarity}</h3>
-                  <p className={styles.resultName}>{pullResult?.itemName || pullResult?.name}</p>
+                  <h3 className={styles.resultRarity}>{pullResult.rarity}</h3>
+                  <p className={styles.resultName}>{pullResult.itemName || pullResult.name}</p>
+                  <div className={styles.confirmBtnWrapper}>
+                    <Button color="#2cdfd0" onClick={closePullResult} width="130px" height="40px">확인</Button>
+                  </div>
                 </>
               )}
-              <div style={{marginTop: '20px'}}>
-                <Button color="#1e293b" onClick={closePullResult} width="130px" height="40px">
-                  확인
-                </Button>
-              </div>
             </div>
           </div>
         </div>
       )}
 
-      <ItemModal item={selectedItem} onClose={() => setSelectedItem(null)} onBuy={handleBuy} />
+      {/* 아이템 클릭 시 상세 정보 모달 */}
+      <ItemModal 
+        item={selectedItem} 
+        onClose={() => setSelectedItem(null)} 
+        onBuy={handleBuy} 
+        isOwned={myItems.includes(String(selectedItem?.itemId || selectedItem?.ITEM_ID || ""))}
+      />
     </div>
   );
 };
