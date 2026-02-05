@@ -2,17 +2,15 @@ import { useState } from "react";
 import styles from "./ReviewFormModal.module.css";
 
 function ReviewFormModal({ 
-  isOpen, onClose,test, title, content, setContent, rating, setRating, onSubmit ,shopName
+  isOpen, onClose, title, content, setContent, rating, setRating, onSubmit, shopName, isEditMode 
 }) {
   const [hover, setHover] = useState(0);
-console.log("shopName:", shopName);
-console.log(test);
+
   if (!isOpen) return null;
 
   return (
     <div className={styles.reviewModalOverlay} onClick={onClose}>
       <div className={styles.reviewModalContent} onClick={(e) => e.stopPropagation()}>
-        <button className={styles.closeCircleBtn} onClick={onClose}>✕</button>
 
         <div className={styles.modalInner}>
           <h4 className={styles.newWriteTitle}>{title}</h4>
@@ -55,7 +53,7 @@ console.log(test);
               disabled={!content.trim()}
               type="button"
             >
-              리뷰 등록하기
+              {isEditMode ? "리뷰 수정하기" : "리뷰 등록하기"} {/* ✅ 텍스트 가변 */}
             </button>
           </div>
         </div>

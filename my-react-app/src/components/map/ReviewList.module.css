@@ -5,9 +5,9 @@
 }
 
 .sectionTitle {
-  display: flex;                /* ✅ 가로 배치 */
-  justify-content: space-between; /* ✅ 양 끝 정렬 */
-  align-items: center;          /* ✅ 세로 중앙 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 18px;
   font-weight: 700;
   color: #1e293b;
@@ -25,14 +25,6 @@
   font-size: 16px;
 }
 
-/* ... 기존 나머지 카드 스타일 ... */
-.noReview {
-  padding: 40px 0;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-}
-
 .list {
   display: flex;
   flex-direction: column;
@@ -41,15 +33,19 @@
 
 .reviewCard {
   background: white;
-  padding: 16px;
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  position: relative;  
+  display: flex;
+  flex-direction: column;
+  min-height: 110px; 
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .userName {
@@ -67,6 +63,9 @@
   font-size: 14px;
   line-height: 1.5;
   color: #475569;
+  text-align: left;     
+  margin-bottom: 20px; 
+  word-break: break-all;
 }
 
 .authButtons {
@@ -82,7 +81,28 @@
   border-radius: 4px;
   cursor: pointer;
   color: #64748b;
+  transition: all 0.2s;
 }
 
-.editBtn:hover { color: #14b8a6; }
-.deleteBtn:hover { color: #f43f5e; }
+.editBtn:hover { color: #14b8a6; background: #e2f3f0; }
+.deleteBtn:hover { color: #f43f5e; background: #fee2e2; }
+
+.reviewFooter {
+  position: absolute;   
+  right: 20px;          
+  bottom: 15px;         
+}
+
+.date {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.noReview {
+  padding: 40px 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
