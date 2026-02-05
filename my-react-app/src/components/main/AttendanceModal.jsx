@@ -14,30 +14,43 @@ const AttendanceModal = ({ isOpen, onClose }) => {
     const [checking, setChecking] = useState(false);
 
     useEffect(() => {
-        if (isOpen && user?.memberId) {
-            loadAttendance();
+        if (isOpen) {
+            if (user?.memberId) {
+                loadAttendance();
+            } else {
+                setLoading(false);
+            }
         }
-    }, [isOpen, user, calDate]);
+    }, [isOpen, user?.memberId, calDate]);
 
     const loadAttendance = async () => {
+        if (!user?.memberId) return;
         setLoading(true);
         const ym = `${calDate.getFullYear()}-${String(calDate.getMonth() + 1).padStart(2, "0")}`;
         try {
             const list = await getAttendanceList(user.memberId, ym);
             const dates = new Set();
             let lastStreak = 0;
-            list.forEach((a) => {
-                const d = new Date(a.attendanceDate);
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-                    d.getDate()
-                ).padStart(2, "0")}`;
-                dates.add(key);
-                lastStreak = a.consecutiveDays || 0;
-            });
+
+            if (Array.isArray(list)) {
+                list.forEach((a) => {
+                    if (a.attendanceDate) {
+                        const d = new Date(a.attendanceDate);
+                        if (!isNaN(d.getTime())) {
+                            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+                                d.getDate()
+                            ).padStart(2, "0")}`;
+                            dates.add(key);
+                            lastStreak = a.consecutiveDays || 0;
+                        }
+                    }
+                });
+            }
             setAttDates(dates);
             setStreak(lastStreak);
         } catch (error) {
             console.error("Failed to load attendance", error);
+            setMsg({ text: "데이터를 불러오는 데 실패했습니다.", type: "fail" });
         } finally {
             setLoading(false);
         }
@@ -133,7 +146,15 @@ const AttendanceModal = ({ isOpen, onClose }) => {
                 <button onClick={() => changeMonth(1)}>▶</button>
             </div>
 
-            {loading ? <div className={styles.spinner}></div> : renderCalendar()}
+            {loading ? (
+                <div className={styles.spinner}></div>
+            ) : !user ? (
+                <p style={{ textAlign: "center", color: "#999", padding: "40px 0" }}>
+                    로그인이 필요한 서비스입니다.
+                </p>
+            ) : (
+                renderCalendar()
+            )}
         </Modal>
     );
 };
