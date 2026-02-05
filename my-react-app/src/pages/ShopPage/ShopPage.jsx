@@ -117,6 +117,8 @@ const ShopPage = () => {
   }, [allItems, categoryFilter, rarityFilter]);
 
   const handleBuy = (item) => {
+    const id = item.itemId || item.ITEM_ID; 
+    console.log("구매 시도 아이템 ID:", id);
     if (!memberId) {
       setModalConfig({
         isOpen: true,
@@ -177,15 +179,17 @@ const ShopPage = () => {
         setIsPulling(true);
         setPullResult(null);
         setIsDuplicate(false);
-
+        
         try {
           const result = await itemApi.randomPull(memberId);
+          console.log("랜덤뽑기 결과 : " + result.itemId);
           setTimeout(() => {
             setPullResult(result);
             const newItemId = String(result.itemId || result.ITEM_ID || "");
-            if (myItems.includes(newItemId)) {
+            if (myItems.includes(newItemId) || result==undefined) {
               setIsDuplicate(true);
             } else {
+              console.log(newItemId);
               setMyItems(prev => [...prev, newItemId]);
             }
           }, 1500);
@@ -316,17 +320,23 @@ const ShopPage = () => {
             <div className={`${styles.cardBack} ${pullResult?.rarity ? styles[pullResult.rarity.toLowerCase()] : ""}`}>
               {pullResult && (
                 <>
-                  {isDuplicate && (
+                  {(isDuplicate || pullResult.itemId === undefined) && (
                     <div className={styles.refundBadge}>
                       이미 보유한 아이템입니다!<br/>
                       <strong>500P 반환 완료</strong>
                     </div>
                   )}
-                  <div className={styles.resultImage}>
+                  {pullResult.itemId!=undefined && (
+                    <div className={styles.resultImage}>
                     <img src={getItemImage(pullResult)} alt="result" />
                   </div>
+                  )}
+                  
+                  {/* <div className={styles.resultImage}>
+                    <img src={getItemImage(pullResult)} alt="result" />
+                  </div> */}
                   <h3 className={styles.resultRarity}>{pullResult.rarity}</h3>
-                  <p className={styles.resultName}>{pullResult.itemName || pullResult.name}</p>
+                  <p className={styles.resultName}>{pullResult.itemName || pullResult.name} </p>
                   <div className={styles.confirmBtnWrapper}>
                     <Button color="#2cdfd0" onClick={closePullResult} width="130px" height="40px">확인</Button>
                   </div>
