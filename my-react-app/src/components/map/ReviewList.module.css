@@ -5,15 +5,32 @@
 }
 
 .sectionTitle {
+  display: flex;                /* ✅ 가로 배치 */
+  justify-content: space-between; /* ✅ 양 끝 정렬 */
+  align-items: center;          /* ✅ 세로 중앙 */
   font-size: 18px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.sectionTitle span {
-  color: var(--green-600);
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count {
+  color: #14b8a6;
   font-size: 16px;
+}
+
+/* ... 기존 나머지 카드 스타일 ... */
+.noReview {
+  padding: 40px 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
 }
 
 .list {
@@ -32,32 +49,7 @@
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
   margin-bottom: 10px;
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.userAvatar {
-  width: 36px;
-  height: 36px;
-  background-color: var(--green-100);
-  color: var(--green-700);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.nameGroup {
-  display: flex;
-  flex-direction: column;
 }
 
 .userName {
@@ -67,67 +59,30 @@
 }
 
 .rating {
-  color: #f59e0b; 
-  font-size: 12px;
-  letter-spacing: 1px;
+  color: #f59e0b;
+  margin-left: 8px;
 }
 
 .content {
   font-size: 14px;
   line-height: 1.5;
   color: #475569;
-  word-break: break-all;
 }
 
-.noReview {
-  padding: 40px 0;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-}
-/* 본인 확인 버튼 컨테이너 */
 .authButtons {
   display: flex;
   gap: 8px;
-  align-items: center;
 }
 
-/* 공통 버튼 스타일 */
 .editBtn, .deleteBtn {
-  padding: 4px 8px;
   font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
+  background: #f1f5f9;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  background-color: transparent;
+  color: #64748b;
 }
 
-/* 수정 버튼: 부드러운 회색 -> 청록색 호버 */
-.editBtn {
-  color: var(--gray-600);
-  background-color: var(--gray-200);
-}
-
-.editBtn:hover {
-  color: var(--eco-teal);
-  background-color: #f0fdfa;
-  border-color: #99f6e4;
-}
-
-/* 삭제 버튼: 부드러운 회색 -> 붉은색 호버 */
-.deleteBtn {
-  color: var(--gray-600);
-  background-color: var(--gray-200);
-}
-
-.deleteBtn:hover {
-  color: var(--danger);
-  background-color: #fef2f2;
-  border-color: #fecaca;
-}
-
-.editBtn:active, .deleteBtn:active {
-  transform: scale(0.95);
-}
+.editBtn:hover { color: #14b8a6; }
+.deleteBtn:hover { color: #f43f5e; }

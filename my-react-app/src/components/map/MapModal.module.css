@@ -1,154 +1,79 @@
+/* --- 상세창(사이드바) 스타일 --- */
 .modalContainer {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 380px;
-  height: 100%;
+  top: 0; left: 0;
+  width: 380px; height: 100%;
   background: white;
-  z-index: 1001; /* 지도(100)보다 높고 네비게이션바보다 낮게 설정 */
+  z-index: 1001;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
 }
 
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
+@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+
+.scrollContent { flex: 1; overflow-y: auto; }
+
+.imageBox { width: 100%; height: 250px; background: #f1f5f9; }
+.imageBox img { width: 100%; height: 100%; object-fit: cover; }
+.noImage { display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; }
+
+.infoBox { padding: 24px; }
+.categoryTag { display: inline-block; padding: 4px 10px; background: #f1f5f9; color: #64748b; border-radius: 4px; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.title { font-size: 22px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0; }
+.divider { height: 1px; background: #e2e8f0; margin-bottom: 20px; }
+
+.detailList { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.detailItem { display: flex; flex-direction: column; gap: 4px; }
+.detailItem strong { font-size: 13px; color: #94a3b8; }
+.detailItem span { font-size: 15px; color: #334155; }
+.description { line-height: 1.6; color: #475569; font-size: 15px; }
+
+.closeBtnWrapper { position: absolute; top: 15px; right: 15px; z-index: 10; display: flex; justify-content: flex-end; }
+.closeBtnWrapper button { display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--green-200); box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap; padding: 0 8px; }
+
+/* --- ✅ 리뷰 작성 모달 (중앙 배치 핵심) --- */
+.reviewModalOverlay {
+  position: fixed;      /* 👈 상세창을 무시하고 브라우저 화면 전체 기준 */
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* 어두운 배경 */
+  display: flex;
+  align-items: center;  /* 세로 중앙 */
+  justify-content: center; /* 가로 중앙 */
+  z-index: 9999;        /* 👈 1001보다 훨씬 높은 값으로 설정 */
+  backdrop-filter: blur(2px);
 }
 
-.closeBtn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 32px;
-  line-height: 1;
+.reviewModalContent {
   background: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  display: flex;
-  align-items: center;    /* 세로 중앙 */
-  justify-content: center; /* 가로 중앙 */
-}
-
-.scrollContent {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.imageBox {
-  width: 100%;
-  height: 250px;
-  background: #f1f5f9;
-}
-
-.imageBox img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.noImage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #94a3b8;
-}
-
-.infoBox {
-  padding: 24px;
-}
-
-.categoryTag {
-  display: inline-block;
-  padding: 4px 10px;
-  background: #f1f5f9;
-  color: #64748b;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.title {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0 0 16px 0;
-}
-
-.divider {
-  height: 1px;
-  background: #e2e8f0;
-  margin-bottom: 20px;
-}
-
-.detailList {
+  padding: 30px;
+  border-radius: 20px;
+  width: 380px;         /* 모달 너비 */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 15px;
+  animation: popUp 0.2s ease-out;
 }
 
-.detailItem {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
+@keyframes popUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-.detailItem strong {
-  font-size: 13px;
-  color: #94a3b8;
-}
+.writeTitle { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; }
+.writeSub { font-size: 14px; color: #64748b; margin: 0; }
 
-.detailItem span {
-  font-size: 15px;
-  color: #334155;
-}
+.ratingBox { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.ratingSelect { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
 
-.description {
-  line-height: 1.6;
-  color: #475569;
-  font-size: 15px;
-}
-.closeBtnWrapper {
-  position: absolute;
-  top: 15px;
-  right: 15px; 
-  z-index: 10;
-  display: flex;
-  justify-content: flex-end;
-}
+.reviewTextArea { width: 100%; height: 140px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; resize: none; outline-color: #14b8a6; }
 
-.closeBtnWrapper button {
-  display: flex;
-  align-items: center;    /* 세로 중앙 */
-  justify-content: center; /* 가로 중앙 */
-  border-radius: 8px;      /* 닫기 글자가 들어갈 수 있게 약간 사각형으로 변경 */
-  border: 1px solid var(--green-200);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  white-space: nowrap;     /* ✅ 글자가 세로로 꺾이지 않고 가로로 유지되게 함 */
-  padding: 0 8px;          /* 좌우 여유 공간 */
-}
-/* 리뷰 버튼 스타일 */
-.authButtons {
-  display: flex;
-  gap: 10px;
-}
+.reviewModalBtns { display: flex; gap: 10px; }
+.cancelBtn { flex: 1; padding: 12px; background: #f1f5f9; color: #64748b; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+.submitBtn { flex: 1; padding: 12px; background: #14b8a6; color: white; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
 
-.editBtn, .deleteBtn {
-  background: none;
-  border: none;
-  font-size: 13px;
-  cursor: pointer;
-  color: #94a3b8;
-}
-
+/* --- 리뷰 리스트 내부 버튼 --- */
+.authButtons { display: flex; gap: 10px; }
+.editBtn, .deleteBtn { background: none; border: none; font-size: 13px; cursor: pointer; color: #94a3b8; }
 .editBtn:hover { color: #14b8a6; }
 .deleteBtn:hover { color: #f43f5e; }
