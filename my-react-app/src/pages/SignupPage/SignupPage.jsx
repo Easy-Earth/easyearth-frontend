@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; 
-import { useAuth } from "../../context/AuthContext";
-import authApi from "../../apis/authApi";
+import { useEffect, useState } from "react";
 import DaumPostcode from "react-daum-postcode";
+import { useNavigate } from "react-router-dom";
+import authApi from "../../apis/authApi";
+import CustomModal from "../../components/common/CustomModal";
+import { useAuth } from "../../context/AuthContext";
 
 function SignupPage() {
   const { register, login } = useAuth();
@@ -20,6 +21,14 @@ function SignupPage() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+
+  // 커스텀 모달 상태 관리
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: 'alert',
+    message: '',
+    onConfirm: () => {}
+  });
 
   // 1. 아이디 상태 관리
   const [idStatus, setIdStatus] = useState({ message: "", color: "#64748b", isAvailable: false });
@@ -103,14 +112,31 @@ function SignupPage() {
       if (registerResult.success) {
         const loginResult = await login({ loginId: formData.userId, password: formData.password });
         if (loginResult.success) {
-          alert("🎉 가입을 축하합니다!");
-          navigate("/", { replace: true });
+          setModalConfig({
+            isOpen: true,
+            type: 'alert',
+            message: "🎉 가입을 축하합니다!",
+            onConfirm: () => {
+              setModalConfig(prev => ({ ...prev, isOpen: false }));
+              navigate("/", { replace: true });
+            }
+          });
         }
       } else {
-        alert(registerResult.message || "회원가입 실패");
+        setModalConfig({
+          isOpen: true,
+          type: 'alert',
+          message: registerResult.message || "회원가입 실패",
+          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
       }
     } catch (err) {
-      alert("오류가 발생했습니다.");
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: "오류가 발생했습니다.",
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
     } finally {
       setLoading(false);
     }
@@ -157,6 +183,14 @@ function SignupPage() {
           {loading ? "처리 중..." : "회원가입 및 시작하기"}
         </button>
       </form>
+
+      <CustomModal 
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 }
