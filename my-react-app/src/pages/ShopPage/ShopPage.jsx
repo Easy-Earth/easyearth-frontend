@@ -6,6 +6,9 @@ import Button from "../../components/common/Button";
 import ItemModal from "../../components/item/ItemModal"; 
 import styles from "./ShopPage.module.css";
 
+// 기본 이미지 설정
+const defaultImg = "https://via.placeholder.com/150?text=No+Image";
+
 const ShopPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -36,6 +39,43 @@ const ShopPage = () => {
     { label: "EPIC", value: "EPIC" },
     { label: "LEGENDARY", value: "LEGENDARY" },
   ];
+
+  /**
+   * [이미지 동적 로드 함수 - 카테고리 확장 버전]
+   * 경로 규칙: src/assets/[카테고리별폴더]/[등급]/[파일명]
+   */
+  const getItemImage = (item) => {
+    if (!item) return defaultImg;
+
+    // 1. 카테고리에 따른 폴더 결정 (BADGE -> badges, TITLE -> titles, BACKGROUND -> backgrounds)
+    const category = (item.itemCategory || item.category || "BADGE").toUpperCase();
+    let folderName = "badges"; // 기본값
+    let prefix = "badge";      // 파일명 접두사 (badge_01, title_01 등)
+
+    if (category === "TITLE") {
+      folderName = "titles";
+      prefix = "title";
+    } else if (category === "BACKGROUND") {
+      folderName = "backgrounds";
+      prefix = "background";
+    }
+
+    // 2. 등급 소문자 변환 (폴더명 일치)
+    const rarity = (item.rarity || item.RARITY || "common").toLowerCase();
+    
+    // 3. ID 포맷팅 (badge_01.png, title_01.png 등)
+    const itemId = item.itemId || item.ITEM_ID || 0;
+    const formattedId = String(itemId).padStart(2, '0');
+    const fileName = `${prefix}_${formattedId}.png`;
+
+    try {
+      // 수정된 경로: ../../assets/[folderName]/[rarity]/[fileName]
+      return new URL(`../../assets/${folderName}/${rarity}/${fileName}`, import.meta.url).href;
+    } catch (err) {
+      console.warn("이미지 경로 생성 실패:", fileName);
+      return defaultImg;
+    }
+  };
 
   const fetchInitialData = useCallback(async () => {
     setLoading(true);
@@ -178,11 +218,10 @@ const ShopPage = () => {
               >
                 <span className={styles.rarityBadge}>{item.rarity || item.RARITY}</span>
                 <div className={styles.itemImage}>
-                  <img src={item.itemImage || "/default-item.png"} alt={item.name} />
+                  <img src={getItemImage(item)} alt={item.name || item.itemName} />
                 </div>
                 <div className={styles.itemContent}>
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
-                  {/* ✨ 설명(Description) 제거: 상세 정보는 모달에서 확인 */}
                   <div className={styles.itemFooter}>
                     <span className={styles.price}>
                       {isOnSale ? (
@@ -214,7 +253,6 @@ const ShopPage = () => {
         </div>
       )}
 
-      {/* 뽑기 결과 모달 */}
       {isPulling && (
         <div className={styles.pullOverlay}>
           <div className={`${styles.pullCard} ${pullResult ? styles.isFlipped : ""}`}>
@@ -227,13 +265,12 @@ const ShopPage = () => {
                 <>
                   {isDuplicate && (
                     <div className={styles.refundBadge}>
-                      <span className={styles.refundIcon}></span>
                       이미 보유한 아이템입니다!<br/>
                       <strong>500P 반환 완료</strong>
                     </div>
                   )}
                   <div className={styles.resultImage}>
-                    <img src={pullResult.itemImage || "/default-item.png"} alt="result" />
+                    <img src={getItemImage(pullResult)} alt="result" />
                   </div>
                   <h3 className={styles.resultRarity}>{pullResult.rarity}</h3>
                   <p className={styles.resultName}>{pullResult.itemName || pullResult.name}</p>
@@ -247,12 +284,12 @@ const ShopPage = () => {
         </div>
       )}
 
-      {/* 아이템 클릭 시 상세 정보 모달 */}
       <ItemModal 
         item={selectedItem} 
         onClose={() => setSelectedItem(null)} 
         onBuy={handleBuy} 
         isOwned={myItems.includes(String(selectedItem?.itemId || selectedItem?.ITEM_ID || ""))}
+        imageSrc={getItemImage(selectedItem)}
       />
     </div>
   );
