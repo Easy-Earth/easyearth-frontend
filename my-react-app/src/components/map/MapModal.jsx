@@ -158,6 +158,11 @@ function MapModal({ item, onClose }) {
           <div className={styles.infoBox}>
             <div className={styles.categoryTag}>{displayItem.THM_THEME_NAME || "테마"}</div>
             <h2 className={styles.title}>{displayItem.COT_CONTS_NAME}</h2>
+           <div className={styles.ratingScoreBox}>
+              <span className={styles.starIconLarge}>★</span>
+              <span className={styles.ratingValue}>{displayItem.avgRating?.toFixed(1) || "0.0"}</span>
+              <span className={styles.ratingMax}>/ 5.0</span>
+            </div>
             <div className={styles.divider} />
             <div className={styles.detailList}>
               <div className={styles.detailItem}>
@@ -188,9 +193,7 @@ function MapModal({ item, onClose }) {
                   </div>
               )}
             </div>
-            <div className={styles.description}>
-              <p>{displayItem.COT_CONTS_DESC || "상세 설명 정보가 없습니다."}</p>
-            </div>
+
           </div>
           
           <div style={{ padding: '0 24px 20px 24px' }}>
@@ -207,7 +210,6 @@ function MapModal({ item, onClose }) {
               currentMemberId={currentMemberId}
               onDelete={handleDeleteReview}
               onEdit={handleEditReview}
-              // 🚨 수정: detailData?.body?.[0]가 아니라 detailData에 이미 담겨있음
               shopId={detailData?.shopId} 
               onWriteClick={() => setIsReviewModalOpen(true)}
               shopName={detailData?.COT_CONTS_NAME}
