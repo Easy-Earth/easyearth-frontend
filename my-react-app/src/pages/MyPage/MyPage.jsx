@@ -1,5 +1,5 @@
 import badgeImg25 from "../../assets/badges/epic/badge_25.png";
-import badgeImg33 from "../../assets/badges/legendary/badge_33.png";
+import badgeImg33 from "../../assets/badges/common/badge_05.png";
 import titleImg from "../../assets/titles/common/normal-1.png";
 import Profile from "../../components/common/Profile";
 const MyPage = () => {
