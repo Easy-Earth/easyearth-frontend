@@ -6,5 +6,13 @@ export const reviewApi = {
         
         const response = await api.get(`/eco/review/list/${shopId}`);
         return response.data;
-    }
+    },
+
+    reviewWrite: async (reviewData) => {
+    const response = await api.post('/eco/review/write', null, {
+        params: reviewData 
+    });
+    return response.data;
+}
+    
 }

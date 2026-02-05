@@ -1,5 +1,6 @@
 import axios from "axios";
 import { memo, useEffect, useState } from "react";
+import { reviewApi } from "../../apis/reviewApi";
 import Button from "../common/Button";
 import CustomModal from "../common/CustomModal";
 import KeywordTags from "./KeywordTags";
@@ -10,6 +11,9 @@ function MapModal({ item, onClose }) {
   const [reviews, setReviews] = useState([]);
   const [detailData, setDetailData] = useState(null);
 
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [content, setContent] = useState("");
+  const [rating, setRating] = useState(5);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     type: 'alert', 
@@ -19,36 +23,65 @@ function MapModal({ item, onClose }) {
 
   const loginUser = JSON.parse(localStorage.getItem("user"));
   const currentMemberId = loginUser ? loginUser.memberId : null;
+  // 데이터 로딩 함수 (등록 후 재호출을 위해 별도 선언)
+  const fetchDetailAndReviews = async () => {
+    if (!item?.COT_CONTS_ID) return;
 
-  useEffect(() => {
-    const fetchDetailAndReviews = async () => {
-      if (!item?.COT_CONTS_ID) return;
-
-      try {
-        const response = await axios.get(`http://localhost:8080/spring/api/seoul/detail`, {
-          params: {
-            themeId: item.COT_THEME_ID,
-            contsId: item.COT_CONTS_ID
-          }
-        });
-
-        const data = response.data.body[0];
-        
-        if (data) {
-          setDetailData(data);
-          setReviews(data.reviews || []);
+    try {
+      const response = await axios.get(`http://localhost:8080/spring/api/seoul/detail`, {
+        params: {
+          themeId: item.COT_THEME_ID,
+          contsId: item.COT_CONTS_ID
         }
-      } catch (err) {
-        console.error("데이터 로딩 실패:", err);
-        setReviews([]);
-      }
-    };
+      });
 
+      const data = response.data.body[0];
+      
+      if (data) {
+        console.log(data);
+        setDetailData(data);
+        setReviews(data.reviews || []);
+      }
+    } catch (err) {
+      console.error("데이터 로딩 실패:", err);
+      setReviews([]);
+    }
+  };
+  
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (item) fetchDetailAndReviews();
   }, [item]);
 
+  const handleReviewSubmit = async () => {
+    if (!content.trim()) {
+      alert("리뷰 내용을 입력해주세요.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("memberId", currentMemberId);
+    formData.append("shopId", item.COT_CONTS_ID);
+    formData.append("content", content);
+    formData.append("rating", rating);
+
+    try {
+      await reviewApi.reviewWrite(formData);
+      alert("리뷰가 등록되었습니다.");
+      
+      // 상태 초기화 및 갱신
+      setIsReviewModalOpen(false);
+      setContent("");
+      setRating(5);
+      fetchDetailAndReviews(); // 목록 새로고침
+    } catch (error) {
+      console.error("리뷰 등록 실패:", error);
+      alert("리뷰 등록 중 오류가 발생했습니다.");
+    }
+  };
 
   const handleDeleteReview = (esrId) => {
+    
     setModalConfig({
       isOpen: true,
       type: 'confirm',
@@ -77,7 +110,6 @@ function MapModal({ item, onClose }) {
     });
   };
 
-  // ✅ [수정] window.alert 대신 커스텀 모달 사용
   const handleEditReview = (review) => {
     setModalConfig({
       isOpen: true,
@@ -167,7 +199,7 @@ function MapModal({ item, onClose }) {
                   <KeywordTags keywords={displayItem.COT_KW} />
                 </div>
               )}
-          </div>
+          </div> 
 
           <div className={styles.reviewBox}>
             <ReviewList 
@@ -175,12 +207,16 @@ function MapModal({ item, onClose }) {
               currentMemberId={currentMemberId}
               onDelete={handleDeleteReview}
               onEdit={handleEditReview}
+              // 🚨 수정: detailData?.body?.[0]가 아니라 detailData에 이미 담겨있음
+              shopId={detailData?.shopId} 
+              onWriteClick={() => setIsReviewModalOpen(true)}
+              shopName={detailData?.COT_CONTS_NAME}
+              refreshReviews={fetchDetailAndReviews}
             />
           </div>
         </div>
       </div>
 
-      {/* ✅ 커스텀 모달 컴포넌트 호출 */}
       <CustomModal 
         isOpen={modalConfig.isOpen}
         type={modalConfig.type}
