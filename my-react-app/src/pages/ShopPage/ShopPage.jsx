@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom"; 
-import * as itemApi from "../../apis/itemApi"; 
-import { useAuth } from "../../context/AuthContext"; 
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import * as itemApi from "../../apis/itemApi";
 import Button from "../../components/common/Button";
-import ItemModal from "../../components/item/ItemModal"; 
+import CustomModal from "../../components/common/CustomModal";
+import ItemModal from "../../components/item/ItemModal";
+import { useAuth } from "../../context/AuthContext";
 import styles from "./ShopPage.module.css";
 
 const ShopPage = () => {
@@ -18,6 +19,13 @@ const ShopPage = () => {
   const [pullResult, setPullResult] = useState(null);
   const [isDuplicate, setIsDuplicate] = useState(false); 
   const [selectedItem, setSelectedItem] = useState(null);
+
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: 'alert',
+    message: '',
+    onConfirm: () => {}
+  });
 
   const [categoryFilter, setCategoryFilter] = useState("ALL");
   const [rarityFilter, setRarityFilter] = useState("ALL");
@@ -68,45 +76,90 @@ const ShopPage = () => {
     });
   }, [allItems, categoryFilter, rarityFilter]);
 
-  const handleBuy = async (item) => {
-    if (!memberId) return alert("로그인이 필요한 서비스입니다.");
+  const handleBuy = (item) => {
+    if (!memberId) {
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: '로그인이 필요한 서비스입니다.',
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      return;
+    }
+
     const itemId = item.itemId || item.ITEM_ID;
     const price = item.price || item.PRICE;
-    if (!window.confirm(`[${item.name || item.itemName}] 구매하시겠습니까?`)) return;
 
-    try {
-      await itemApi.buyItem({ userId: memberId, itemId, price });
-      setMyItems(prev => [...prev, String(itemId)]);
-      setSelectedItem(null);
-      alert("🎉 구매 완료되었습니다!");
-    } catch (error) {
-      alert(error.response?.data || "구매 중 오류가 발생했습니다.");
-    }
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      message: `[${item.name || item.itemName}] 구매하시겠습니까?`,
+      onConfirm: async () => {
+        try {
+          await itemApi.buyItem({ userId: memberId, itemId, price });
+          setMyItems(prev => [...prev, String(itemId)]);
+          setSelectedItem(null);
+          setModalConfig({
+            isOpen: true,
+            type: 'alert',
+            message: '🎉 구매 완료되었습니다!',
+            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+          });
+        } catch (error) {
+          setModalConfig({
+            isOpen: true,
+            type: 'alert',
+            message: error.response?.data || "구매 중 오류가 발생했습니다.",
+            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      }
+    });
   };
 
-  const handleRandomPull = async () => {
-    if (!memberId) return alert("로그인이 필요합니다.");
-    if (!window.confirm("1,000P를 사용하여 랜덤 뽑기를 진행하시겠습니까?")) return;
-    
-    setIsPulling(true);
-    setPullResult(null);
-    setIsDuplicate(false);
-
-    try {
-      const result = await itemApi.randomPull(memberId);
-      setTimeout(() => {
-        setPullResult(result);
-        const newItemId = String(result.itemId || result.ITEM_ID || "");
-        if (myItems.includes(newItemId)) {
-          setIsDuplicate(true);
-        } else {
-          setMyItems(prev => [...prev, newItemId]);
-        }
-      }, 1500);
-    } catch (error) {
-      setIsPulling(false);
-      alert(error.response?.data || "포인트가 부족하거나 오류가 발생했습니다.");
+  const handleRandomPull = () => {
+    if (!memberId) {
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: '로그인이 필요합니다.',
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      return;
     }
+
+    setModalConfig({
+      isOpen: true,
+      type: 'confirm',
+      message: '1,000P를 사용하여 랜덤 뽑기를 진행하시겠습니까?',
+      onConfirm: async () => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        setIsPulling(true);
+        setPullResult(null);
+        setIsDuplicate(false);
+
+        try {
+          const result = await itemApi.randomPull(memberId);
+          setTimeout(() => {
+            setPullResult(result);
+            const newItemId = String(result.itemId || result.ITEM_ID || "");
+            if (myItems.includes(newItemId)) {
+              setIsDuplicate(true);
+            } else {
+              setMyItems(prev => [...prev, newItemId]);
+            }
+          }, 1500);
+        } catch (error) {
+          setIsPulling(false);
+          setModalConfig({
+            isOpen: true,
+            type: 'alert',
+            message: error.response?.data || "포인트가 부족하거나 오류가 발생했습니다.",
+            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+          });
+        }
+      }
+    });
   };
 
   const closePullResult = () => {
@@ -182,7 +235,6 @@ const ShopPage = () => {
                 </div>
                 <div className={styles.itemContent}>
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
-                  {/* ✨ 설명(Description) 제거: 상세 정보는 모달에서 확인 */}
                   <div className={styles.itemFooter}>
                     <span className={styles.price}>
                       {isOnSale ? (
@@ -214,7 +266,6 @@ const ShopPage = () => {
         </div>
       )}
 
-      {/* 뽑기 결과 모달 */}
       {isPulling && (
         <div className={styles.pullOverlay}>
           <div className={`${styles.pullCard} ${pullResult ? styles.isFlipped : ""}`}>
@@ -247,12 +298,19 @@ const ShopPage = () => {
         </div>
       )}
 
-      {/* 아이템 클릭 시 상세 정보 모달 */}
       <ItemModal 
         item={selectedItem} 
         onClose={() => setSelectedItem(null)} 
         onBuy={handleBuy} 
         isOwned={myItems.includes(String(selectedItem?.itemId || selectedItem?.ITEM_ID || ""))}
+      />
+
+      <CustomModal 
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
       />
     </div>
   );

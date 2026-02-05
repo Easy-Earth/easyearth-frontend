@@ -1,9 +1,18 @@
 import { useEffect, useState } from "react";
-import { getMyItems, equipItem } from "../api/itemApi";
+import CustomModal from "../../components/common/CustomModal";
+import { equipItem, getMyItems } from "../api/itemApi";
 
 const MyItems = () => {
   const [myItems, setMyItems] = useState([]);
   const memberId = 1; // 테스트용
+
+  // 커스텀 모달 상태 관리
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: 'alert',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     const fetchMyItems = async () => {
@@ -12,7 +21,12 @@ const MyItems = () => {
         setMyItems(data);
       } catch (error) {
         console.error(error);
-        alert("보유 아이템 불러오기 실패");
+        setModalConfig({
+          isOpen: true,
+          type: 'alert',
+          message: "보유 아이템 불러오기 실패",
+          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
       }
     };
     fetchMyItems();
@@ -21,10 +35,20 @@ const MyItems = () => {
   const handleEquip = async (uiId) => {
     try {
       const res = await equipItem(uiId, memberId);
-      alert(res);
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: res,
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
     } catch (error) {
       console.error(error);
-      alert("아이템 장착 실패");
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: "아이템 장착 실패",
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
     }
   };
 
@@ -39,6 +63,15 @@ const MyItems = () => {
           </li>
         ))}
       </ul>
+
+      {/* 커스텀 모달 추가 */}
+      <CustomModal 
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

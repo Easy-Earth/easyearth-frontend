@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
-import { getStoreItems, buyItem, equipItem } from "../api/itemApi";
+import CustomModal from "../../components/common/CustomModal";
+import { buyItem, getStoreItems } from "../api/itemApi";
 
 const Store = () => {
   const [items, setItems] = useState([]);
+
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: 'alert',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -11,7 +19,12 @@ const Store = () => {
         setItems(data);
       } catch (error) {
         console.error(error);
-        alert("상점 아이템 불러오기 실패");
+        setModalConfig({
+          isOpen: true,
+          type: 'alert',
+          message: "상점 아이템 불러오기 실패",
+          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
       }
     };
     fetchItems();
@@ -25,10 +38,20 @@ const Store = () => {
         price: item.price,
       };
       const res = await buyItem(userItemsVO);
-      alert(res);
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: res,
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
     } catch (error) {
       console.error(error);
-      alert("아이템 구매 실패");
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: "아이템 구매 실패",
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
     }
   };
 
@@ -43,6 +66,15 @@ const Store = () => {
           </li>
         ))}
       </ul>
+
+      {/* ✅ 커스텀 모달 컴포넌트 배치 */}
+      <CustomModal 
+        isOpen={modalConfig.isOpen}
+        type={modalConfig.type}
+        message={modalConfig.message}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

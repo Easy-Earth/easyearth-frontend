@@ -1,32 +1,36 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import authApi from "../../apis/authApi";
+import CustomModal from "../common/CustomModal";
 import styles from "./PasswordFindPage.module.css";
 
 function PasswordFindPage() {
   const navigate = useNavigate();
   
-  // 1. 상태 관리 (uncontrolled 경고 방지를 위해 초기값 설정)
   const [formData, setFormData] = useState({ 
     loginId: "", 
     name: "" 
   });
   
   const [loading, setLoading] = useState(false);
-  const [tempPassword, setTempPassword] = useState(""); // 발급된 비밀번호 저장
-  const [copied, setCopied] = useState(false); // 복사 완료 상태
+  const [tempPassword, setTempPassword] = useState(""); 
+  const [copied, setCopied] = useState(false); 
+
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    message: "",
+  });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 2. 복사하기 기능
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(tempPassword);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000); // 2초 뒤 문구 초기화
+      setTimeout(() => setCopied(false), 2000); 
     } catch (err) {
       console.error("복사 실패:", err);
     }
@@ -37,18 +41,23 @@ function PasswordFindPage() {
     setLoading(true);
 
     try {
-      // authApi.findPassword 호출
       const result = await authApi.findPassword(formData);
 
       if (result && result.tempPassword) {
         setTempPassword(result.tempPassword);
       } else {
-        alert("일치하는 회원 정보가 없습니다.");
+        setModalConfig({
+          isOpen: true,
+          message: "일치하는 회원 정보가 없습니다."
+        });
       }
     } catch (err) {
       console.error("비밀번호 찾기 오류:", err);
       const errorMsg = err.response?.data || "입력하신 정보와 일치하는 계정이 없습니다.";
-      alert(typeof errorMsg === 'string' ? errorMsg : "정보가 일치하지 않습니다.");
+      setModalConfig({
+        isOpen: true,
+        message: typeof errorMsg === 'string' ? errorMsg : "정보가 일치하지 않습니다."
+      });
     } finally {
       setLoading(false);
     }
@@ -99,7 +108,6 @@ function PasswordFindPage() {
               임시 비밀번호는 아래와 같습니다.
             </p>
             
-            {/* 3. 비밀번호 표시 및 복사 영역 */}
             <div className={styles.tempPasswordWrapper}>
               <div className={styles.tempPasswordBox}>
                 {tempPassword}
@@ -130,6 +138,13 @@ function PasswordFindPage() {
           이전으로 돌아가기
         </button>
       </div>
+
+      <CustomModal 
+        isOpen={modalConfig.isOpen}
+        type="alert"
+        message={modalConfig.message}
+        onConfirm={() => setModalConfig({ ...modalConfig, isOpen: false })}
+      />
     </div>
   );
 }
