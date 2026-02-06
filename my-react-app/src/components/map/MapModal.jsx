@@ -1,6 +1,5 @@
 import axios from "axios";
 import { memo, useEffect, useState } from "react";
-import { reviewApi } from "../../apis/reviewApi";
 import routeApi from "../../apis/routeApi";
 import Button from "../common/Button";
 import CustomModal from "../common/CustomModal";
@@ -17,9 +16,6 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
   const [routeInfo, setRouteInfo] = useState(null); 
   const [loadingRoute, setLoadingRoute] = useState(false);
 
-  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-  const [content, setContent] = useState("");
-  const [rating, setRating] = useState(5);
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     type: 'alert', 
@@ -89,55 +85,6 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
     }
   };
 
-  const handleReviewSubmit = async () => {
-    if (!content.trim()) {
-      alert("리뷰 내용을 입력해주세요.");
-      return;
-    }
-    const formData = new FormData();
-    formData.append("memberId", currentMemberId);
-    formData.append("shopId", item.COT_CONTS_ID);
-    formData.append("content", content);
-    formData.append("rating", rating);
-    try {
-      await reviewApi.reviewWrite(formData);
-      alert("리뷰가 등록되었습니다.");
-      setIsReviewModalOpen(false);
-      setContent("");
-      setRating(5);
-      fetchDetailAndReviews();
-    } catch (error) {
-      alert("리뷰 등록 중 오류가 발생했습니다.");
-    }
-  };
-
-  const handleDeleteReview = (esrId) => {
-    setModalConfig({
-      isOpen: true,
-      type: 'confirm',
-      message: '정말로 이 리뷰를 삭제하시겠습니까?',
-      onConfirm: async () => {
-        try {
-          await axios.delete(`http://localhost:8080/spring/api/review/delete/${esrId}`);
-          setReviews((prev) => prev.filter((rev) => rev.esrId !== esrId));
-          setModalConfig({
-            isOpen: true,
-            type: 'alert',
-            message: '리뷰가 삭제되었습니다.',
-            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-          });
-        } catch (err) {
-          setModalConfig({
-            isOpen: true,
-            type: 'alert',
-            message: '오류 발생',
-            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-          });
-        }
-      }
-    });
-  };
-
   if (!item) return null;
   const displayItem = detailData || item;
   const rawImg = displayItem.COT_IMG_MAIN_URL || displayItem.COT_IMG_MAIN_URL1;
@@ -190,9 +137,9 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
             <ReviewList 
               reviews={reviews} 
               currentMemberId={currentMemberId}
-              onDelete={handleDeleteReview}
-              onWriteClick={() => setIsReviewModalOpen(true)}
+              shopId={displayItem.shopId || item.shopId}
               shopName={displayItem.COT_CONTS_NAME}
+              refreshReviews={fetchDetailAndReviews}
             />
           </div>
         </div>
@@ -218,7 +165,6 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
                   <div className={styles.routeLoading}>계산 중...</div>
                 ) : routeInfo ? (
                   <div className={styles.routeDataCard}>
-                    {/* 상단: 시간 및 거리, 환경 정보 (수직 나열) */}
                     <div className={styles.topInfoRow}>
                       <div className={styles.timeMain}>
                         <span className={styles.resTime}>{routeInfo.durationMinutes}</span>
@@ -240,7 +186,6 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
                       </div>
                     </div>
 
-                    {/* 자동차 모드일 때 환경 권장 문구 추가 */}
                     {routeMode === "driving-car" && (
                       <div className={styles.ecoRecommendation} style={{ 
                         backgroundColor: '#f0fdf4', 
@@ -257,7 +202,6 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
                       </div>
                     )}
 
-                    {/* 대중교통 전용: 환승 및 상세 경로 요약 */}
                     {routeMode === "public-transit" && routeInfo.subPaths && (
                       <div className={styles.transitSummaryBox}>
                         <div className={styles.transitTotalInfo}>

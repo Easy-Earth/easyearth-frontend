@@ -53,7 +53,8 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
         });
         return;
     }
-
+    
+    // ✅ 변수 선언을 API 호출 전으로 배치 (ReferenceError 해결)
     const reviewData = {
         esrId: isEditMode ? selectedEsrId : 0,
         shopId: Number(shopId), 
@@ -65,23 +66,20 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
 
     try {
         if (isEditMode) {
-          // ✅ 수정 API 호출 (전달해주신 reviewUpdate 사용)
           await reviewApi.reviewUpdate(reviewData);
         } else {
-          // ✅ 작성 API 호출
           await reviewApi.reviewWrite({ ...reviewData, createdAt: new Date().toISOString() }); 
         }
 
-        // 🚨 핵심: API 성공 즉시 입력 폼 모달을 먼저 닫습니다.
         setIsReviewModalOpen(false);
 
-        // 그 후 완료 알림창을 띄웁니다.
         setModalConfig({
             isOpen: true,
             type: 'alert',
             message: isEditMode ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다.',
             onConfirm: () => {
                 setModalConfig(prev => ({ ...prev, isOpen: false }));
+                // ✅ 부모 목록 즉시 새로고침
                 if (refreshReviews) refreshReviews(); 
             }
         });
@@ -111,6 +109,7 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
             message: '게시글이 삭제되었습니다.',
             onConfirm: () => {
               setModalConfig(prev => ({ ...prev, isOpen: false }));
+              // ✅ 삭제 후 부모 목록 즉시 새로고침
               if (refreshReviews) refreshReviews(); 
             }
           });
@@ -145,18 +144,13 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
           <div key={rev.esrId} className={styles.reviewCard}>
             <div className={styles.header}>
               <div className={styles.userInfo}>
-                <span className={styles.userName}>{rev.name}</span>
+                <span className={styles.userName}>{rev.name || "익명"}</span>
                 <span className={styles.rating}>{"★".repeat(Number(rev.rating))}</span>
               </div>
               {currentMemberId && Number(rev.memberId) === Number(currentMemberId) && (
                 <div className={styles.authButtons}>
                   <button className={styles.editBtn} onClick={() => onReviewEdit(rev)}>수정</button>
                   <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId)}>삭제</button>
-                </div>
-              )}
-              {currentMemberId && Number(rev.memberId)!=Number(currentMemberId) && (
-                <div className = {styles.authButtons}>
-                  <button className = {styles.declarationButton}>🚨</button>
                 </div>
               )}
             </div>
