@@ -1,22 +1,24 @@
-import badgeImg25 from "../../assets/badges/epic/badge_25.png";
-import badgeImg33 from "../../assets/badges/common/badge_05.png";
-import titleImg from "../../assets/titles/common/normal-1.png";
 import Profile from "../../components/common/Profile";
+
 const MyPage = () => {
+  const grades = ["normal", "rare", "epic", "legendary"];
+
   return (
-    <div style={{ padding: "40px", display: "flex", flexDirection: "column", gap: "20px", background: "#f0f0f0" }}>
-      <Profile 
-        presetId="epic-7" 
-        userName="Name1" 
-        badgeImage={badgeImg33} 
-        titleImage={titleImg}
-      />
-      <Profile 
-        presetId="legendary-4" 
-        userName="Name2" 
-        badgeImage={badgeImg25} 
-        titleImage={titleImg}
-      />
+    <div style={{ padding: "40px", background: "#111", display: "flex", flexDirection: "column", gap: "50px" }}>
+      {grades.map(grade => (
+        <div key={grade}>
+          <h2 style={{ color: "#fff", marginBottom: "20px", textTransform: "uppercase" }}>{grade} Titles</h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: "20px" }}>
+            {[1,2,3,4,5,6,7,8,9,10].map(num => (
+              <Profile 
+                key={`${grade}-${num}`}
+                presetId={`${grade}-${num}`} 
+                userName={`${grade.toUpperCase()} USER`} 
+              />
+            ))}
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

@@ -1,15 +1,21 @@
 import axios from "axios";
 import { memo, useEffect, useState } from "react";
 import { reviewApi } from "../../apis/reviewApi";
+import routeApi from "../../apis/routeApi";
 import Button from "../common/Button";
 import CustomModal from "../common/CustomModal";
 import KeywordTags from "./KeywordTags";
 import styles from "./MapModal.module.css";
 import ReviewList from "./ReviewList";
 
-function MapModal({ item, onClose }) {
+function MapModal({ item, theme, onClose, onDrawRoute }) {
   const [reviews, setReviews] = useState([]);
   const [detailData, setDetailData] = useState(null);
+  // --- 길찾기 관련 상태 ---
+  const [isRouteOpen, setIsRouteOpen] = useState(false); 
+  const [routeMode, setRouteMode] = useState(null); 
+  const [routeInfo, setRouteInfo] = useState(null); 
+  const [loadingRoute, setLoadingRoute] = useState(false);
 
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [content, setContent] = useState("");
@@ -23,10 +29,9 @@ function MapModal({ item, onClose }) {
 
   const loginUser = JSON.parse(localStorage.getItem("user"));
   const currentMemberId = loginUser ? loginUser.memberId : null;
-  // 데이터 로딩 함수 (등록 후 재호출을 위해 별도 선언)
+
   const fetchDetailAndReviews = async () => {
     if (!item?.COT_CONTS_ID) return;
-
     try {
       const response = await axios.get(`http://localhost:8080/spring/api/seoul/detail`, {
         params: {
@@ -34,11 +39,8 @@ function MapModal({ item, onClose }) {
           contsId: item.COT_CONTS_ID
         }
       });
-
       const data = response.data.body[0];
-      
       if (data) {
-        console.log(data);
         setDetailData(data);
         setReviews(data.reviews || []);
       }
@@ -49,39 +51,67 @@ function MapModal({ item, onClose }) {
   };
   
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (item) fetchDetailAndReviews();
   }, [item]);
+
+  const handleGetRoute = async (mode) => {
+    setLoadingRoute(true);
+    setRouteMode(mode);
+    setRouteInfo(null);
+
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      const { longitude: startX, latitude: startY } = pos.coords;
+      const goalX = item.COT_COORD_X;
+      const goalY = item.COT_COORD_Y;
+
+      try {
+        let data;
+        if (mode === "public-transit") {
+          data = await routeApi.getTransitRoute({ startX, startY, goalX, goalY });
+        } else {
+          data = await routeApi.getOrsRoute({ startX, startY, goalX, goalY, mode });
+        }
+        setRouteInfo(data);
+      } catch (err) {
+        alert("경로를 가져오는 데 실패했습니다.");
+      } finally {
+        setLoadingRoute(false);
+      }
+    });
+  };
+
+  const handleShowRouteOnMap = () => {
+    if (!routeInfo) return;
+    const pathData = routeMode === "public-transit" ? routeInfo : routeInfo.geometry;
+    if (pathData) {
+      onDrawRoute(pathData);
+      setIsRouteOpen(false);
+    }
+  };
 
   const handleReviewSubmit = async () => {
     if (!content.trim()) {
       alert("리뷰 내용을 입력해주세요.");
       return;
     }
-
     const formData = new FormData();
     formData.append("memberId", currentMemberId);
     formData.append("shopId", item.COT_CONTS_ID);
     formData.append("content", content);
     formData.append("rating", rating);
-
     try {
       await reviewApi.reviewWrite(formData);
       alert("리뷰가 등록되었습니다.");
-      
-      // 상태 초기화 및 갱신
       setIsReviewModalOpen(false);
       setContent("");
       setRating(5);
-      fetchDetailAndReviews(); // 목록 새로고침
+      fetchDetailAndReviews();
     } catch (error) {
-      console.error("리뷰 등록 실패:", error);
       alert("리뷰 등록 중 오류가 발생했습니다.");
     }
   };
 
   const handleDeleteReview = (esrId) => {
-    
     setModalConfig({
       isOpen: true,
       type: 'confirm',
@@ -90,7 +120,6 @@ function MapModal({ item, onClose }) {
         try {
           await axios.delete(`http://localhost:8080/spring/api/review/delete/${esrId}`);
           setReviews((prev) => prev.filter((rev) => rev.esrId !== esrId));
-          
           setModalConfig({
             isOpen: true,
             type: 'alert',
@@ -98,11 +127,10 @@ function MapModal({ item, onClose }) {
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
         } catch (err) {
-          console.error("삭제 실패:", err);
           setModalConfig({
             isOpen: true,
             type: 'alert',
-            message: '리뷰 삭제 중 오류가 발생했습니다.',
+            message: '오류 발생',
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
         }
@@ -110,44 +138,17 @@ function MapModal({ item, onClose }) {
     });
   };
 
-  const handleEditReview = (review) => {
-    setModalConfig({
-      isOpen: true,
-      type: 'alert',
-      message: '수정 기능을 준비 중입니다.',
-      onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-    });
-  };
-
   if (!item) return null;
-
   const displayItem = detailData || item;
-
-  const SEOUL_BASE_URL = "https://map.seoul.go.kr";
   const rawImg = displayItem.COT_IMG_MAIN_URL || displayItem.COT_IMG_MAIN_URL1;
-  const imageUrl = rawImg ? (rawImg.startsWith("http") ? rawImg : SEOUL_BASE_URL + rawImg) : null;
+  const imageUrl = rawImg ? (rawImg.startsWith("http") ? rawImg : "https://map.seoul.go.kr" + rawImg) : null;
 
   return (
     <>
       <div className={styles.modalContainer}>
         <div className={styles.closeBtnWrapper}>
-          <Button 
-            width="70px"  
-            height="36px" 
-            color="var(--green-100)" 
-            hover="#e2f3f0"
-            onClick={onClose}
-          >
-            <span style={{ 
-              fontSize: "15px", 
-              fontWeight: "600",
-              color: "#14b8a6", 
-              display: "block",
-              width: "100%",
-              textAlign: "center"
-            }}>
-              닫기
-            </span>
+          <Button width="70px" height="36px" color="var(--green-100)" onClick={onClose}>
+            <span style={{ fontSize: "15px", fontWeight: "600", color: "#14b8a6" }}>닫기</span>
           </Button>
         </div>
         
@@ -156,52 +157,33 @@ function MapModal({ item, onClose }) {
             {imageUrl ? <img src={imageUrl} alt={displayItem.COT_CONTS_NAME} /> : <div className={styles.noImage}>이미지 준비중</div>}
           </div>
           <div className={styles.infoBox}>
-            <div className={styles.categoryTag}>{displayItem.THM_THEME_NAME || "테마"}</div>
+            <div className={styles.categoryTag}>{theme || "미지정"}</div>
             <h2 className={styles.title}>{displayItem.COT_CONTS_NAME}</h2>
-           <div className={styles.ratingScoreBox}>
-              <span className={styles.starIconLarge}>★</span>
-              <span className={styles.ratingValue}>{displayItem.avgRating?.toFixed(1) || "0.0"}</span>
-              <span className={styles.ratingMax}>/ 5.0</span>
+           
+            <div className={styles.ratingAndRouteRow}>
+              <div className={styles.ratingScoreBox}>
+                <span className={styles.starIconLarge}>★</span>
+                <span className={styles.ratingValue}>{displayItem.avgRating?.toFixed(1) || "0.0"}</span>
+                <span className={styles.ratingMax}>/ 5.0</span>
+              </div>
+              <button className={styles.routeTriggerBtn} onClick={() => setIsRouteOpen(true)}>📍 길찾기</button>
             </div>
+
             <div className={styles.divider} />
             <div className={styles.detailList}>
               <div className={styles.detailItem}>
                 <strong>주소</strong>
-                <span>{displayItem.COT_ADDR_FULL_NEW || displayItem.COT_ADDR_FULL || "정보 없음"}</span>
+                <span>{displayItem.COT_ADDR_FULL_NEW || "정보 없음"}</span>
               </div>
               <div className={styles.detailItem}>
                   <strong>연락처</strong>
                   <span>{displayItem.COT_TEL_NO || "정보 없음"}</span>
               </div>
-            
-              {displayItem.COT_NAME_01 && (
-                  <div className={styles.detailItem}> 
-                      <strong>{displayItem.COT_NAME_01}</strong>
-                      <span>{displayItem.COT_VALUE_01}</span>
-                  </div>
-              )}
-              {displayItem.COT_NAME_02 && (
-                  <div className={styles.detailItem}> 
-                      <strong>{displayItem.COT_NAME_02}</strong>
-                      <span>{displayItem.COT_VALUE_02}</span>
-                  </div>
-              )}
-              {displayItem.COT_NAME_03 && (
-                  <div className={styles.detailItem}> 
-                      <strong>{displayItem.COT_NAME_03}</strong>
-                      <span>{displayItem.COT_VALUE_03}</span>
-                  </div>
-              )}
             </div>
-
           </div>
           
           <div style={{ padding: '0 24px 20px 24px' }}>
-              {displayItem.COT_KW && (
-                <div className={styles.detailItem}>
-                  <KeywordTags keywords={displayItem.COT_KW} />
-                </div>
-              )}
+              {displayItem.COT_KW && <KeywordTags keywords={displayItem.COT_KW} />}
           </div> 
 
           <div className={styles.reviewBox}>
@@ -209,15 +191,107 @@ function MapModal({ item, onClose }) {
               reviews={reviews} 
               currentMemberId={currentMemberId}
               onDelete={handleDeleteReview}
-              onEdit={handleEditReview}
-              shopId={detailData?.shopId} 
               onWriteClick={() => setIsReviewModalOpen(true)}
-              shopName={detailData?.COT_CONTS_NAME}
-              refreshReviews={fetchDetailAndReviews}
+              shopName={displayItem.COT_CONTS_NAME}
             />
           </div>
         </div>
       </div>
+
+      {isRouteOpen && (
+        <div className={styles.overlay} onClick={() => setIsRouteOpen(false)}>
+          <div className={`${styles.modal} ${styles.md}`} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.header}>
+              <h3>길찾기 수단 선택</h3>
+              <button className={styles.closeBtn} onClick={() => setIsRouteOpen(false)}>✕</button>
+            </div>
+            <div className={styles.body}>
+              <div className={styles.tabContainer}>
+                <button onClick={() => handleGetRoute("foot-walking")} className={routeMode === "foot-walking" ? styles.activeTab : ""}>도보</button>
+                <button onClick={() => handleGetRoute("cycling-regular")} className={routeMode === "cycling-regular" ? styles.activeTab : ""}>자전거</button>
+                <button onClick={() => handleGetRoute("public-transit")} className={routeMode === "public-transit" ? styles.activeTab : ""}>대중교통</button>
+                <button onClick={() => handleGetRoute("driving-car")} className={routeMode === "driving-car" ? styles.activeTab : ""}>자동차</button>
+              </div>
+
+              <div className={styles.routeResultArea}>
+                {loadingRoute ? (
+                  <div className={styles.routeLoading}>계산 중...</div>
+                ) : routeInfo ? (
+                  <div className={styles.routeDataCard}>
+                    {/* 상단: 시간 및 거리, 환경 정보 (수직 나열) */}
+                    <div className={styles.topInfoRow}>
+                      <div className={styles.timeMain}>
+                        <span className={styles.resTime}>{routeInfo.durationMinutes}</span>
+                        <span className={styles.resUnit}>분</span>
+                      </div>
+                      <div className={styles.resDist}>{routeInfo.distanceKm}km</div>
+                      
+                      <div className={styles.ecoStatsCol}>
+                        <div className={styles.ecoItem}>
+                          <span className={styles.ecoIcon}>🌱</span>
+                          <span className={styles.ecoLabel}>탄소 절감 :</span>
+                          <span className={styles.ecoValue}>{routeInfo.co2Saved}kg</span>
+                        </div>
+                        <div className={styles.ecoItem}>
+                          <span className={styles.ecoIcon}>🌳</span>
+                          <span className={styles.ecoLabel}>나무 심기 :</span>
+                          <span className={styles.ecoValue}>{routeInfo.treeEffect}그루</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 자동차 모드일 때 환경 권장 문구 추가 */}
+                    {routeMode === "driving-car" && (
+                      <div className={styles.ecoRecommendation} style={{ 
+                        backgroundColor: '#f0fdf4', 
+                        padding: '12px', 
+                        borderRadius: '10px', 
+                        marginBottom: '15px', 
+                        border: '1px solid #dcfce7',
+                        textAlign: 'center'
+                      }}>
+                        <p style={{ margin: 0, fontSize: '13px', color: '#166534', fontWeight: '600', lineHeight: '1.6' }}>
+                          🚗 자동차 보다는 <span style={{ color: '#14b8a6' }}>대중교통</span>을 이용해<br/> 
+                          지구의 온도를 낮춰보는 건 어떨까요? 🌏
+                        </p>
+                      </div>
+                    )}
+
+                    {/* 대중교통 전용: 환승 및 상세 경로 요약 */}
+                    {routeMode === "public-transit" && routeInfo.subPaths && (
+                      <div className={styles.transitSummaryBox}>
+                        <div className={styles.transitTotalInfo}>
+                          <span className={styles.transitIcon}>🚌</span>
+                          <strong>{routeInfo.transitCount}회 환승</strong> 
+                          <span className={styles.bar}>|</span>
+                        </div>
+                        <div className={styles.pathSteps}>
+                          {routeInfo.subPaths
+                            .filter(sub => sub.trafficType !== 3) 
+                            .map((sub, idx) => (
+                              <div key={idx} className={styles.stepItem}>
+                                <span className={styles.lineBadge} style={{backgroundColor: sub.lane?.[0]?.busColor || '#64748b'}}>
+                                  {sub.lane?.[0]?.busNo || sub.lane?.[0]?.name}
+                                </span>
+                                <span className={styles.stationName}>{sub.startName} 승차</span>
+                              </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <button className={styles.submitBtn} onClick={handleShowRouteOnMap}>
+                      지도에서 경로보기
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.placeholder}>이동 수단을 클릭해 주세요.</div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <CustomModal 
         isOpen={modalConfig.isOpen}

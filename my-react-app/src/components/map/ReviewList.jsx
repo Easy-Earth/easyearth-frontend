@@ -145,13 +145,18 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
           <div key={rev.esrId} className={styles.reviewCard}>
             <div className={styles.header}>
               <div className={styles.userInfo}>
-                <span className={styles.userName}>{rev.name || "익명"}</span>
+                <span className={styles.userName}>{rev.name}</span>
                 <span className={styles.rating}>{"★".repeat(Number(rev.rating))}</span>
               </div>
               {currentMemberId && Number(rev.memberId) === Number(currentMemberId) && (
                 <div className={styles.authButtons}>
                   <button className={styles.editBtn} onClick={() => onReviewEdit(rev)}>수정</button>
                   <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId)}>삭제</button>
+                </div>
+              )}
+              {currentMemberId && Number(rev.memberId)!=Number(currentMemberId) && (
+                <div className = {styles.authButtons}>
+                  <button className = {styles.declarationButton}>🚨</button>
                 </div>
               )}
             </div>
