@@ -1,0 +1,145 @@
+.container {
+  position: relative;
+  display: inline-block;
+}
+
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
+.uploadButton:hover {
+  background: #e0e0e0;
+}
+
+.fileInput {
+  display: none;
+}
+
+.previewModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.previewContent {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.previewContent h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.previewImage {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.fileInfo {
+  padding: 20px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.fileInfo p {
+  margin: 8px 0;
+}
+
+.fileSize {
+  color: #666;
+  font-size: 14px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.sendButton,
+.cancelButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.sendButton {
+  background: #007bff;
+  color: white;
+}
+
+.sendButton:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.sendButton:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.cancelButton:hover:not(:disabled) {
+  background: #e0e0e0;
+}
+
+.progressBar {
+  margin-top: 16px;
+  height: 4px;
+  background: #f0f0f0;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: #007bff;
+  animation: progress 1.5s infinite;
+}
+
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+  50% {
+    width: 70%;
+  }
+  100% {
+    width: 100%;
+  }
+}

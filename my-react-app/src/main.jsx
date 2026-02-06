@@ -1,3 +1,9 @@
+// src/main.jsx
+// sockjs-client 호환성을 위해 global 객체 정의
+if (typeof global === 'undefined') {
+  window.global = window;
+}
+
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.jsx";

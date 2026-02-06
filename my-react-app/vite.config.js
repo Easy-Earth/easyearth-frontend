@@ -4,6 +4,9 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 
 export default defineConfig({
+  define: {
+    global: 'window',
+  },
   plugins: [react()],
   resolve: {
     alias: {
@@ -17,8 +20,17 @@ export default defineConfig({
         target: 'http://localhost:8080', // Spring Boot 서버 주소
         changeOrigin: true,
         secure: false,
+        ws: true,
         // 필요하다면 rewrite는 사용하지 않습니다. (Spring이 /spring을 가지고 있으므로)
       },
+      // ✅ [복구] 파일 리소스 접근을 위한 프록시 (이미지, 파일)
+      // /chat/file/... 요청은 백엔드 리소스 핸들러로 전달
+      '/chat/file': {
+        target: 'http://localhost:8080/spring', 
+        changeOrigin: true,
+        secure: false,
+      },
+
     },
   },
 });

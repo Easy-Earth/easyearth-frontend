@@ -22,9 +22,15 @@ export const AuthProvider = ({ children }) => {
       const res = await authApi.login({ loginId, password });
       const { token, user } = res;
 
+      // 백엔드 memberId를 id로도 매핑 (일관성을 위해)
+      const normalizedUser = {
+        ...user,
+        id: user.memberId // memberId를 id로도 접근 가능하도록
+      };
+
       localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(user));
-      setUser(user);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      setUser(normalizedUser);
 
       return { success: true };
     } catch (err) {
