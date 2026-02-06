@@ -16,6 +16,7 @@ import SuggestionPage from "./pages/SuggestionPage/SuggestionPage";
 
 import { PrivateRoute, PublicRoute } from "./router/PrivateRouter";
 import PasswordFindPage from "./components/member/PasswordFindPage";
+import InventoryPage from "./pages/InventoryPage/InventoryPage";
 
 // 🚀 수정된 모달 관리자: 네비게이션 state를 감시하고 즉시 비웁니다.
 const ModalManager = ({ openLoginModal }) => {
@@ -64,6 +65,7 @@ function App() {
               <Route path="/suggestions" element={<SuggestionPage />} />
               <Route path="/shop" element={<ShopPage />} />
               <Route path="/find-password" element={<PasswordFindPage />} />
+              <Route path="/inventory" element={<InventoryPage />} />
               
               <Route path="/join" element={
                 <PublicRoute>
@@ -76,6 +78,7 @@ function App() {
                   <MyPage />
                 </PrivateRoute>
               } />
+
             </Routes>
           </main>
         </div>

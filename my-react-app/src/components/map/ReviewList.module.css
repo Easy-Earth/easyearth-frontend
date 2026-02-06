@@ -25,6 +25,14 @@
   font-size: 16px;
 }
 
+/* ... 기존 나머지 카드 스타일 ... */
+.noReview {
+  padding: 40px 0;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
 .list {
   display: flex;
   flex-direction: column;

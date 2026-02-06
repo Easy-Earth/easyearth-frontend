@@ -10,6 +10,7 @@ import SignupPage from "../pages/SignupPage/SignupPage";
 import SuggestionPage from "../pages/SuggestionPage/SuggestionPage";
 
 import { PrivateRoute, PublicRoute } from "./PrivateRouter";
+import InventoryPage from "../pages/InventoryPage/InventoryPage";
 
 function AppRouter() {
   return (
@@ -21,6 +22,7 @@ function AppRouter() {
       <Route path="/suggestions" element={<SuggestionPage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/find-password" element={<PasswordFindPage />} />
+      <Route path="/inventory" element={<InventoryPage />} />
 
       {/* 2. 로그인 안 한 유저만 접근 가능 (회원가입/로그인 등) */}
       <Route
