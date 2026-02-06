@@ -1,20 +1,20 @@
 import { memo, useMemo } from "react";
-import { getTitleBgPresetById } from "../../shared/constants/profileBackgrounds";
+import { getTitleBgPresetById } from "../../utils/profileBackgrounds";
 import styles from "./Profile.module.css";
 
 const Profile = ({ 
-  presetId = "normal-1", 
+  presetId = "common-1", 
   userName = "Name", 
   profileImage, 
-  badgeImage,   
-  titleImage    
+  badgeImage ,   
+  // titleImage    
 }) => {
   const result = useMemo(() => getTitleBgPresetById(presetId), [presetId]);
   if (!result) return null;
 
   const { grade, preset } = result;
   
-  const fxValues = { normal: 0.20, rare: 0.55, epic: 0.85, legendary: 1.25 };
+  const fxValues = { common: 0.20, rare: 0.55, epic: 0.85, legendary: 1.25 };
   const currentFx = fxValues[grade] || 0.2;
 
   const styleVars = {
@@ -47,13 +47,13 @@ const Profile = ({
         {/* 오른쪽 칭호 + [대형 배지 & 이름] */}
         <div className={styles.rightSide}>
           <div className={styles.titleArea}>
-            {titleImage && <img src={titleImage} className={styles.titleImg} alt="" />}
+            {/* {titleImage && <img src={titleImage} className={styles.titleImg} alt="" />} */}
           </div>
           
           <div className={styles.userRow}>
             {/* 모든 등급 공통: 대형 배지 (72px) */}
             <div className={styles.massiveBadgeContainer}>
-              {badgeImage && <img src={badgeImage} className={styles.massiveBadge} alt="" />}
+              {/* {badgeImage && <img src={badgeImage} className={styles.massiveBadge} alt="" />} */}
               <div className={styles.badgeBackLight} />
             </div>
             <span className={styles.userName}>{userName}</span>

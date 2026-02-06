@@ -1,10 +1,70 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Profile from "../../components/common/Profile";
-import Button from "../../components/common/Button";
 import InventoryModal from "../../components/item/InventoryModal";
+import EditProfile from "../../components/member/EditProfilePage";
+import DeleteAccount from "../../components/member/DeleteMember";
 import * as itemApi from "../../apis/itemApi";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./MyPage.module.css";
+import { TITLE_BG_PRESETS } from "../../utils/profileBackgrounds";
+
+/**
+ * 인벤토리 그리드 내에서만 사용하는 CSS 프리뷰 컴포넌트
+ */
+const ItemCssPreview = ({ item }) => {
+  const category = (item.category || "").toUpperCase();
+  const rarity = (item.rarity || "common").toLowerCase();
+  const rarityList = TITLE_BG_PRESETS[rarity] || TITLE_BG_PRESETS.common || [];
+  
+  if (rarityList.length === 0) return <div className={styles.badgeCard}></div>;
+
+  const itemIdNum = parseInt(item.itemId || 1);
+  const presetIndex = (itemIdNum - 1) % rarityList.length;
+  const preset = rarityList[presetIndex];
+
+  const hexToRgb = (hex) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
+  };
+
+  const dynamicStyle = {
+    "--g1": preset.g1,
+    "--g2": preset.g2,
+    "--g3": preset.g3,
+    "--b1": preset.b1,
+    "--b2": preset.b2,
+    "--ring": preset.ring,
+    "--ring-rgb": hexToRgb(preset.ring),
+  };
+
+  return (
+    <div 
+      className={`
+        ${styles.badgeCard} 
+        ${styles[rarity]} 
+        ${category === "TITLE" ? styles.isTitleOnly : styles.isBackgroundOnly}
+      `} 
+      style={dynamicStyle}
+    >
+      <div className={styles.badgeGlow}></div>
+      {category === "BACKGROUND" && (
+        <>
+          <div className={styles.rays}></div>
+          <div className={styles.ring}></div>
+        </>
+      )}
+      {category === "TITLE" && (
+        <div className={styles.badgeContent}>
+          <div className={styles.titleArea}>
+            <span className={styles.mainTitle}>{item.name}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const MyPage = () => {
   const { user, logout } = useAuth();
@@ -13,14 +73,11 @@ const MyPage = () => {
   const [activeTab, setActiveTab] = useState("inventory");
   const [myItems, setMyItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  
-  // ✅ 필터 상태 (초기값 ALL)
   const [filterCategory, setFilterCategory] = useState("ALL");
   const [filterRarity, setFilterRarity] = useState("ALL");
-  
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // 데이터 로드
+  // 1. 인벤토리 데이터 로드
   const fetchMyInventory = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -38,24 +95,22 @@ const MyPage = () => {
     fetchMyInventory();
   }, [fetchMyInventory]);
 
-  // ✅ [핵심] 다중 필터링 로직: 따로 또 같이 작동하는 조건문
+  // 2. 아이템 필터링 로직 (장착된 아이템 우선 정렬 추가)
   const filteredItems = useMemo(() => {
-    return myItems.filter(item => {
-      // 1. 유형 체크: "ALL"이면 통과, 아니면 해당 유형만 통과
-      const matchCategory = filterCategory === "ALL" || 
-        (item.category && item.category.toUpperCase() === filterCategory.toUpperCase());
-
-      // 2. 등급 체크: "ALL"이면 통과, 아니면 해당 등급만 통과
-      const matchRarity = filterRarity === "ALL" || 
-        (item.rarity && item.rarity.toUpperCase() === filterRarity.toUpperCase());
-
-      // 3. 두 조건이 모두 만족(AND)해야 함
-      // 유형만 선택하면 등급은 ALL이라 무시되고, 등급만 선택하면 유형은 ALL이라 무시됩니다.
-      return matchCategory && matchRarity;
-    });
+    return myItems
+      .filter((item) => {
+        const matchCategory =
+          filterCategory === "ALL" ||
+          (item.category && item.category.toUpperCase() === filterCategory.toUpperCase());
+        const matchRarity =
+          filterRarity === "ALL" ||
+          (item.rarity && item.rarity.toUpperCase() === filterRarity.toUpperCase());
+        return matchCategory && matchRarity;
+      })
+      .sort((a, b) => (b.isEquipped === "Y" ? 1 : -1) - (a.isEquipped === "Y" ? 1 : -1));
   }, [myItems, filterCategory, filterRarity]);
 
-  // 장착/해제 핸들러
+  // 3. 장착 및 해제 핸들러
   const handleEquipToggle = async (item) => {
     try {
       await itemApi.equipItem(item.uiId, userId);
@@ -71,35 +126,41 @@ const MyPage = () => {
     }
   };
 
-  // 이미지 경로 생성 로직
+  // 4. 아이템 이미지 경로 생성 (Profile 컴포넌트 전달용)
   const getItemImage = (item) => {
     if (!item) return null;
     const category = (item.category || "BADGE").toUpperCase();
-    const folder = category === "TITLE" ? "titles" : category === "BACKGROUND" ? "backgrounds" : "badges";
-    const prefix = category === "TITLE" ? "title" : category === "BACKGROUND" ? "background" : "badge";
     const rarity = (item.rarity || "COMMON").toLowerCase();
-    const fileName = `${prefix}_${String(item.itemId || 0).padStart(2, '0')}.png`;
     
+    // 카테고리별 접두사 설정
+    let prefix = "badge";
+    if (category === "TITLE") prefix = "title";
+    if (category === "BACKGROUND") prefix = "bg";
+
+    const fileName = `${prefix}_${String(item.itemId || 0).padStart(2, "0")}.png`;
+
     try {
-      return new URL(`../../assets/${folder}/${rarity}/${fileName}`, import.meta.url).href;
+      return new URL(`../../assets/badges/${rarity}/${fileName}`, import.meta.url).href;
     } catch {
       return null;
     }
   };
 
-  const equippedBadge = myItems.find(i => i.category === "BADGE" && i.isEquipped === "Y");
-  const equippedTitle = myItems.find(i => i.category === "TITLE" && i.isEquipped === "Y");
-  const equippedBg = myItems.find(i => i.category === "BACKGROUND" && i.isEquipped === "Y");
+  // 장착 중인 아이템 찾기
+  const equippedBadge = myItems.find((i) => i.category === "BADGE" && i.isEquipped === "Y");
+  const equippedTitle = myItems.find((i) => i.category === "TITLE" && i.isEquipped === "Y");
+  const equippedBg = myItems.find((i) => i.category === "BACKGROUND" && i.isEquipped === "Y");
 
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <section className={styles.profileSection}>
-          <Profile 
+          {/* Profile 컴포넌트 원본 기능 유지 */}
+          <Profile
             presetId={equippedBg ? `${equippedBg.rarity.toLowerCase()}-${equippedBg.itemId}` : "normal-1"}
             userName={user?.name || "사용자"}
             badgeImage={getItemImage(equippedBadge)}
-            titleImage={getItemImage(equippedTitle)}
+            // titleImage={getItemImage(equippedTitle)}
           />
         </section>
 
@@ -110,25 +171,42 @@ const MyPage = () => {
               <p className={styles.nameTag}>{user?.name || "사용자"}님</p>
             </div>
             <nav className={styles.navMenu}>
-              <button className={activeTab === "inventory" ? styles.activeNav : ""} onClick={() => setActiveTab("inventory")}>🎒 내 인벤토리</button>
-              <button className={activeTab === "edit" ? styles.activeNav : ""} onClick={() => setActiveTab("edit")}>⚙️ 정보 수정</button>
-              <button className={styles.logoutBtn} onClick={logout}>로그아웃</button>
+              <button
+                className={activeTab === "inventory" ? styles.activeNav : ""}
+                onClick={() => setActiveTab("inventory")}
+              >
+                🎒 내 인벤토리
+              </button>
+              <button
+                className={activeTab === "edit" ? styles.activeNav : ""}
+                onClick={() => setActiveTab("edit")}
+              >
+                ⚙️ 정보 수정
+              </button>
+              <button
+                className={activeTab === "delete" ? styles.activeNav : ""}
+                onClick={() => setActiveTab("delete")}
+              >
+                👤 회원 탈퇴
+              </button>
             </nav>
+            <button className={`${styles.navMenu} ${styles.logoutBtn}`} onClick={logout} style={{border:'none', background:'none', cursor:'pointer', padding:'12px 15px', color:'#ef4444', fontWeight:'500'}}>
+              로그아웃
+            </button>
           </aside>
 
           <main className={styles.contentArea}>
-            {activeTab === "inventory" ? (
+            {activeTab === "inventory" && (
               <div className={styles.inventoryWrapper}>
                 <div className={styles.contentHeader}>
                   <div className={styles.headerLeft}>
                     <h3>소지품 ({filteredItems.length}/{myItems.length})</h3>
                   </div>
                   <div className={styles.filterControls}>
-                    {/* 유형별 필터 탭 */}
                     <div className={styles.categoryTabs}>
-                      {["ALL", "BADGE", "TITLE", "BACKGROUND"].map(cat => (
-                        <span 
-                          key={cat} 
+                      {["ALL", "BADGE", "TITLE", "BACKGROUND"].map((cat) => (
+                        <span
+                          key={cat}
                           className={filterCategory === cat ? styles.activeCat : ""}
                           onClick={() => setFilterCategory(cat)}
                         >
@@ -136,10 +214,9 @@ const MyPage = () => {
                         </span>
                       ))}
                     </div>
-                    {/* 등급별 필터 셀렉트박스 */}
-                    <select 
-                      className={styles.raritySelect} 
-                      value={filterRarity} 
+                    <select
+                      className={styles.raritySelect}
+                      value={filterRarity}
                       onChange={(e) => setFilterRarity(e.target.value)}
                     >
                       <option value="ALL">전체 등급</option>
@@ -155,25 +232,31 @@ const MyPage = () => {
                   <div className={styles.loading}>데이터 로딩 중...</div>
                 ) : (
                   <div className={styles.itemGrid}>
-                    {filteredItems.map(item => {
+                    {filteredItems.map((item) => {
                       const isEquipped = item.isEquipped === "Y";
                       const rarity = (item.rarity || "COMMON").toLowerCase();
+                      const category = (item.category || "BADGE").toUpperCase();
+
                       return (
-                        <div 
-                          key={item.uiId} 
-                          className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} ${styles['border_' + rarity]}`}
+                        <div
+                          key={item.uiId}
+                          className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} ${styles["border_" + rarity]}`}
                           onClick={() => setSelectedItem(item)}
                         >
                           {isEquipped && <span className={styles.equippedBadge}>장착됨</span>}
                           <div className={styles.imgBox}>
-                            <img src={getItemImage(item)} alt={item.name} />
+                            {category === "BADGE" ? (
+                              <img src={getItemImage(item)} alt={item.name} />
+                            ) : (
+                              <ItemCssPreview item={item} />
+                            )}
                           </div>
                           <div className={styles.itemCardInfo}>
                             <span className={`${styles.itemRarityTag} ${styles[rarity]}`}>{item.rarity}</span>
                             <p className={styles.itemCardName}>{item.name}</p>
                           </div>
-                          <button 
-                            className={styles.equipActionBtn} 
+                          <button
+                            className={styles.equipActionBtn}
                             onClick={(e) => { e.stopPropagation(); handleEquipToggle(item); }}
                           >
                             {isEquipped ? "해제" : "장착"}
@@ -181,16 +264,23 @@ const MyPage = () => {
                         </div>
                       );
                     })}
-                    {filteredItems.length === 0 && (
-                      <div className={styles.noItemMsg}>아이템이 없습니다.</div>
-                    )}
+                    {filteredItems.length === 0 && <div className={styles.noItemMsg}>아이템이 없습니다.</div>}
                   </div>
                 )}
               </div>
-            ) : (
-              <div className={styles.editProfileForm}>
-                <h3>회원 정보 수정</h3>
-                {/* 정보 수정 폼 UI */}
+            )}
+
+            {activeTab === "edit" && (
+              <div className={styles.editWrapper}>
+                <div className={styles.contentHeader}><h3>⚙️ 회원 정보 수정</h3></div>
+                <EditProfile user={user} />
+              </div>
+            )}
+
+            {activeTab === "delete" && (
+              <div className={styles.deleteWrapper}>
+                <div className={styles.contentHeader}><h3>👤 회원 탈퇴</h3></div>
+                <DeleteAccount user={user} onLogout={logout} />
               </div>
             )}
           </main>
@@ -198,7 +288,7 @@ const MyPage = () => {
       </div>
 
       {selectedItem && (
-        <InventoryModal 
+        <InventoryModal
           item={selectedItem}
           imageSrc={getItemImage(selectedItem)}
           onClose={() => setSelectedItem(null)}
