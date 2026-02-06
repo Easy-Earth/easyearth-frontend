@@ -5,7 +5,6 @@ import MapModal from "../../components/map/MapModal";
 import { SEOUL_THEMES, THEME_COLOR_MAP } from "../../shared/constants/seoulThemes";
 import styles from "./MapPage.module.css";
 
-// CSS 변수를 JS에서 읽어오는 유틸리티 함수
 function getCssVar(name, fallback) {
   try {
     const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -16,16 +15,16 @@ function getCssVar(name, fallback) {
 }
 
 function MapPage() {
-  /** * [1] useRef 영역 */
   const mapElRef = useRef(null);      
   const mapRef = useRef(null);        
   const markersRef = useRef([]);      
   const userMarkerRef = useRef(null); 
   const polylinesRef = useRef([]);    
+  const routePolylineRef = useRef(null); 
+  const routeMarkersRef = useRef([]); 
   const circleRef = useRef(null);     
   const infoWindowRef = useRef(null); 
 
-  /** [2] useState 영역 */
   const [pos, setPos] = useState(null);               
   const [distance, setDistance] = useState(2000);       
   const [keyword, setKeyword] = useState("");           
@@ -33,11 +32,10 @@ function MapPage() {
   const [loading, setLoading] = useState(false);        
   const [error, setError] = useState("");               
   const [items, setItems] = useState([]);               
-  const [selectedItem, setSelectedItem] = useState(null); // ✅ 클릭된 마커 상태 추가
+  const [selectedItem, setSelectedItem] = useState(null); 
 
   const ecoTeal = useMemo(() => getCssVar("--eco-teal", "#14b8a6"), []);
 
-  /** [3] 핸들러 */
   const handleAllSelect = useCallback(() => {
     if (selectedThemeIds.length === SEOUL_THEMES.length) {
       setSelectedThemeIds([]); 
@@ -59,12 +57,17 @@ function MapPage() {
     mapRef.current.setZoom(16);
   }, [pos]);
 
-  /** [4] 지도 오버레이 관리 */
   const clearMapOverlays = useCallback(() => {
     markersRef.current.forEach((m) => m.setMap(null));
     markersRef.current = [];
     polylinesRef.current.forEach((p) => p.setMap(null));
     polylinesRef.current = [];
+    if (routePolylineRef.current) {
+      routePolylineRef.current.setMap(null);
+      routePolylineRef.current = null;
+    }
+    routeMarkersRef.current.forEach(m => m.setMap(null));
+    routeMarkersRef.current = [];
     if (infoWindowRef.current) infoWindowRef.current.close();
   }, []);
 
@@ -86,29 +89,22 @@ function MapPage() {
     });
   }, [ecoTeal]);
 
-  // [수정] 에러가 났던 좌표 파싱 함수 - 방어 로직 강화
   const drawAreaLine = useCallback((data, color) => {
     const naver = window.naver;
     if (!naver?.maps || !mapRef.current || !data) return;
     try {
       let pathArray = typeof data === "string" ? JSON.parse(data) : data;
-      
-      // MultiPolygon 또는 중첩 배열 처리 ([[[lng, lat], ...]])
       while (Array.isArray(pathArray) && pathArray.length > 0 && Array.isArray(pathArray[0]) && !Number.isFinite(pathArray[0][0])) {
         pathArray = pathArray[0];
       }
-
       if (!Array.isArray(pathArray) || pathArray.length === 0) return;
-
       const path = pathArray.map(coord => {
         if (Array.isArray(coord) && coord.length >= 2) {
           return new naver.maps.LatLng(coord[1], coord[0]);
         }
         return null;
       }).filter(p => p !== null);
-
       if (path.length < 2) return;
-
       const polyline = new naver.maps.Polyline({
         map: mapRef.current,
         path: path,
@@ -121,6 +117,79 @@ function MapPage() {
       polylinesRef.current.push(polyline);
     } catch (e) { console.warn("영역 그리기 실패:", e); }
   }, []);
+
+  // ✅ [수정] 길찾기 경로 그리기 (테마 색상 반영 및 툴팁 개선)
+  const drawRoutePath = useCallback((pathData) => {
+    const naver = window.naver;
+    if (!naver?.maps || !mapRef.current || !pathData) return;
+
+    // 1. 초기화
+    if (routePolylineRef.current) routePolylineRef.current.setMap(null);
+    routeMarkersRef.current.forEach(m => m.setMap(null));
+    routeMarkersRef.current = [];
+
+    // 2. 테마 색상 추출 (아이템 테마 아이디 기반)
+    const themeId = String(selectedItem?.COT_THEME_ID || selectedItem?.cotThemeId || "");
+    const themeColor = THEME_COLOR_MAP[themeId] || "#3b82f6"; // 기본값 블루
+
+    // 3. 기존 마커/영역 숨기기 (선택된 목적지 제외)
+    const destLat = parseFloat(selectedItem?.COT_COORD_Y || selectedItem?.cotCoordY);
+    const destLng = parseFloat(selectedItem?.COT_COORD_X || selectedItem?.cotCoordX);
+    markersRef.current.forEach((marker) => {
+      const markerPos = marker.getPosition();
+      if (!(markerPos.lat() === destLat && markerPos.lng() === destLng)) {
+        marker.setMap(null);
+      }
+    });
+    polylinesRef.current.forEach((p) => p.setMap(null));
+
+    let path = [];
+    if (pathData.subPaths) {
+      // 대중교통 모드
+      pathData.subPaths.forEach(sub => {
+        if (sub.passStopList && sub.passStopList.stations) {
+          sub.passStopList.stations.forEach(s => {
+            path.push(new naver.maps.LatLng(parseFloat(s.y), parseFloat(s.x)));
+          });
+        }
+        // ✅ 툴팁에 테마 색상 적용
+        if (sub.trafficType === 1 || sub.trafficType === 2) {
+          const info = sub.trafficType === 1 ? sub.lane[0].name : sub.lane[0].busNo;
+          const tooltipContent = `
+            <div style="padding:6px 12px; background:white; border:3px solid ${themeColor}; border-radius:20px; font-size:12px; font-weight:bold; box-shadow:0 3px 8px rgba(0,0,0,0.2); white-space:nowrap; transform: translate(-50%, -100%); margin-top:-10px;">
+              <span style="color:${themeColor};">[${info}]</span> ${sub.startName} (${sub.sectionTime}분)
+            </div>
+          `;
+          const tooltipMarker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(sub.startY, sub.startX),
+            map: mapRef.current,
+            icon: { content: tooltipContent, anchor: new naver.maps.Point(0, 0) },
+            zIndex: 210
+          });
+          routeMarkersRef.current.push(tooltipMarker);
+        }
+      });
+    } else if (Array.isArray(pathData)) {
+      path = pathData.map(coord => new naver.maps.LatLng(coord[1], coord[0]));
+    }
+
+    if (path.length === 0) return;
+
+    // ✅ 경로 선에 테마 색상 적용
+    routePolylineRef.current = new naver.maps.Polyline({
+      map: mapRef.current,
+      path: path,
+      strokeColor: themeColor,
+      strokeWeight: 10,
+      strokeOpacity: 0.8,
+      strokeLineJoin: 'round',
+      zIndex: 200 
+    });
+
+    const bounds = new naver.maps.LatLngBounds();
+    path.forEach(p => bounds.extend(p));
+    mapRef.current.fitBounds(bounds, { top: 100, right: 50, bottom: 50, left: 400 });
+  }, [selectedItem]);
 
   const renderMarkers = useCallback((list) => {
     const naver = window.naver;
@@ -166,7 +235,6 @@ function MapPage() {
         },
       });
 
-      // ✅ 마커 클릭 시 모달 데이터 설정 로직 추가
       naver.maps.Event.addListener(marker, "click", () => {
         setSelectedItem(it);
         mapRef.current.panTo(position);
@@ -178,16 +246,12 @@ function MapPage() {
             themeId: themeId,
             contsId: it.COT_CONTS_ID || it.cotContsId
           });
-
           if (res?.body && res.body.length > 0) {
             const d = res.body[0];
             const SEOUL_BASE_URL = "https://map.seoul.go.kr";
             const rawImg = d.COT_IMG_MAIN_URL || d.COT_IMG_MAIN_URL1;
-            
-            // 이미지 및 주소 예외 처리 (삼항 연산자 사용)
             const imgUrl = rawImg ? (rawImg.startsWith("http") ? rawImg : SEOUL_BASE_URL + rawImg) : "";
             const addrText = d.COT_ADDR_FULL_NEW ? d.COT_ADDR_FULL_NEW : "등록된 주소가 없습니다.";
-            
             infoWindowRef.current.setContent(`
               <div style="padding: 0; margin-bottom: 35px;">
                 <div style="background: white; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); width: 220px; overflow: hidden; position: relative;">
@@ -215,7 +279,6 @@ function MapPage() {
     if (list.length > 0) mapRef.current.fitBounds(bounds);
   }, [clearMapOverlays, drawAreaLine]);
 
-  /** [5] 생명주기 */
   useEffect(() => {
     const naver = window.naver;
     if (!naver?.maps || !mapElRef.current || mapRef.current) return;
@@ -278,15 +341,21 @@ function MapPage() {
     <div className={styles.page}>
       <div className={styles.mapWrap}>
         <div ref={mapElRef} className={styles.mapEl} />
-        
-        {/* ✅ MapModal 추가 */}
         {selectedItem && (
           <MapModal 
             item={selectedItem} 
-            onClose={() => setSelectedItem(null)} 
+            theme = {selectedItem.THM_THEME_NAME}
+            onClose={() => {
+              setSelectedItem(null);
+              markersRef.current.forEach(m => m.setMap(mapRef.current));
+              polylinesRef.current.forEach(p => p.setMap(mapRef.current));
+              if (routePolylineRef.current) routePolylineRef.current.setMap(null);
+              routeMarkersRef.current.forEach(m => m.setMap(null));
+              routeMarkersRef.current = [];
+            }} 
+            onDrawRoute={drawRoutePath} 
           />
         )}
-
         <div className={styles.panel}>
           <div className={styles.panelHeader}>
             <div className={styles.panelTitle}>내 주변 검색</div>
