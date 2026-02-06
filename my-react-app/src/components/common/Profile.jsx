@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { getTitleBgPresetById } from "../../shared/constants/profileBackgrounds";
+import { getTitleBgPresetById } from "../../utils/profileBackgrounds";
 import { TITLE_LIST } from "../../shared/constants/titles";
 import styles from "./Profile.module.css";
 

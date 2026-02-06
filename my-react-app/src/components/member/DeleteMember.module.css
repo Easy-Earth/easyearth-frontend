@@ -1,0 +1,138 @@
+/* 전체 컨테이너 */
+.deleteContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* ⚠️ 주의사항 박스 */
+.warningBox {
+  background-color: #fff5f5; /* 연한 빨강 배경 */
+  border: 1px solid #feb2b2;
+  border-left: 5px solid #f56565; /* 왼쪽 강조 테두리 */
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.warningTitle {
+  color: #c53030;
+  margin-top: 0;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.warningList {
+  margin: 0;
+  padding-left: 20px;
+  color: #4a5568;
+  line-height: 1.6;
+}
+
+.warningList li {
+  margin-bottom: 8px;
+}
+
+.warningList li strong {
+  color: #2d3748;
+  text-decoration: underline;
+}
+
+/* 폼 섹션 */
+.deleteForm {
+  background-color: #ffffff;
+  padding: 10px;
+}
+
+.inputGroup {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inputGroup label {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.inputGroup label strong {
+  color: #e53e3e;
+}
+
+/* 입력 필드 공통 */
+.inputGroup input {
+  padding: 12px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.inputGroup input:focus {
+  border-color: #f56565;
+  box-shadow: 0 0 0 3px rgba(245, 101, 101, 0.1);
+}
+
+.inputGroup input::placeholder {
+  color: #a0aec0;
+}
+
+/* 🚀 탈퇴 버튼 */
+.submitDeleteBtn {
+  width: 100%;
+  padding: 14px;
+  background-color: #e53e3e; /* 파괴적인 작업임을 알리는 빨간색 */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s active;
+  margin-top: 10px;
+}
+
+.submitDeleteBtn:hover {
+  background-color: #c53030;
+}
+
+.submitDeleteBtn:active {
+  transform: scale(0.98);
+}
+
+.submitDeleteBtn:disabled {
+  background-color: #cbd5e0;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 페이드인 애니메이션 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 반응형 처리 */
+@media (max-width: 480px) {
+  .deleteContainer {
+    padding: 10px;
+  }
+  
+  .warningBox {
+    padding: 15px;
+    font-size: 0.9rem;
+  }
+}
