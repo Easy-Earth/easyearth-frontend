@@ -5,7 +5,7 @@ import { getTitleBgPresetById } from "../../utils/profileBackgrounds";
 import { TITLE_LIST } from "../../utils/profileTitles";
 import styles from "./Profile.module.css";
 
-const Profile = ({ size = "big", memberId, userName = "사용자" }) => {
+const Profile = ({ size = "big", memberId, userName = "사용자", onClick }) => {
   const [equippedIds, setEquippedIds] = useState([]);
 
   useEffect(() => {
@@ -56,13 +56,15 @@ const Profile = ({ size = "big", memberId, userName = "사용자" }) => {
     "--g1": preset?.g1,
     "--g2": preset?.g2,
     "--ring": preset?.ring,
-    "--ring-rgb": preset?.ring?.replace(/rgba?\(|\)/g, '') || "148, 163, 184"
+    "--ring-rgb": preset?.ring?.replace(/rgba?\(|\)/g, '') || "148, 163, 184",
+    cursor: onClick ? "pointer" : "default" // ✅ 클릭 프롭이 있을 때만 포인터 커서 표시
   };
 
   return (
     <div 
       className={`${styles.profileContainer} ${size === "small" ? styles.small : styles.big}`} 
       style={styleVars}
+      onClick={() => onClick && onClick(memberId)} // ✅ 클릭 시 memberId 전달
     >
       {/* 배경 레이어: 칭호/배지 색상 변조 방지 */}
       <div className={`fx-background-layer rarity-${cardGrade} fx-bg-only`}>
