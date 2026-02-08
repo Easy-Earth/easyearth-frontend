@@ -2,68 +2,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import * as itemApi from "../../apis/itemApi";
 import Button from "../../components/common/Button";
 import CustomModal from "../../components/common/CustomModal";
+import ItemCssPreview from "../../components/item/ItemCssPreview";
 import ItemModal from "../../components/item/ItemModal";
 import { useAuth } from "../../context/AuthContext";
+import "../../styles/itemEffects.css";
 import styles from "./ShopPage.module.css";
-import { TITLE_BG_PRESETS } from "../../utils/profileBackgrounds"; 
 
 const defaultImg = "https://via.placeholder.com/150?text=No+Image";
-
-const ItemCssPreview = ({ item }) => {
-  const category = (item.itemCategory || item.category || "").toUpperCase();
-  const rarity = (item.rarity || item.RARITY || "common").toLowerCase();
-  const rarityList = TITLE_BG_PRESETS[rarity] || TITLE_BG_PRESETS.common || [];
-  
-  if (rarityList.length === 0) return <div className={styles.badgeCard}></div>;
-
-  const itemIdNum = parseInt(item.itemId || item.ITEM_ID || 1);
-  const presetIndex = (itemIdNum - 1) % rarityList.length;
-  const preset = rarityList[presetIndex];
-
-  const hexToRgb = (hex) => {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `${r}, ${g}, ${b}`;
-  };
-
-  const dynamicStyle = {
-    "--g1": preset.g1,
-    "--g2": preset.g2,
-    "--g3": preset.g3,
-    "--b1": preset.b1,
-    "--b2": preset.b2,
-    "--ring": preset.ring,
-    "--ring-rgb": hexToRgb(preset.ring),
-  };
-
-  return (
-    <div 
-      className={`
-        ${styles.badgeCard} 
-        ${styles[rarity]} 
-        ${category === "TITLE" ? styles.isTitleOnly : styles.isBackgroundOnly}
-      `} 
-      style={dynamicStyle}
-    >
-      {category === "BACKGROUND" && (
-        <>
-          <div className={styles.badgeGlow}></div>
-          <div className={styles.rays}></div>
-          <div className={styles.ring}></div>
-        </>
-      )}
-
-      {category === "TITLE" && (
-        <div className={styles.badgeContent}>
-          <div className={styles.titleArea}>
-            <span className={styles.mainTitle}>{item.name || item.itemName}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const ShopPage = () => {
   const { user } = useAuth();
@@ -103,12 +48,10 @@ const ShopPage = () => {
     if (!item) return defaultImg;
     const category = (item.itemCategory || item.category || "BADGE").toUpperCase();
     if (category !== "BADGE") return null;
-
     const rarity = (item.rarity || item.RARITY || "common").toLowerCase();
     const itemId = item.itemId || item.ITEM_ID || 0;
     const formattedId = String(itemId).padStart(2, '0');
     const fileName = `badge_${formattedId}.png`;
-
     try {
       return new URL(`../../assets/badges/${rarity}/${fileName}`, import.meta.url).href;
     } catch (err) {
@@ -154,7 +97,6 @@ const ShopPage = () => {
       });
       return;
     }
-
     setModalConfig({
       isOpen: true,
       type: 'confirm',
@@ -262,50 +204,33 @@ const ShopPage = () => {
           {filteredItems.map((item) => {
             const itemId = String(item.itemId || item.ITEM_ID || "");
             const isOwned = myItems.includes(itemId);
-            const category = (item.itemCategory || item.category || "BADGE").toUpperCase();
-            const rarity = (item.rarity || item.RARITY || 'COMMON').toUpperCase();
+            const rarityLower = (item.rarity || item.RARITY || 'common').toLowerCase();
 
             return (
               <div 
                 key={itemId} 
-                className={`${styles.itemCard} ${styles[`card_${rarity.toLowerCase()}`]}`}
+                className={`${styles.itemCard} ${styles[`card_${rarityLower}`]}`}
                 onClick={() => setSelectedItem(item)}
+                style={{ position: 'relative', overflow: 'hidden' }}
               >
-                <span className={styles.rarityTag}>{rarity}</span>
-                <div className={styles.imageArea}>
-                  {/* 카드 등급별 배경 효과를 위한 요소 */}
-                  <div className={styles.cardRarityBg}></div>
-                  
-                  {category === "BADGE" ? (
-                    <img src={getItemImage(item)} alt={item.name} className={styles.badgeImg} />
+                {/* 배경 뿌연 효과 레이어 추가 */}
+                <div className={`fx-background-layer rarity-${rarityLower} fx-bg-only`} style={{ filter: 'blur(20px)', transform: 'scale(1.2)', opacity: 0.6 }}>
+                  <div className="fx-glow" />
+                </div>
+
+                <span className={`${styles.rarityTag} bg-${rarityLower}`} style={{ zIndex: 2 }}>{rarityLower.toUpperCase()}</span>
+                <div className={styles.imageArea} style={{ position: 'relative', zIndex: 1, background: 'transparent' }}>
+                  {(item.itemCategory || item.category || "BADGE").toUpperCase() === "BADGE" ? (
+                    <img src={getItemImage(item)} alt={item.name} className={`${styles.badgeImg} ${rarityLower === 'legendary' ? 'fx-pulse' : ''}`} />
                   ) : (
                     <ItemCssPreview item={item} />
                   )}
                 </div>
-                <div className={styles.infoArea}>
+                <div className={styles.infoArea} style={{ position: 'relative', zIndex: 1 }}>
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
                   <div className={styles.cardFooter}>
-                    <div className={styles.priceArea}>
-                      {rarity === 'LEGENDARY' ? (
-                        <span className={styles.notForSale}>비매품</span>
-                      ) : (
-                        <span className={styles.priceTag}>
-                          <i className={styles.pCircle}>P</i> 
-                          {(item.price || item.PRICE)?.toLocaleString()}
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.btnActionArea}>
-                      {isOwned ? (
-                        <span className={styles.ownedLabel}>보유 중</span>
-                      ) : rarity === 'LEGENDARY' ? (
-                        <span className={styles.gachaOnlyLabel}>뽑기 전용</span>
-                      ) : (
-                        <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">
-                          <span className={styles.btnText}>구매</span>
-                        </Button>
-                      )}
-                    </div>
+                    <span className={styles.priceTag}>{rarityLower === 'legendary' ? '비매품' : `${(item.price || item.PRICE).toLocaleString()} P`}</span>
+                    {isOwned ? <span className={styles.ownedLabel}>보유 중</span> : <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">구매</Button>}
                   </div>
                 </div>
               </div>
@@ -314,27 +239,26 @@ const ShopPage = () => {
         </div>
       )}
 
-      {/* 뽑기 애니메이션 오버레이 */}
       {isPulling && (
         <div className={styles.pullOverlay}>
           <div className={`${styles.pullCard} ${pullResult ? styles.isFlipped : ""}`}>
             <div className={styles.cardFront}>?</div>
-            <div className={styles.cardBack}>
+            <div className={`${styles.cardBack} ${pullResult ? styles[`res_${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`] : ''}`}>
               {pullResult && (
                 <>
+                  <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{ (pullResult.rarity || pullResult.RARITY || 'common').toUpperCase() }</span>
                   <div className={styles.resultVisual}>
-                    <div className={styles.cardRarityBg}></div>
                     {(pullResult.itemCategory || pullResult.category) === "BADGE" ? (
-                       <img src={getItemImage(pullResult)} alt="res" className={styles.badgeImg} />
+                       <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
                     ) : (
                        <ItemCssPreview item={pullResult} />
                     )}
                   </div>
-                  <h3 className={styles.resultTitle}>{pullResult.itemName || pullResult.name}</h3>
-                  {isDuplicate && <p className={styles.duplicateMsg}>이미 보유 중 (500P 반환)</p>}
-                  <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px">
-                    <span className={styles.btnText}>확인</span>
-                  </Button>
+                  <div className={styles.resultInfo}>
+                    <h3 className={styles.resultTitle}>{pullResult.itemName || pullResult.name}</h3>
+                    {isDuplicate && <p className={styles.duplicateMsg}>이미 보유 중 (500P 반환)</p>}
+                  </div>
+                  <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px" height="40px">확인</Button>
                 </>
               )}
             </div>
@@ -342,16 +266,8 @@ const ShopPage = () => {
         </div>
       )}
 
-      <ItemModal 
-        item={selectedItem} onClose={() => setSelectedItem(null)} onBuy={handleBuy} 
-        isOwned={myItems.includes(String(selectedItem?.itemId || selectedItem?.ITEM_ID || ""))}
-        imageSrc={getItemImage(selectedItem)}
-      />
-
-      <CustomModal 
-        isOpen={modalConfig.isOpen} type={modalConfig.type} message={modalConfig.message}
-        onConfirm={modalConfig.onConfirm} onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
-      />
+      <ItemModal item={selectedItem} onClose={() => setSelectedItem(null)} onBuy={handleBuy} isOwned={myItems.includes(String(selectedItem?.itemId || selectedItem?.ITEM_ID || ""))} imageSrc={getItemImage(selectedItem)} />
+      <CustomModal isOpen={modalConfig.isOpen} type={modalConfig.type} message={modalConfig.message} onConfirm={modalConfig.onConfirm} onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))} />
     </div>
   );
 };

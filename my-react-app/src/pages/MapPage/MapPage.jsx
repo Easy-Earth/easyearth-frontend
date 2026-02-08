@@ -36,6 +36,23 @@ function MapPage() {
 
   const ecoTeal = useMemo(() => getCssVar("--eco-teal", "#14b8a6"), []);
 
+  useEffect(() => {
+    const naver = window.naver;
+    if (!naver?.maps || !mapElRef.current || mapRef.current) return;
+    
+    mapRef.current = new naver.maps.Map(mapElRef.current, {
+      center: new naver.maps.LatLng(37.5665, 126.978),
+      zoom: 14,
+      // ✅ 휠 관련 옵션을 명시적으로 설정 (SDK 내부 최적화 유도)
+      scrollWheel: true,
+      zoomControl: false, // 필요시 컨트롤러를 끄고 휠만 활성화
+    });
+
+    // ✅ 지도가 초기화된 후 브라우저에게 이 영역은 
+    // 기본 스크롤을 차단하지 않을 것임을 힌트로 줌 (선택 사항)
+    mapRef.current.setOptions("draggable", true);
+    mapRef.current.setOptions("pinchZoom", true);
+  }, []);
   const handleAllSelect = useCallback(() => {
     if (selectedThemeIds.length === SEOUL_THEMES.length) {
       setSelectedThemeIds([]); 
@@ -50,12 +67,30 @@ function MapPage() {
     );
   }, []);
 
+  // ✅ [수정] 버튼 클릭 시에만 위치 정보를 요청하도록 변경
   const moveToMyLocation = useCallback(() => {
     const naver = window.naver;
-    if (!naver?.maps || !mapRef.current || !pos) return;
-    mapRef.current.setCenter(new naver.maps.LatLng(pos.lat, pos.lng));
-    mapRef.current.setZoom(16);
-  }, [pos]);
+    if (!naver?.maps || !mapRef.current) return;
+
+    if (!navigator.geolocation) {
+      alert("이 브라우저에서는 위치 정보를 사용할 수 없습니다.");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (p) => {
+        const newPos = { lat: p.coords.latitude, lng: p.coords.longitude };
+        setPos(newPos);
+        mapRef.current.setCenter(new naver.maps.LatLng(newPos.lat, newPos.lng));
+        mapRef.current.setZoom(16);
+      },
+      (err) => {
+        console.error("위치 획득 실패:", err);
+        alert("위치 정보를 가져올 수 없습니다. 권한을 확인해주세요.");
+      },
+      { enableHighAccuracy: true }
+    );
+  }, []);
 
   const clearMapOverlays = useCallback(() => {
     markersRef.current.forEach((m) => m.setMap(null));
@@ -118,21 +153,17 @@ function MapPage() {
     } catch (e) { console.warn("영역 그리기 실패:", e); }
   }, []);
 
-  // ✅ [수정] 길찾기 경로 그리기 (테마 색상 반영 및 툴팁 개선)
   const drawRoutePath = useCallback((pathData) => {
     const naver = window.naver;
     if (!naver?.maps || !mapRef.current || !pathData) return;
 
-    // 1. 초기화
     if (routePolylineRef.current) routePolylineRef.current.setMap(null);
     routeMarkersRef.current.forEach(m => m.setMap(null));
     routeMarkersRef.current = [];
 
-    // 2. 테마 색상 추출 (아이템 테마 아이디 기반)
     const themeId = String(selectedItem?.COT_THEME_ID || selectedItem?.cotThemeId || "");
-    const themeColor = THEME_COLOR_MAP[themeId] || "#3b82f6"; // 기본값 블루
+    const themeColor = THEME_COLOR_MAP[themeId] || "#3b82f6"; 
 
-    // 3. 기존 마커/영역 숨기기 (선택된 목적지 제외)
     const destLat = parseFloat(selectedItem?.COT_COORD_Y || selectedItem?.cotCoordY);
     const destLng = parseFloat(selectedItem?.COT_COORD_X || selectedItem?.cotCoordX);
     markersRef.current.forEach((marker) => {
@@ -145,14 +176,12 @@ function MapPage() {
 
     let path = [];
     if (pathData.subPaths) {
-      // 대중교통 모드
       pathData.subPaths.forEach(sub => {
         if (sub.passStopList && sub.passStopList.stations) {
           sub.passStopList.stations.forEach(s => {
             path.push(new naver.maps.LatLng(parseFloat(s.y), parseFloat(s.x)));
           });
         }
-        // ✅ 툴팁에 테마 색상 적용
         if (sub.trafficType === 1 || sub.trafficType === 2) {
           const info = sub.trafficType === 1 ? sub.lane[0].name : sub.lane[0].busNo;
           const tooltipContent = `
@@ -175,7 +204,6 @@ function MapPage() {
 
     if (path.length === 0) return;
 
-    // ✅ 경로 선에 테마 색상 적용
     routePolylineRef.current = new naver.maps.Polyline({
       map: mapRef.current,
       path: path,
@@ -288,13 +316,7 @@ function MapPage() {
     });
   }, []);
 
-  useEffect(() => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition(
-      (p) => setPos({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      null, { enableHighAccuracy: true }
-    );
-  }, []);
+  // ✅ [수정] 페이지 로드 시 자동 Geolocation 호출 로직 삭제 (사용자 클릭 시에만 작동하도록 moveToMyLocation에 통합)
 
   useEffect(() => {
     const naver = window.naver;
@@ -313,7 +335,10 @@ function MapPage() {
   }, [pos, ecoTeal]);
 
   const handleSearch = useCallback(async () => {
-    if (!pos) return;
+    if (!pos) {
+      setError("먼저 '내 위치로' 버튼을 눌러 현재 위치를 파악해주세요.");
+      return;
+    }
     if (selectedThemeIds.length === 0) {
       setError("테마를 최소 하나 선택해야 합니다.");
       return;
@@ -368,7 +393,7 @@ function MapPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <span style={{ fontSize: '14px', color: '#64748b', fontWeight: '600' }}>현위치</span>
                 <span style={{ fontSize: '14px', color: '#1e293b', fontWeight: '700', fontFamily: 'monospace' }}>
-                  {pos ? `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` : "위치 파악 중..."}
+                  {pos ? `${pos.lat.toFixed(6)}, ${pos.lng.toFixed(6)}` : "위치 확인 필요"}
                 </span>
               </div>
               <Button width="100%" height="48px" color="transparent" onClick={moveToMyLocation} style={{ border: `2px solid ${ecoTeal}`, borderRadius: '24px' }}>

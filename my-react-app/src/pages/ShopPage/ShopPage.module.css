@@ -95,17 +95,42 @@
 @keyframes legendaryFlow { to { background-position: 200% center; } }
 @keyframes starShower { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 40% { transform: translate(-100px, 100px); opacity: 0; } 100% { transform: translate(-100px, 100px); opacity: 0; } }
 
+/* 전설 서서히 색 변하는 애니메이션 */
+@keyframes legendaryColorShift {
+  0% { filter: hue-rotate(0deg) brightness(1.1); }
+  50% { filter: hue-rotate(180deg) brightness(1.2); }
+  100% { filter: hue-rotate(360deg) brightness(1.1); }
+}
+
+/* 후광 애니메이션 정의 */
+@keyframes glow-legendary {
+  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b; }
+  50% { box-shadow: 0 0 40px #fbbf24, 0 0 80px #fbbf24; }
+}
+@keyframes glow-epic {
+  0%, 100% { box-shadow: 0 0 20px #8b5cf6, 0 0 40px #8b5cf6; }
+  50% { box-shadow: 0 0 40px #a78bfa, 0 0 80px #a78bfa; }
+}
+@keyframes glow-rare {
+  0%, 100% { box-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6; }
+  50% { box-shadow: 0 0 30px #60a5fa, 0 0 60px #60a5fa; }
+}
+@keyframes glow-common {
+  0%, 100% { box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80; }
+  50% { box-shadow: 0 0 20px #86efac, 0 0 40px #86efac; }
+}
+
 .epic .badgeGlow { animation: epicGlow 3s ease-in-out infinite alternate; }
 @keyframes epicGlow { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
 
+/* 뽑기용 링 제거하고 광선만 남김 */
 .legendary .rays { display: block; position: absolute; inset: -60%; z-index: 1; background: conic-gradient(from 0deg, transparent 0deg, var(--ring) 45deg, transparent 90deg, var(--g1) 135deg, transparent 180deg, var(--ring) 225deg, transparent 270deg, var(--g2) 315deg, transparent 360deg); opacity: 0.7; animation: spin 4s linear infinite, legendaryRainbow 8s linear infinite; }
-.legendary .ring { display: block; position: absolute; inset: 6px; z-index: 2; border-radius: 18px; background: conic-gradient(from 0deg, var(--ring), transparent, var(--g2), transparent); mask: radial-gradient(transparent 63%, #000 66%); -webkit-mask: radial-gradient(transparent 63%, #000 66%); animation: spin 2.5s linear infinite reverse; }
 
 .epic .titleArea { background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); border: 1.5px solid #fff; box-shadow: 0 0 20px var(--ring); }
 .epic .titleArea::after { content: ""; position: absolute; top: 0; left: -150%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-30deg); animation: sweep 4s infinite; }
 .epic .mainTitle { color: #fff; text-shadow: 0 0 10px #fff, 0 0 20px var(--ring); }
 
-.legendary .titleArea { background: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--ring); }
+.legendary .titleArea { background: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--ring); animation: legendaryColorShift 10s linear infinite; }
 .legendary .titleArea::after { content: ""; position: absolute; top: -100px; left: -50px; width: 200%; height: 200%; background-image: radial-gradient(1.5px 1.5px at 50% 50%, #fff, transparent); background-size: 50px 50px; animation: starShower 2s linear infinite; }
 .legendary .mainTitle { background: linear-gradient(to right, #fff, var(--ring), var(--g1), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; animation: legendaryFlow 2s linear infinite; filter: drop-shadow(0 0 12px var(--ring)); }
 
@@ -123,9 +148,78 @@
 .pullOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; perspective: 1200px; backdrop-filter: blur(8px); }
 .pullCard { width: 300px; height: 450px; position: relative; transform-style: preserve-3d; transition: 0.8s; }
 .pullCard.isFlipped { transform: rotateY(180deg); }
-.cardFront, .cardBack { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 25px; display: flex; flex-direction: column; align-items: center; }
+.cardFront, .cardBack { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 25px; display: flex; flex-direction: column; align-items: center; overflow: visible; }
 .cardFront { background: linear-gradient(135deg, #14b8a6, #0f766e); color: white; justify-content: center; font-size: 80px; font-weight: 900; border: 4px solid #fbbf24; }
-.cardBack { background: white; transform: rotateY(180deg); padding: 30px; text-align: center; justify-content: space-between; }
+
+/* [수정] 결과창 뒷면 등급별 화려한 후광 효과 추가 */
+.cardBack { background: white; transform: rotateY(180deg); padding: 30px; text-align: center; justify-content: space-between; border: 2px solid #e2e8f0; }
+
+.cardBack.legendary { 
+  border: 3px solid #f59e0b !important; 
+  animation: legendaryColorShift 10s linear infinite, glow-legendary 2s ease-in-out infinite !important; 
+}
+.cardBack.epic { 
+  border: 3px solid #8b5cf6 !important; 
+  animation: glow-epic 2s ease-in-out infinite !important;
+}
+.cardBack.rare { 
+  border: 3px solid #3b82f6 !important; 
+  animation: glow-rare 2s ease-in-out infinite !important;
+}
+.cardBack.common { 
+  border: 3px solid #4ade80 !important; 
+  animation: glow-common 2s ease-in-out infinite !important;
+}
+
 .resultVisual { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-radius: 15px; }
 .confirmBtnWrapper { margin-top: auto; padding-bottom: 10px; }
 .statusMsg { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #94a3b8; font-size: 18px; }
+.duplicateMsg { color: #ef4444; font-weight: 800; font-size: 14px; margin: 10px 0; }
+
+/* --- [뽑기 결과창 등급별 번쩍임 애니메이션] --- */
+
+/* 전설: 황금빛 노란색으로 강렬하게 번쩍 */
+@keyframes glow_legendary {
+  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b, inset 0 0 20px #f59e0b; }
+  50% { box-shadow: 0 0 60px #fbbf24, 0 0 100px #fbbf24, inset 0 0 30px #fbbf24; }
+}
+
+/* 에픽: 신비로운 보라색으로 번쩍 */
+@keyframes glow_epic {
+  0%, 100% { box-shadow: 0 0 20px #8b5cf6, 0 0 40px #8b5cf6, inset 0 0 15px #8b5cf6; }
+  50% { box-shadow: 0 0 50px #a78bfa, 0 0 80px #a78bfa, inset 0 0 25px #a78bfa; }
+}
+
+/* 레어: 시원한 푸른색으로 번쩍 */
+@keyframes glow_rare {
+  0%, 100% { box-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6, inset 0 0 10px #3b82f6; }
+  50% { box-shadow: 0 0 40px #60a5fa, 0 0 60px #60a5fa, inset 0 0 20px #60a5fa; }
+}
+
+/* 노멀: 싱그러운 연두색으로 번쩍 */
+@keyframes glow_common {
+  0%, 100% { box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80; }
+  50% { box-shadow: 0 0 30px #86efac, 0 0 40px #86efac; }
+}
+
+/* 결과창 뒷면 기본 설정 (overflow visible이어야 빛이 밖으로 나갑니다) */
+.cardBack {
+  position: absolute; inset: 0; backface-visibility: hidden;
+  border-radius: 25px; display: flex; flex-direction: column;
+  align-items: center; background: white; transform: rotateY(180deg);
+  padding: 30px; text-align: center; justify-content: space-between;
+  overflow: visible; /* 빛이 카드 밖으로 퍼지게 설정 */
+}
+
+/* JS에서 등급별로 갈아끼울 클래스 */
+.res_legendary { animation: glow_legendary 1.5s infinite ease-in-out; border: 4px solid #f59e0b !important; }
+.res_epic { animation: glow_epic 2s infinite ease-in-out; border: 3px solid #8b5cf6 !important; }
+.res_rare { animation: glow_rare 2s infinite ease-in-out; border: 3px solid #3b82f6 !important; }
+.res_common { animation: glow_common 2.5s infinite ease-in-out; border: 2px solid #94a3b8 !important; }
+
+/* 기존 이미지 및 레이아웃 유지 */
+.pullOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; perspective: 1200px; backdrop-filter: blur(8px); }
+.pullCard { width: 300px; height: 450px; position: relative; transform-style: preserve-3d; transition: 0.8s; }
+.pullCard.isFlipped { transform: rotateY(180deg); }
+.cardFront { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 25px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(135deg, #14b8a6, #0f766e); color: white; justify-content: center; font-size: 80px; font-weight: 900; border: 4px solid #fbbf24; }
+.resultVisual { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
