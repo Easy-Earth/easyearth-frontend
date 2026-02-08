@@ -45,7 +45,7 @@ const ShopPage = () => {
   ];
 
   const getItemImage = (item) => {
-    if (!item) return defaultImg;
+    if (!item || typeof item === 'string') return defaultImg;
     const category = (item.itemCategory || item.category || "BADGE").toUpperCase();
     if (category !== "BADGE") return null;
     const rarity = (item.rarity || item.RARITY || "common").toLowerCase();
@@ -136,13 +136,21 @@ const ShopPage = () => {
         setIsDuplicate(false);
         try {
           const result = await itemApi.randomPull(memberId);
+          console.log("서버 응답 전체 구조:", result); 
+          
           setTimeout(() => {
-            setPullResult(result);
-            const newItemId = String(result.itemId || result.ITEM_ID || "");
-            if (myItems.includes(newItemId)) {
+            // 서버 응답이 문자열(환급 안내)인 경우 처리
+            if (typeof result === 'string') {
               setIsDuplicate(true);
+              setPullResult({ itemName: "이미 보유 중인 아이템", rarity: "common" }); // UI 구조 유지용 임시 데이터
             } else {
-              setMyItems(prev => [...prev, newItemId]);
+              setPullResult(result);
+              const newItemId = String(result.itemId || result.ITEM_ID || "");
+              if (myItems.includes(newItemId)) {
+                setIsDuplicate(true);
+              } else {
+                setMyItems(prev => [...prev, newItemId]);
+              }
             }
           }, 1500);
         } catch (error) {
@@ -213,7 +221,6 @@ const ShopPage = () => {
                 onClick={() => setSelectedItem(item)}
                 style={{ position: 'relative', overflow: 'hidden' }}
               >
-                {/* 배경 뿌연 효과 레이어 추가 */}
                 <div className={`fx-background-layer rarity-${rarityLower} fx-bg-only`} style={{ filter: 'blur(20px)', transform: 'scale(1.2)', opacity: 0.6 }}>
                   <div className="fx-glow" />
                 </div>
@@ -247,16 +254,32 @@ const ShopPage = () => {
               {pullResult && (
                 <>
                   <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{ (pullResult.rarity || pullResult.RARITY || 'common').toUpperCase() }</span>
-                  <div className={styles.resultVisual}>
-                    {(pullResult.itemCategory || pullResult.category) === "BADGE" ? (
-                       <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
-                    ) : (
-                       <ItemCssPreview item={pullResult} />
-                    )}
-                  </div>
+                  
+                  {/* 중복이 아닐 때만 이미지/프리뷰 렌더링 */}
+                  {!isDuplicate ? (
+                    <div className={styles.resultVisual}>
+                      {(pullResult.itemCategory || pullResult.category) === "BADGE" ? (
+                         <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
+                      ) : (
+                         <ItemCssPreview item={pullResult} />
+                      )}
+                    </div>
+                  ) : (
+                    /* 중복일 때 이미지를 대체하는 텍스트 영역 */
+                    <div className={styles.resultVisual} style={{ flexDirection: 'column', gap: '10px' }}>
+                      <span style={{ fontSize: '50px' }}>♻️</span>
+                      <p style={{ fontWeight: '800', color: '#64748b', margin: 0 }}>중복 아이템 확인</p>
+                    </div>
+                  )}
+
                   <div className={styles.resultInfo}>
                     <h3 className={styles.resultTitle}>{pullResult.itemName || pullResult.name}</h3>
-                    {isDuplicate && <p className={styles.duplicateMsg}>이미 보유 중 (500P 반환)</p>}
+                    {isDuplicate && (
+                      <div style={{ marginTop: '10px' }}>
+                        <p className={styles.duplicateMsg} style={{ fontSize: '18px', color: '#f59e0b' }}>이미 가지고 있는 아이템이에요!</p>
+                        <p style={{ fontSize: '14px', color: '#94a3b8', fontWeight: '600' }}>아쉽지만 500포인트로 환급해 드렸습니다.</p>
+                      </div>
+                    )}
                   </div>
                   <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px" height="40px">확인</Button>
                 </>

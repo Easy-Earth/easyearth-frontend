@@ -2,6 +2,8 @@ import { memo, useState } from "react";
 import { reviewApi } from "../../apis/reviewApi";
 import Button from "../common/Button";
 import CustomModal from "../common/CustomModal";
+import Profile from "../common/Profile";
+import UserDetailModal from "../common/UserDatailModal";
 import ReviewFormModal from "./ReviewFormModal";
 import styles from "./ReviewList.module.css";
 
@@ -9,6 +11,10 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedEsrId, setSelectedEsrId] = useState(null);
+
+  // --- 유저 상세 모달 관련 상태 ---
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
+  const [selectedMemberId, setSelectedMemberId] = useState(null);
 
   const [content, setContent] = useState("");
   const [rating, setRating] = useState(5);
@@ -20,11 +26,18 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
     onConfirm: () => {}
   });
 
+  // 날짜 포맷 함수
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
     if (isNaN(date.getTime())) return dateString.split('T')[0];
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+  };
+
+  // 프로필 클릭 핸들러 (Profile 컴포넌트의 onClick으로 전달됨)
+  const handleProfileClick = (memberId) => {
+    setSelectedMemberId(memberId);
+    setIsUserModalOpen(true);
   };
 
   const onReviewEdit = (rev) => {
@@ -54,7 +67,6 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
         return;
     }
     
-    // ✅ 변수 선언을 API 호출 전으로 배치 (ReferenceError 해결)
     const reviewData = {
         esrId: isEditMode ? selectedEsrId : 0,
         shopId: Number(shopId), 
@@ -79,7 +91,6 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
             message: isEditMode ? '리뷰가 수정되었습니다.' : '리뷰가 등록되었습니다.',
             onConfirm: () => {
                 setModalConfig(prev => ({ ...prev, isOpen: false }));
-                // ✅ 부모 목록 즉시 새로고침
                 if (refreshReviews) refreshReviews(); 
             }
         });
@@ -109,7 +120,6 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
             message: '게시글이 삭제되었습니다.',
             onConfirm: () => {
               setModalConfig(prev => ({ ...prev, isOpen: false }));
-              // ✅ 삭제 후 부모 목록 즉시 새로고침
               if (refreshReviews) refreshReviews(); 
             }
           });
@@ -140,28 +150,49 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
     <div className={styles.reviewSection}>
       {renderHeader}
       <div className={styles.list}>
-        {reviews?.map((rev) => (
-          <div key={rev.esrId} className={styles.reviewCard}>
-            <div className={styles.header}>
-              <div className={styles.userInfo}>
-                <span className={styles.userName}>{rev.name || "익명"}</span>
-                <span className={styles.rating}>{"★".repeat(Number(rev.rating))}</span>
-              </div>
-              {currentMemberId && Number(rev.memberId) === Number(currentMemberId) && (
-                <div className={styles.authButtons}>
-                  <button className={styles.editBtn} onClick={() => onReviewEdit(rev)}>수정</button>
-                  <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId)}>삭제</button>
+        {reviews && reviews.length > 0 ? (
+          reviews.map((rev) => (
+            <div key={rev.esrId} className={styles.reviewCard}>
+              <div className={styles.header}>
+                <div className={styles.profileArea}>
+                  {/* ✅ Profile 컴포넌트에 onClick 전달 */}
+                  <Profile 
+                    size="small" 
+                    memberId={rev.memberId} 
+                    userName={rev.name} 
+                    onClick={handleProfileClick} 
+                  />
+                  
+                  <div className={styles.ratingAndActions}>
+                    <div className={styles.ratingWrapper}>
+                      <span className={styles.rating}>{"★".repeat(Number(rev.rating))}</span>
+                    </div>
+
+                    {currentMemberId && Number(rev.memberId) === Number(currentMemberId) && (
+                      <div className={styles.authButtons}>
+                        <button className={styles.editBtn} onClick={() => onReviewEdit(rev)}>수정</button>
+                        <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId)}>삭제</button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
+              
+              <p className={styles.content}>{rev.content}</p>
+              
+              <div className={styles.reviewFooter}>
+                <span className={styles.date}>{formatDate(rev.createdAt || rev.createAt)}</span>
+              </div>
             </div>
-            <p className={styles.content}>{rev.content}</p>
-            <div className={styles.reviewFooter}>
-              <span className={styles.date}>{formatDate(rev.createdAt || rev.createAt)}</span>
-            </div>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className={styles.noReview}>첫 번째 리뷰를 작성해보세요! 🌱</div>
+        )}
       </div>
 
+      {/* --- 각종 모달 섹션 --- */}
+      
+      {/* 1. 리뷰 작성/수정 모달 */}
       <ReviewFormModal 
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
@@ -175,12 +206,20 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
         isEditMode={isEditMode}
       />
 
+      {/* 2. 공통 알림/확인 모달 */}
       <CustomModal
         isOpen={modalConfig.isOpen}
         type={modalConfig.type}
         message={modalConfig.message}
         onConfirm={modalConfig.onConfirm}
         onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
+
+      {/* 3. 유저 상세 정보 모달 ✅ 추가됨 */}
+      <UserDetailModal 
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        memberId={selectedMemberId}
       />
     </div>
   );
