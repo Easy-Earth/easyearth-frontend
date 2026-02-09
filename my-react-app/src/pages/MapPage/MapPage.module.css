@@ -222,3 +222,17 @@
   font-weight: 700;
   font-family: monospace;
 }
+
+.mapEl { 
+  width: 100%; 
+  height: 100%; 
+  /* ✅ 비수동(non-passive) 경고 억제를 위한 최적화 */
+  touch-action: pan-x pan-y; 
+  /* 지도 위에서 휠 스크롤 시 브라우저 기본 동작과의 충돌 방지 */
+  overscroll-behavior: contain; 
+}
+
+/* ✅ 지도 내 네이버 로고나 컨트롤러가 휠 이벤트를 가로채지 않도록 설정 */
+.mapEl [class*="naver-maps-control"] {
+  touch-action: none;
+}

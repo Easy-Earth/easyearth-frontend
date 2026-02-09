@@ -1,4 +1,4 @@
-// constants/titles.js
+// constants/profileTitles.js
 export const TITLE_LIST = {
   common: [
     { id: "common-1", title: "플라스틱 파괴자", subtitle: "일회용을 줄이는 단계" },

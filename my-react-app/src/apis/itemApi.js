@@ -12,15 +12,15 @@ export const getStoreItems = async () => {
   }
 };
 
-export const getMyItems = async (memberId) => {
-  try {
-    const response = await axios.get(`${BASE_URL}/myItems/${memberId}`);
-    return response.data;
-  } catch (error) {
-    console.error("getMyItems error:", error);
-    throw error;
-  }
-};
+// export const getMyItems = async (memberId) => {
+//   try {
+//     const response = await axios.get(`${BASE_URL}/myItems/${memberId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error("getMyItems error:", error);
+//     throw error;
+//   }
+// };
 
 export const getItemDetail = async (itemId) => {
   try {
@@ -84,28 +84,8 @@ export const buyItem = async (userItemsVO) => {
   }
 };
 
-export const equipItem = async (itemId, userId) => {
-  try {
-    const response = await axios.patch(`${BASE_URL}/${itemId}/equip`, null, {
-      params: { userId },
-    });
-    return response.data;
-  } catch (error) {
-    console.error("equipItem error:", error);
-    throw error;
-  }
-};
-export const getEquippedItems = async (memberId) => {
-  try {
-    const response = await axios.get(`http://localhost:8080/spring/member/equipped/${memberId}`, {
-      withCredentials: true // 세션 쿠키 공유 허용
-    });
-    return Array.isArray(response.data) ? response.data : [];
-  } catch (error) {
-    console.error("getEquippedItems error:", error);
-    return [];
-  }
-};
+
+
 export const randomPull = async (memberId) => {
   try {
     const response = await axios.get(`${BASE_URL}/random/${memberId}`);
@@ -116,5 +96,65 @@ export const randomPull = async (memberId) => {
   }
 };
 
+/**
+ * 아이템 장착/해제 API
+ * @param {number} itemId - 아이템 식별자
+ * @param {number} userId - 사용자 식별자
+ * @param {string} category - 아이템 카테고리 (BADGE, TITLE, BACKGROUND)
+ */
 
 
+// 1. 인벤토리 목록 조회
+export const getMyItems = async (userId) => {
+  try {
+    const token = localStorage.getItem("token");
+    const response = await axios.get(`${BASE_URL}/myItems/${userId}`, {
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("getMyItems error:", error);
+    throw error;
+  }
+};
+
+// 2. 아이템 장착/해제 (가짜 401 대응 로직 추가)
+export const equipItem = async (itemId, userId, category) => {
+  const token = localStorage.getItem("token");
+  
+  try {
+    const response = await axios.patch(
+      `${BASE_URL}/${itemId}/equip`,
+      null,
+      {
+        params: { userId, category: category.toUpperCase() },
+        headers: {
+          Authorization: token ? `Bearer ${token}` : "",
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    const errorData = error.response?.data;
+    if (error.response?.status === 401 && typeof errorData === 'string' && errorData.includes("완료")) {
+      console.warn("백엔드 에러 코드 오탐지: 401이지만 성공으로 처리함 (메시지: " + errorData + ")");
+      return errorData; // 에러를 
+    }
+
+    console.error("equipItem error:", error.response || error);
+    throw error; // 진짜 에러일 때만 MyPage로 넘김
+  }
+};
+
+export const getEquippedItems = async (memberId) => {
+  try {
+    const response = await axios.get(`/spring/member/equipped/${memberId}`);
+    return response.data; 
+  } catch (error) {
+    console.error("장착 아이템 조회 실패:", error);
+    return [];
+  }
+};

@@ -105,6 +105,12 @@ const authApi = {
     });
     return res.data;
   },
+
+  //회원 상세 
+  memberDetail : async (memberId) => {
+    const res = await api.get(`/detail/${memberId}`);
+    return res.data;
+  }
 };
 
 export default authApi;

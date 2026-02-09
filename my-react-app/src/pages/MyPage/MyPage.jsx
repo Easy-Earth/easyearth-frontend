@@ -1,71 +1,13 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import * as itemApi from "../../apis/itemApi";
 import Profile from "../../components/common/Profile";
 import InventoryModal from "../../components/item/InventoryModal";
-import EditProfile from "../../components/member/EditProfilePage";
+import ItemCssPreview from "../../components/item/ItemCssPreview";
 import DeleteAccount from "../../components/member/DeleteMember";
-import * as itemApi from "../../apis/itemApi";
+import EditProfile from "../../components/member/EditProfilePage";
 import { useAuth } from "../../context/AuthContext";
+import "../../styles/itemEffects.css";
 import styles from "./MyPage.module.css";
-import { TITLE_BG_PRESETS } from "../../utils/profileBackgrounds";
-
-/**
- * 인벤토리 그리드 내에서만 사용하는 CSS 프리뷰 컴포넌트
- */
-const ItemCssPreview = ({ item }) => {
-  const category = (item.category || "").toUpperCase();
-  const rarity = (item.rarity || "common").toLowerCase();
-  const rarityList = TITLE_BG_PRESETS[rarity] || TITLE_BG_PRESETS.common || [];
-  
-  if (rarityList.length === 0) return <div className={styles.badgeCard}></div>;
-
-  const itemIdNum = parseInt(item.itemId || 1);
-  const presetIndex = (itemIdNum - 1) % rarityList.length;
-  const preset = rarityList[presetIndex];
-
-  const hexToRgb = (hex) => {
-    if (!hex) return "255, 255, 255";
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `${r}, ${g}, ${b}`;
-  };
-
-  const dynamicStyle = {
-    "--g1": preset.g1,
-    "--g2": preset.g2,
-    "--g3": preset.g3,
-    "--b1": preset.b1,
-    "--b2": preset.b2,
-    "--ring": preset.ring,
-    "--ring-rgb": hexToRgb(preset.ring),
-  };
-
-  return (
-    <div 
-      className={`
-        ${styles.badgeCard} 
-        ${styles[rarity]} 
-        ${category === "TITLE" ? styles.isTitleOnly : styles.isBackgroundOnly}
-      `} 
-      style={dynamicStyle}
-    >
-      <div className={styles.badgeGlow}></div>
-      {category === "BACKGROUND" && (
-        <>
-          <div className={styles.rays}></div>
-          <div className={styles.ring}></div>
-        </>
-      )}
-      {category === "TITLE" && (
-        <div className={styles.badgeContent}>
-          <div className={styles.titleArea}>
-            <span className={styles.mainTitle}>{item.name}</span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const MyPage = () => {
   const { user, logout } = useAuth();
@@ -77,11 +19,14 @@ const MyPage = () => {
   const [filterCategory, setFilterCategory] = useState("ALL");
   const [filterRarity, setFilterRarity] = useState("ALL");
   const [selectedItem, setSelectedItem] = useState(null);
+  const [equipUpdateKey, setEquipUpdateKey] = useState(0);
 
-  // Profile 실시간 동기화를 위한 트리거 상태
-  const [profileTick, setProfileTick] = useState(0);
+  // 프로필 클릭 핸들러 (추후 유저 정보 모달 연결용)
+  const handleProfileClick = () => {
+    console.log("유저 정보 모달 오픈 예정");
+    // 여기에 모달 오픈 로직을 추가하세요.
+  };
 
-  // 1. 인벤토리 데이터 로드
   const fetchMyInventory = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
@@ -99,7 +44,6 @@ const MyPage = () => {
     fetchMyInventory();
   }, [fetchMyInventory]);
 
-  // 2. 아이템 필터링 로직 (장착된 아이템 우선 정렬)
   const filteredItems = useMemo(() => {
     return myItems
       .filter((item) => {
@@ -114,42 +58,46 @@ const MyPage = () => {
       .sort((a, b) => (b.isEquipped === "Y" ? 1 : -1) - (a.isEquipped === "Y" ? 1 : -1));
   }, [myItems, filterCategory, filterRarity]);
 
-  // 3. 장착 및 해제 핸들러 (수정된 부분: item.uiId 전달)
   const handleEquipToggle = async (item) => {
-    if (!userId) return;
+    if (!userId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
     try {
-      // ⚠️ 기존 item.itemId(종류번호)에서 item.uiId(고유식별자)로 변경
-      await itemApi.equipItem(item.uiId, userId); 
-      
-      // 목록 갱신
+      const itemId = item.itemId || item.ITEM_ID;
+      const category = item.category || item.itemCategory || "BADGE"; 
+      if (!itemId) return;
+      await itemApi.equipItem(itemId, userId, category);
       await fetchMyInventory();
-      // 상단 Profile 컴포넌트 강제 리렌더링 트리거
-      setProfileTick(prev => prev + 1);
-      
+      setEquipUpdateKey(prev => prev + 1);
       setSelectedItem(null);
     } catch (error) {
-      // 401 에러(세션만료) 혹은 서버 에러 대응
-      const errorMsg = error.response?.data || "아이템 처리 중 오류 발생";
-      if (!errorMsg.includes("해제")) { // 단순 해제 알림이 아닐 경우에만 alert
-        alert(errorMsg);
+      const errorData = error.response?.data;
+      if (typeof errorData === 'string' && errorData.includes("완료")) {
+          await fetchMyInventory(); 
+          setEquipUpdateKey(prev => prev + 1);
+          setSelectedItem(null);    
+          return;
+      }
+      if (error.response?.status === 401) {
+        alert("인증 세션이 만료되었습니다. 다시 로그인해주세요.");
+        logout(); 
+      } else {
+        alert(error.response?.data || "아이템 처리 중 오류 발생");
       }
       fetchMyInventory();
       setSelectedItem(null);
     }
   };
 
-  // 4. 아이템 이미지 경로 생성
   const getItemImage = (item) => {
     if (!item) return null;
     const category = (item.category || "BADGE").toUpperCase();
     const rarity = (item.rarity || "COMMON").toLowerCase();
-    
     let prefix = "badge";
     if (category === "TITLE") prefix = "title";
     if (category === "BACKGROUND") prefix = "bg";
-
     const fileName = `${prefix}_${String(item.itemId || 0).padStart(2, "0")}.png`;
-
     try {
       return new URL(`../../assets/badges/${rarity}/${fileName}`, import.meta.url).href;
     } catch {
@@ -160,13 +108,24 @@ const MyPage = () => {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        <section className={styles.profileSection}>
-          {/* key를 변경하여 장착 시 Profile 정보를 다시 fetch하도록 함 */}
-          <Profile
-            key={`profile-${userId}-${profileTick}`}
-            memberId={userId}
-            userName={user?.name || "사용자"}
-          />
+        {/* 상단 섹션: BIG 버전과 SMALL 버전을 나란히 배치 */}
+        <section className={styles.profileSection} style={{ display: 'flex', alignItems: 'flex-end', gap: '24px', cursor: 'pointer' }}>
+          <div onClick={handleProfileClick} style={{ transition: 'transform 0.2s' }}>
+            <Profile
+              key={`big-${userId}-${equipUpdateKey}`}
+              memberId={userId}
+              userName={user?.name || "사용자"}
+              size="big"
+            />
+          </div>
+          <div onClick={handleProfileClick} style={{ transition: 'transform 0.2s' }}>
+            <Profile
+              key={`small-top-${userId}-${equipUpdateKey}`}
+              memberId={userId}
+              userName={user?.name || "사용자"}
+              size="small"
+            />
+          </div>
         </section>
 
         <div className={styles.mainLayout}>
@@ -175,27 +134,19 @@ const MyPage = () => {
               <p className={styles.welcome}>반가워요!</p>
               <p className={styles.nameTag}>{user?.name || "사용자"}님</p>
             </div>
+            
             <nav className={styles.navMenu}>
-              <button
-                className={activeTab === "inventory" ? styles.activeNav : ""}
-                onClick={() => setActiveTab("inventory")}
-              >
+              <button className={activeTab === "inventory" ? styles.activeNav : ""} onClick={() => setActiveTab("inventory")}>
                 🎒 내 인벤토리
               </button>
-              <button
-                className={activeTab === "edit" ? styles.activeNav : ""}
-                onClick={() => setActiveTab("edit")}
-              >
+              <button className={activeTab === "edit" ? styles.activeNav : ""} onClick={() => setActiveTab("edit")}>
                 ⚙️ 정보 수정
               </button>
-              <button
-                className={activeTab === "delete" ? styles.activeNav : ""}
-                onClick={() => setActiveTab("delete")}
-              >
+              <button className={activeTab === "delete" ? styles.activeNav : ""} onClick={() => setActiveTab("delete")}>
                 👤 회원 탈퇴
               </button>
             </nav>
-            <button className={`${styles.navMenu} ${styles.logoutBtn}`} onClick={logout} style={{border:'none', background:'none', cursor:'pointer', padding:'12px 15px', color:'#ef4444', fontWeight:'500'}}>
+            <button className={styles.logoutBtn} onClick={logout} style={{border:'none', background:'none', cursor:'pointer', padding:'12px 15px', color:'#ef4444', fontWeight:'500', textAlign:'left', width:'100%'}}>
               로그아웃
             </button>
           </aside>
@@ -210,20 +161,12 @@ const MyPage = () => {
                   <div className={styles.filterControls}>
                     <div className={styles.categoryTabs}>
                       {["ALL", "BADGE", "TITLE", "BACKGROUND"].map((cat) => (
-                        <span
-                          key={cat}
-                          className={filterCategory === cat ? styles.activeCat : ""}
-                          onClick={() => setFilterCategory(cat)}
-                        >
+                        <span key={cat} className={filterCategory === cat ? styles.activeCat : ""} onClick={() => setFilterCategory(cat)}>
                           {cat === "ALL" ? "전체" : cat === "BADGE" ? "뱃지" : cat === "TITLE" ? "칭호" : "배경"}
                         </span>
                       ))}
                     </div>
-                    <select
-                      className={styles.raritySelect}
-                      value={filterRarity}
-                      onChange={(e) => setFilterRarity(e.target.value)}
-                    >
+                    <select className={styles.raritySelect} value={filterRarity} onChange={(e) => setFilterRarity(e.target.value)}>
                       <option value="ALL">전체 등급</option>
                       <option value="COMMON">COMMON</option>
                       <option value="RARE">RARE</option>
@@ -243,27 +186,28 @@ const MyPage = () => {
                       const category = (item.category || "BADGE").toUpperCase();
 
                       return (
-                        <div
-                          key={item.uiId} // 고유 식별자인 uiId를 key로 사용
-                          className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} ${styles["border_" + rarity]}`}
+                        <div 
+                          key={item.uiId} 
+                          className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} border-${rarity}`} 
                           onClick={() => setSelectedItem(item)}
+                          style={{ position: 'relative', overflow: 'hidden' }}
                         >
-                          {isEquipped && <span className={styles.equippedBadge}>장착됨</span>}
-                          <div className={styles.imgBox}>
+                          <div className={`fx-background-layer rarity-${rarity} fx-bg-only`} style={{ filter: 'blur(20px)', transform: 'scale(1.2)', opacity: 0.6 }}>
+                            <div className="fx-glow" />
+                          </div>
+                          {isEquipped && <span className={styles.equippedBadge} style={{ zIndex: 2 }}>장착됨</span>}
+                          <div className={styles.imgBox} style={{ position: 'relative', zIndex: 1, background: 'transparent' }}>
                             {category === "BADGE" ? (
                               <img src={getItemImage(item)} alt={item.name} />
                             ) : (
                               <ItemCssPreview item={item} />
                             )}
                           </div>
-                          <div className={styles.itemCardInfo}>
-                            <span className={`${styles.itemRarityTag} ${styles[rarity]}`}>{item.rarity}</span>
+                          <div className={styles.itemCardInfo} style={{ position: 'relative', zIndex: 1 }}>
+                            <span className={`${styles.itemRarityTag} bg-${rarity}`}>{item.rarity}</span>
                             <p className={styles.itemCardName}>{item.name}</p>
                           </div>
-                          <button
-                            className={styles.equipActionBtn}
-                            onClick={(e) => { e.stopPropagation(); handleEquipToggle(item); }}
-                          >
+                          <button className={styles.equipActionBtn} style={{ zIndex: 1 }} onClick={(e) => { e.stopPropagation(); handleEquipToggle(item); }}>
                             {isEquipped ? "해제" : "장착"}
                           </button>
                         </div>
@@ -274,32 +218,13 @@ const MyPage = () => {
                 )}
               </div>
             )}
-
-            {/* 나머지 탭 생략 (기존과 동일) */}
-            {activeTab === "edit" && (
-              <div className={styles.editWrapper}>
-                <div className={styles.contentHeader}><h3>⚙️ 회원 정보 수정</h3></div>
-                <EditProfile user={user} />
-              </div>
-            )}
-
-            {activeTab === "delete" && (
-              <div className={styles.deleteWrapper}>
-                <div className={styles.contentHeader}><h3>👤 회원 탈퇴</h3></div>
-                <DeleteAccount user={user} onLogout={logout} />
-              </div>
-            )}
+            {activeTab === "edit" && <div className={styles.editWrapper}><EditProfile user={user} /></div>}
+            {activeTab === "delete" && <div className={styles.deleteWrapper}><DeleteAccount user={user} onLogout={logout} /></div>}
           </main>
         </div>
       </div>
-
       {selectedItem && (
-        <InventoryModal
-          item={selectedItem}
-          imageSrc={getItemImage(selectedItem)}
-          onClose={() => setSelectedItem(null)}
-          onEquipToggle={() => handleEquipToggle(selectedItem)}
-        />
+        <InventoryModal item={selectedItem} imageSrc={getItemImage(selectedItem)} onClose={() => setSelectedItem(null)} onEquipToggle={handleEquipToggle} />
       )}
     </div>
   );
