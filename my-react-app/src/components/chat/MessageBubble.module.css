@@ -1,0 +1,128 @@
+.wrapper {
+    display: flex;
+    margin-bottom: 6px; /* Reduced vertical spacing */
+    align-items: flex-start;
+    padding: 0 16px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.myMessage {
+    flex-direction: row-reverse;
+}
+
+.avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 8px;
+    background: #e5e7eb;
+    margin-top: 2px; /* Slight adjustment */
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.content {
+    max-width: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+.myMessage .content {
+    align-items: flex-end;
+}
+
+.name {
+    font-size: 12px;
+    color: #4b5563;
+    margin-bottom: 2px;
+    margin-left: 2px;
+}
+
+.bubbleRow {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.myMessage .bubbleRow {
+    flex-direction: row-reverse;
+}
+
+.bubble {
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word; /* Prevent overflow */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow */
+}
+
+/* Colors */
+.wrapper:not(.myMessage) .bubble {
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #1f2937;
+    border-top-left-radius: 2px;
+}
+
+.myMessage .bubble {
+    background-color: #3b82f6; /* Blue for my messages */
+    color: white;
+    border-top-right-radius: 2px;
+}
+
+.info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-width: 40px; /* Ensure space for time */
+}
+
+.myMessage .info {
+    align-items: flex-end;
+}
+
+.time {
+    font-size: 10px;
+    color: #9ca3af;
+    margin-bottom: 2px;
+}
+
+.unread {
+    color: #fbbf24; /* Yellow/Orange for unread count */
+    font-size: 10px;
+    font-weight: bold;
+    margin-bottom: 2px;
+}
+
+.systemMessage {
+    display: flex;
+    justify-content: center;
+    margin: 16px 0;
+}
+
+.systemMessage span {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #6b7280;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 16px;
+}
+
+.imageContent {
+    max-width: 200px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.fileLink {
+    color: inherit;
+    text-decoration: underline;
+    font-size: 13px;
+}
