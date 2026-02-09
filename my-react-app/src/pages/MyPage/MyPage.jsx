@@ -23,6 +23,7 @@ const ItemCssPreview = ({ item }) => {
   const preset = rarityList[presetIndex];
 
   const hexToRgb = (hex) => {
+    if (!hex) return "255, 255, 255";
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
     const b = parseInt(hex.slice(5, 7), 16);
@@ -77,6 +78,9 @@ const MyPage = () => {
   const [filterRarity, setFilterRarity] = useState("ALL");
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Profile 실시간 동기화를 위한 트리거 상태
+  const [profileTick, setProfileTick] = useState(0);
+
   // 1. 인벤토리 데이터 로드
   const fetchMyInventory = useCallback(async () => {
     if (!userId) return;
@@ -95,7 +99,7 @@ const MyPage = () => {
     fetchMyInventory();
   }, [fetchMyInventory]);
 
-  // 2. 아이템 필터링 로직 (장착된 아이템 우선 정렬 추가)
+  // 2. 아이템 필터링 로직 (장착된 아이템 우선 정렬)
   const filteredItems = useMemo(() => {
     return myItems
       .filter((item) => {
@@ -110,29 +114,36 @@ const MyPage = () => {
       .sort((a, b) => (b.isEquipped === "Y" ? 1 : -1) - (a.isEquipped === "Y" ? 1 : -1));
   }, [myItems, filterCategory, filterRarity]);
 
-  // 3. 장착 및 해제 핸들러
+  // 3. 장착 및 해제 핸들러 (수정된 부분: item.uiId 전달)
   const handleEquipToggle = async (item) => {
+    if (!userId) return;
     try {
-      await itemApi.equipItem(item.uiId, userId);
-      fetchMyInventory();
+      // ⚠️ 기존 item.itemId(종류번호)에서 item.uiId(고유식별자)로 변경
+      await itemApi.equipItem(item.uiId, userId); 
+      
+      // 목록 갱신
+      await fetchMyInventory();
+      // 상단 Profile 컴포넌트 강제 리렌더링 트리거
+      setProfileTick(prev => prev + 1);
+      
       setSelectedItem(null);
     } catch (error) {
-      if (error.response?.status === 401 && error.response?.data.includes("해제")) {
-        fetchMyInventory();
-        setSelectedItem(null);
-      } else {
-        alert(error.response?.data || "아이템 처리 중 오류 발생");
+      // 401 에러(세션만료) 혹은 서버 에러 대응
+      const errorMsg = error.response?.data || "아이템 처리 중 오류 발생";
+      if (!errorMsg.includes("해제")) { // 단순 해제 알림이 아닐 경우에만 alert
+        alert(errorMsg);
       }
+      fetchMyInventory();
+      setSelectedItem(null);
     }
   };
 
-  // 4. 아이템 이미지 경로 생성 (Profile 컴포넌트 전달용)
+  // 4. 아이템 이미지 경로 생성
   const getItemImage = (item) => {
     if (!item) return null;
     const category = (item.category || "BADGE").toUpperCase();
     const rarity = (item.rarity || "COMMON").toLowerCase();
     
-    // 카테고리별 접두사 설정
     let prefix = "badge";
     if (category === "TITLE") prefix = "title";
     if (category === "BACKGROUND") prefix = "bg";
@@ -146,21 +157,15 @@ const MyPage = () => {
     }
   };
 
-  // 장착 중인 아이템 찾기
-  const equippedBadge = myItems.find((i) => i.category === "BADGE" && i.isEquipped === "Y");
-  const equippedTitle = myItems.find((i) => i.category === "TITLE" && i.isEquipped === "Y");
-  const equippedBg = myItems.find((i) => i.category === "BACKGROUND" && i.isEquipped === "Y");
-
   return (
     <div className={styles.page}>
       <div className={styles.container}>
         <section className={styles.profileSection}>
-          {/* Profile 컴포넌트 원본 기능 유지 */}
+          {/* key를 변경하여 장착 시 Profile 정보를 다시 fetch하도록 함 */}
           <Profile
-            presetId={equippedBg ? `${equippedBg.rarity.toLowerCase()}-${equippedBg.itemId}` : "normal-1"}
+            key={`profile-${userId}-${profileTick}`}
+            memberId={userId}
             userName={user?.name || "사용자"}
-            badgeImage={getItemImage(equippedBadge)}
-            // titleImage={getItemImage(equippedTitle)}
           />
         </section>
 
@@ -239,7 +244,7 @@ const MyPage = () => {
 
                       return (
                         <div
-                          key={item.uiId}
+                          key={item.uiId} // 고유 식별자인 uiId를 key로 사용
                           className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} ${styles["border_" + rarity]}`}
                           onClick={() => setSelectedItem(item)}
                         >
@@ -270,6 +275,7 @@ const MyPage = () => {
               </div>
             )}
 
+            {/* 나머지 탭 생략 (기존과 동일) */}
             {activeTab === "edit" && (
               <div className={styles.editWrapper}>
                 <div className={styles.contentHeader}><h3>⚙️ 회원 정보 수정</h3></div>
@@ -292,7 +298,7 @@ const MyPage = () => {
           item={selectedItem}
           imageSrc={getItemImage(selectedItem)}
           onClose={() => setSelectedItem(null)}
-          onEquipToggle={handleEquipToggle}
+          onEquipToggle={() => handleEquipToggle(selectedItem)}
         />
       )}
     </div>

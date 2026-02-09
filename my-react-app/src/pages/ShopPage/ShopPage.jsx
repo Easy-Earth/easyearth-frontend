@@ -156,26 +156,41 @@ const ShopPage = () => {
     }
 
     setModalConfig({
-      isOpen: true,
-      type: 'confirm',
-      message: `[${item.name || item.itemName}] 구매하시겠습니까?`,
-      onConfirm: async () => {
-        try {
-          await itemApi.buyItem({ userId: memberId, itemId: id, price: item.price || item.PRICE });
-          setMyItems(prev => [...prev, String(id)]);
-          setSelectedItem(null);
-          setModalConfig({
-            isOpen: true, type: 'alert', message: '🎉 구매 완료되었습니다!',
-            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-          });
-        } catch (error) {
-          setModalConfig({
-            isOpen: true, type: 'alert', message: error.response?.data || "구매 중 오류가 발생했습니다.",
-            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-          });
-        }
-      }
-    });
+  isOpen: true,
+  type: 'confirm',
+  message: `[${item.name || item.itemName}] 구매하시겠습니까?`,
+  onConfirm: async () => {
+    try {
+      // 1. 필요한 데이터 추출 (아이템 객체의 필드명 대소문자 주의)
+      const purchaseData = {
+        userId: memberId,
+        itemId: id,
+        price: item.price || item.PRICE,
+        category: item.category || item.CATEGORY // 카테고리 추가
+      };
+
+      // 2. API 호출
+      await itemApi.buyItem(purchaseData);
+
+      // 3. 상태 업데이트 및 알림
+      setMyItems(prev => [...prev, String(id)]);
+      setSelectedItem(null);
+      setModalConfig({
+        isOpen: true, 
+        type: 'alert', 
+        message: '🎉 구매 완료되었습니다!',
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
+    } catch (error) {
+      setModalConfig({
+        isOpen: true, 
+        type: 'alert', 
+        message: error.response?.data || "구매 중 오류가 발생했습니다.",
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
+    }
+  }
+});
   };
 
   const handleRandomPull = () => {

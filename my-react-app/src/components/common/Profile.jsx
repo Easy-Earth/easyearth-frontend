@@ -1,53 +1,116 @@
-import { memo, useMemo } from "react";
-import { getTitleBgPresetById } from "../../utils/profileBackgrounds";
+import { memo, useMemo, useEffect, useState } from "react";
+import * as itemApi from "../../apis/itemApi";
+import { TITLE_BG_PRESETS } from "../../utils/profileBackgrounds";
 import { TITLE_LIST } from "../../shared/constants/titles";
 import styles from "./Profile.module.css";
 
 const Profile = ({ 
-  presetId = "normal-1", 
+  memberId, 
   userName = "Name", 
-  profileImage, 
-  badgeImage
+  profileImage 
 }) => {
-  const result = useMemo(() => getTitleBgPresetById(presetId), [presetId]);
-  
+  const [equippedIds, setEquippedIds] = useState([]);
+
+  useEffect(() => {
+    // memberId가 없으면 아예 호출 안 함 (첫 렌더링 방어)
+    if (!memberId || memberId === "undefined") return;
+
+    const fetchEquipped = async () => {
+      try {
+        const data = await itemApi.getEquippedItems(memberId);
+        setEquippedIds(data);
+      } catch (err) {
+        setEquippedIds([]);
+      }
+    };
+
+    fetchEquipped();
+  }, [memberId]);
+
+  // 배경 프리셋 계산
+  const bgData = useMemo(() => {
+    const defaultData = { grade: "common", preset: TITLE_BG_PRESETS?.common?.[0] || {} };
+    if (!equippedIds.length) return defaultData;
+
+    const bgId = equippedIds.find(id => id >= 51 && id <= 90);
+    const grades = ["common", "rare", "epic", "legendary"];
+    
+    if (bgId) {
+      const offset = bgId - 51;
+      const gradeIdx = Math.floor(offset / 10);
+      const itemIdx = offset % 10;
+      const targetGrade = grades[gradeIdx] || "common";
+      const preset = TITLE_BG_PRESETS?.[targetGrade]?.[itemIdx];
+      if (preset) return { grade: targetGrade, preset };
+    }
+    return defaultData;
+  }, [equippedIds]);
+
+  // 칭호 리스트 계산
   const titleData = useMemo(() => {
-    if (!presetId) return null;
-    const [grade, idx] = presetId.split("-");
-    return TITLE_LIST[grade][parseInt(idx) - 1];
-  }, [presetId]);
+    const defaultTitle = TITLE_LIST?.common?.[0] || { title: "에코 꿈나무" };
+    if (!equippedIds.length) return defaultTitle;
 
-  if (!result || !titleData) return null;
+    const titleId = equippedIds.find(id => id >= 91 && id <= 130);
+    const grades = ["common", "rare", "epic", "legendary"];
+    
+    if (titleId) {
+      const offset = titleId - 91;
+      const gradeIdx = Math.floor(offset / 10);
+      const itemIdx = offset % 10;
+      const targetGrade = grades[gradeIdx] || "common";
+      return TITLE_LIST?.[targetGrade]?.[itemIdx] || defaultTitle;
+    }
+    return defaultTitle;
+  }, [equippedIds]);
 
-  const { grade, preset } = result;
+  // 뱃지 이미지 계산
+  const badgeImage = useMemo(() => {
+    const badgeId = equippedIds.find(id => id >= 1 && id <= 50);
+    if (!badgeId) return null;
+    const formattedId = String(badgeId).padStart(2, '0');
+    const rarity = ["common", "rare", "epic", "legendary"][Math.floor((badgeId - 1) / 10)] || "common";
+    try {
+      return new URL(`../../assets/badges/${rarity}/badge_${formattedId}.png`, import.meta.url).href;
+    } catch { return null; }
+  }, [equippedIds]);
 
-  const styleVars = {
-    "--g1": preset.g1,
-    "--g2": preset.g2,
-    "--ring": preset.ring,
-  };
+  const { grade, preset } = bgData;
+  const styleVars = useMemo(() => ({
+    "--g1": preset?.g1,
+    "--g2": preset?.g2,
+    "--g3": preset?.g3,
+    "--b1": preset?.b1,
+    "--b2": preset?.b2,
+    "--ring": preset?.ring,
+    "--ring-rgb": preset?.ring?.includes("rgba") 
+      ? preset.ring.replace("rgba(", "").replace(")", "").split(",").slice(0, 3).join(",") 
+      : "255,255,255"
+  }), [preset]);
 
   return (
-    <div className={`${styles.badgeCard} ${styles[grade]}`} style={styleVars}>
+    <div className={`${styles.badgeCard} ${styles[grade]} ${styles.isBackgroundOnly}`} style={styleVars}>
       <div className={styles.badgeGlow} />
       {grade === "legendary" && <div className={styles.rays} />}
+      {grade === "legendary" && <div className={styles.ring} />}
       
       <div className={styles.badgeContent}>
         <div className={styles.leftSide}>
           <div className={styles.profileCircle}>
-            {profileImage ? <img src={profileImage} alt="" /> : <span>{userName[0]}</span>}
+            {profileImage ? (
+              <img src={profileImage} alt="Profile" className={styles.profileImg} />
+            ) : (
+              <span className={styles.initial}>{userName?.[0] || "?"}</span>
+            )}
           </div>
         </div>
-
         <div className={styles.rightSide}>
-          {/* 칭호 영역: 설명 없이 타이틀만 강조 */}
-          <div className={styles.titleArea}>
+          <div className={`${styles.titleArea} ${styles.isTitleOnly}`}>
             <div className={styles.mainTitle}>{titleData.title}</div>
           </div>
-          
           <div className={styles.userRow}>
             <div className={styles.massiveBadgeContainer}>
-              {badgeImage && <img src={badgeImage} className={styles.massiveBadge} alt="" />}
+              {badgeImage && <img src={badgeImage} className={styles.massiveBadge} alt="Badge" />}
             </div>
             <span className={styles.userName}>{userName}</span>
           </div>

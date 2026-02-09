@@ -84,9 +84,9 @@ export const buyItem = async (userItemsVO) => {
   }
 };
 
-export const equipItem = async (uiId, userId) => {
+export const equipItem = async (itemId, userId) => {
   try {
-    const response = await axios.patch(`${BASE_URL}/${uiId}/equip`, null, {
+    const response = await axios.patch(`${BASE_URL}/${itemId}/equip`, null, {
       params: { userId },
     });
     return response.data;
@@ -95,7 +95,17 @@ export const equipItem = async (uiId, userId) => {
     throw error;
   }
 };
-
+export const getEquippedItems = async (memberId) => {
+  try {
+    const response = await axios.get(`http://localhost:8080/spring/member/equipped/${memberId}`, {
+      withCredentials: true // 세션 쿠키 공유 허용
+    });
+    return Array.isArray(response.data) ? response.data : [];
+  } catch (error) {
+    console.error("getEquippedItems error:", error);
+    return [];
+  }
+};
 export const randomPull = async (memberId) => {
   try {
     const response = await axios.get(`${BASE_URL}/random/${memberId}`);
@@ -105,3 +115,6 @@ export const randomPull = async (memberId) => {
     throw error;
   }
 };
+
+
+
