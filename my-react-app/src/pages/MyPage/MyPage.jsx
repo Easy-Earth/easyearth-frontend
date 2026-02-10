@@ -10,7 +10,7 @@ import "../../styles/itemEffects.css";
 import styles from "./MyPage.module.css";
 
 const MyPage = () => {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth(); // 탈퇴 처리를 위해 logout 함수를 가져옵니다.
   const userId = user?.memberNo || user?.memberId || user?.id;
 
   const [activeTab, setActiveTab] = useState("inventory");
@@ -24,7 +24,6 @@ const MyPage = () => {
   // 프로필 클릭 핸들러 (추후 유저 정보 모달 연결용)
   const handleProfileClick = () => {
     console.log("유저 정보 모달 오픈 예정");
-    // 여기에 모달 오픈 로직을 추가하세요.
   };
 
   const fetchMyInventory = useCallback(async () => {
@@ -79,12 +78,7 @@ const MyPage = () => {
           setSelectedItem(null);    
           return;
       }
-      if (error.response?.status === 401) {
-        alert("인증 세션이 만료되었습니다. 다시 로그인해주세요.");
-        logout(); 
-      } else {
-        alert(error.response?.data || "아이템 처리 중 오류 발생");
-      }
+      alert(error.response?.data || "아이템 처리 중 오류 발생");
       fetchMyInventory();
       setSelectedItem(null);
     }
@@ -108,7 +102,6 @@ const MyPage = () => {
   return (
     <div className={styles.page}>
       <div className={styles.container}>
-        {/* 상단 섹션: BIG 버전과 SMALL 버전을 나란히 배치 */}
         <section className={styles.profileSection} style={{ display: 'flex', alignItems: 'flex-end', gap: '24px', cursor: 'pointer' }}>
           <div onClick={handleProfileClick} style={{ transition: 'transform 0.2s' }}>
             <Profile
@@ -146,9 +139,6 @@ const MyPage = () => {
                 👤 회원 탈퇴
               </button>
             </nav>
-            <button className={styles.logoutBtn} onClick={logout} style={{border:'none', background:'none', cursor:'pointer', padding:'12px 15px', color:'#ef4444', fontWeight:'500', textAlign:'left', width:'100%'}}>
-              로그아웃
-            </button>
           </aside>
 
           <main className={styles.contentArea}>
@@ -219,7 +209,12 @@ const MyPage = () => {
               </div>
             )}
             {activeTab === "edit" && <div className={styles.editWrapper}><EditProfile user={user} /></div>}
-            {activeTab === "delete" && <div className={styles.deleteWrapper}><DeleteAccount user={user} onLogout={logout} /></div>}
+            {activeTab === "delete" && (
+              <div className={styles.deleteWrapper}>
+                {/* onLogout 프롭스에 logout 함수를 전달합니다. */}
+                <DeleteAccount user={user} onLogout={logout} />
+              </div>
+            )}
           </main>
         </div>
       </div>

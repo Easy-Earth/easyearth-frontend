@@ -110,6 +110,12 @@ const authApi = {
   memberDetail : async (memberId) => {
     const res = await api.get(`/detail/${memberId}`);
     return res.data;
+  },
+
+  //보유 포인트 조회
+  getMemberPoint: async (memberId) => {
+    const res = await api.get(`/point/${memberId}`);
+    return res.data; // MemberWalletVO 반환
   }
 };
 
