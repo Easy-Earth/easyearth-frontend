@@ -94,3 +94,163 @@
   background-color: var(--btn-primary-hover); /* green-600 */
   border-color: var(--btn-primary-hover);
 }
+
+.logoutBtn {
+  background: transparent;
+  color: var(--gray-400);
+  border: none;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.logoutBtn:hover {
+  color: var(--gray-100);
+}
+
+.welcome {
+  color: var(--gray-100);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* ✨ Notification Center Styles */
+.notificationCenter {
+    position: relative;
+}
+
+.bellBtn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    position: relative;
+    padding: 5px;
+    filter: grayscale(100%); /* 아이콘 기본 색상 조정 */
+    transition: transform 0.2s;
+}
+
+.bellBtn:hover {
+    transform: scale(1.1);
+}
+
+.activeBell {
+    filter: none !important; /* Remove grayscale */
+    animation: swing 2s ease-in-out infinite; /* Optional: adds attention */
+}
+
+@keyframes swing {
+    0%, 100% { transform: rotate(0deg); }
+    20% { transform: rotate(15deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+}
+
+.badge {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background: #ef4444;
+    color: white;
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-radius: 10px;
+    font-weight: bold;
+    min-width: 15px;
+    text-align: center;
+}
+
+.dropdown {
+    position: absolute;
+    top: 40px;
+    right: -10px;
+    width: 320px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+    z-index: 10000;
+    border: 1px solid #e5e7eb;
+}
+
+.dropdownHeader {
+    padding: 12px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.markAllBtn {
+    font-size: 0.8rem;
+    color: #3b82f6;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.notificationList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.emptyItem {
+    padding: 20px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+}
+
+.notificationItem {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 16px;
+    border-bottom: 1px solid #f3f4f6;
+    background: #eff6ff; /* 읽지 않음: 연한 파랑 */
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.notificationItem.read {
+    background: white; /* 읽음: 흰색 */
+}
+
+.notificationItem:hover {
+    background: #f9fafb;
+}
+
+.notificationContent {
+    flex: 1;
+}
+
+.notificationText {
+    font-size: 0.9rem;
+    color: #374151;
+    margin-bottom: 4px;
+    line-height: 1.4;
+}
+
+.notificationTime {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.deleteBtn {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0 0 0 8px;
+    line-height: 1;
+}
+
+.deleteBtn:hover {
+    color: #ef4444;
+}

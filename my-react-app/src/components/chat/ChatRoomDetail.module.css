@@ -1,0 +1,202 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: #f9fafb;
+    border-radius: 8px; /* Optional: adds rounded corners if it floats */
+    overflow: hidden; /* Prevent outer scroll */
+}
+
+.header {
+    flex: 0 0 60px; /* 고정 높이 */
+    padding: 0 20px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 헤더 강조 */
+    z-index: 10;
+}
+
+.title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.actions {
+    display: flex;
+    gap: 8px;
+}
+
+.actionBtn, .leaveBtn {
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    background: white;
+    transition: all 0.2s;
+}
+
+.leaveBtn:hover {
+    background: #fee2e2;
+    color: #ef4444;
+    border-color: #fca5a5;
+}
+
+/* Notice Banner */
+.noticeBanner {
+    background: #fef9c3;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    gap: 8px;
+    border-bottom: 1px solid #fde047;
+    font-size: 13px;
+    color: #854d0e;
+    z-index: 5;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    position: relative; /* For absolute positioning of close button if needed */
+}
+.noticeContentWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap; /* Single line */
+}
+.noticeIcon {
+    font-size: 16px;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+.noticeTextContainer {
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.noticeText {
+    font-weight: 500;
+    margin-right: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.noticeSender {
+    font-size: 11px;
+    color: #a16207;
+    white-space: nowrap;
+    opacity: 0.8;
+}
+.noticeCloseBtn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: #a16207;
+    padding: 2px;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+.noticeCloseBtn:hover {
+    color: #713f12;
+}
+
+.messageList {
+    flex: 1; /* 남은 공간 모두 차지 */
+    overflow-y: auto; /* 내부 스크롤 */
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Input Area Wrapper */
+.inputAreaWrapper {
+    flex: 0 0 auto;
+    background: white;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* Reply Banner */
+.replyBanner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 13px;
+}
+.replyInfo {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+.replyToName {
+    font-weight: bold;
+    color: #475569;
+    font-size: 12px;
+}
+.replyToContent {
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.replyCloseBtn {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+}
+.replyCloseBtn:hover {
+    color: #64748b;
+}
+
+.inputArea {
+    display: flex;
+    padding: 16px;
+    gap: 10px;
+    align-items: flex-end; /* 텍스트area 늘어날 때 버튼 하단 정렬 */
+}
+
+.input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    resize: none;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    max-height: 100px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input:focus {
+    border-color: #3b82f6;
+}
+
+.sendBtn {
+    padding: 10px 20px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    height: 42px; /* 높이 맞춤 */
+}
+
+.sendBtn:disabled {
+    background-color: #93c5fd;
+    cursor: not-allowed;
+}

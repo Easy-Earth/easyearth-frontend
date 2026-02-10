@@ -17,6 +17,7 @@ export default defineConfig({
         target: 'http://localhost:8080', // Spring Boot 서버 주소
         changeOrigin: true,
         secure: false,
+        ws: true,
         // 필요하다면 rewrite는 사용하지 않습니다. (Spring이 /spring을 가지고 있으므로)
       },
     },
