@@ -3,8 +3,8 @@ import { searchMember, inviteUser, kickMember, updateRole } from '../../apis/cha
 import Modal from '../common/Modal'; // Using common Modal housing
 import styles from './MemberManagementModal.module.css';
 
-const MemberManagementModal = ({ onClose, roomId, currentMembers, currentUserId, isOwner, showAlert }) => {
-    const [activeTab, setActiveTab] = useState('INVITE'); // 'INVITE' or 'MANAGE'
+const MemberManagementModal = ({ onClose, roomId, currentMembers, currentUserId, isOwner, showAlert, showConfirm }) => {
+    const [activeTab, setActiveTab] = useState('MANAGE'); // 'INVITE' or 'MANAGE' -> Default to MANAGE for quick access
     const [searchValue, setSearchValue] = useState('');
     const [searchResult, setSearchResult] = useState(null);
 
@@ -42,22 +42,33 @@ const MemberManagementModal = ({ onClose, roomId, currentMembers, currentUserId,
         }
     };
 
-    const handleKick = async (targetId, targetName) => {
-        if (!window.confirm(`${targetName}님을 강퇴하시겠습니까?`)) return; // Should try to use CustomConfirm passed down if possible, but window.confirm for now or simple
-        // Since we don't have a confirm callback easily here without prop drilling complexly, we'll assume CustomModal is used at parent level
-        
-        // For strict CustomModal usage, we would need to lift this state up or pass a showConfirm prop. 
-        // Assuming showAlert handles alerts, we might need to skip confirm or implement a local one.
-        // Let's implement immediate action for now or assume parent handles errors.
-        
-        try {
-            await kickMember(roomId, targetId, currentUserId);
-            showAlert(`${targetName}님을 강퇴했습니다.`);
-            // Need to refresh member list in parent
-        } catch (error) {
-            console.error(error);
-            showAlert("강퇴 실패.");
-        }
+    // ✨ Kick Member with Custom Confirm
+    const handleKick = (targetId, targetName) => {
+        showConfirm(`${targetName}님을 강퇴하시겠습니까?`, async () => {
+            try {
+                await kickMember(roomId, targetId, currentUserId);
+                showAlert(`${targetName}님을 강퇴했습니다.`);
+                // Parent component should ideally refresh member list via socket update or reloading
+                // For now, we rely on parent's re-render or socket
+            } catch (error) {
+                console.error(error);
+                showAlert("강퇴 실패.");
+            }
+        });
+    };
+
+    // ✨ Delegate Owner (Grant Authority) with Custom Confirm
+    const handleDelegate = (targetId, targetName) => {
+        showConfirm(`${targetName}님에게 방장 권한을 위임하시겠습니까?\n위임 후에는 일반 멤버로 변경됩니다.`, async () => {
+             try {
+                await updateRole(roomId, targetId, currentUserId, "OWNER");
+                showAlert(`${targetName}님에게 방장 권한을 위임했습니다.`);
+                onClose(); // Close modal as my permissions changed
+            } catch (error) {
+                console.error(error);
+                showAlert("권한 위임 실패.");
+            }
+        }, "권한 위임");
     };
 
     return (
@@ -123,15 +134,23 @@ const MemberManagementModal = ({ onClose, roomId, currentMembers, currentUserId,
                             <li key={member.memberId} className={styles.memberItem}>
                                 <div className={styles.memberInfo}>
                                     <span className={styles.memberName}>{member.name}</span>
-                                    {String(member.memberId) === String(currentUserId) ? null : (
-                                        isOwner && (
+                                    {isOwner && (
+                                        <div className={styles.actionBtns}>
+                                            {/* ✨ Delegate Button */}
+                                            <button 
+                                                className={styles.delegateBtn}
+                                                onClick={() => handleDelegate(member.memberId, member.name)}
+                                            >
+                                                위임
+                                            </button>
+                                            {/* Kick Button */}
                                             <button 
                                                 className={styles.kickBtn}
                                                 onClick={() => handleKick(member.memberId, member.name)}
                                             >
                                                 강퇴
                                             </button>
-                                        )
+                                        </div>
                                     )}
                                 </div>
                             </li>

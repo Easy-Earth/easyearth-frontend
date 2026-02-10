@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import DaumPostcode from "react-daum-postcode";
 import authApi from "../../apis/authApi";
 import styles from "./EditProfilePage.module.css";
+import { uploadFile, updateProfile } from '../../apis/chatApi'; // Static import
+import { getFullUrl } from '../../utils/imageUtil';
 
 const EditProfile = ({ user }) => {
   const [formData, setFormData] = useState({
@@ -80,11 +82,84 @@ const EditProfile = ({ user }) => {
     }
   };
 
+
+
+// ... (existing imports)
+
+// ... inside component ...
+
+  // 🚀 이미지 업로드 핸들러
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // 간단한 유효성 검사
+    if (!file.type.match("image.*")) {
+        setMessage({ type: "error", text: "이미지 파일만 업로드 가능합니다." });
+        return;
+    }
+
+    try {
+        setLoading(true);
+        
+        console.log("Uploading profile image...");
+        const fileUrl = await uploadFile(file);
+        console.log("Profile image uploaded:", fileUrl);
+        
+        // 2. Chat API를 사용하여 프로필 URL 업데이트 (채팅 프로필)
+        // user.memberId가 없을 경우를 대비해 예외 처리 또는 로깅
+        if (!user.memberId) {
+             console.error("Member ID is missing in user context:", user);
+             throw new Error("회원 정보를 찾을 수 없습니다.");
+        }
+
+        await updateProfile(user.memberId, fileUrl);
+        console.log("Profile updated via Chat API");
+        
+        // 3. AuthContext 상태 업데이트 (즉시 반영)
+        // updateProfile은 ChatService만 갱신하므로, AuthContext의 user state도 맞춰줘야 함
+        // ChatRoomList는 profileImageUrl을 사용하므로 둘 다 업데이트
+        updateUser({ profileImage: fileUrl, profileImageUrl: fileUrl });
+        
+        setMessage({ type: "success", text: "프로필 이미지가 변경되었습니다." }); 
+        
+    } catch (error) {
+        console.error("이미지 업로드/변경 실패:", error);
+        setMessage({ type: "error", text: "이미지 변경 중 오류가 발생했습니다." });
+    } finally {
+        setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.editFormContainer}>
       <form onSubmit={handleSubmit} className={styles.form}>
         <h3 className={styles.title}>회원 정보 수정</h3>
         
+        {/* ✨ 프로필 이미지 수정 */}
+        <div className={styles.profileUploadSection} style={{ textAlign: 'center', marginBottom: '20px' }}>
+            <label htmlFor="profile-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
+                <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#eee', margin: '0 auto 10px', overflow: 'hidden', position: 'relative', border: '2px solid #ddd' }}>
+                    <img 
+                        src={getFullUrl(user?.profileImage) || "/default-profile.png"} 
+                        alt="Profile" 
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onError={(e) => e.target.src = "/default-profile.png"} 
+                    />
+                    <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: '10px', padding: '2px' }}>
+                        변경
+                    </div>
+                </div>
+            </label>
+            <input 
+                id="profile-upload" 
+                type="file" 
+                accept="image/*" 
+                onChange={handleImageChange} 
+                style={{ display: 'none' }}
+            />
+        </div>
+
         {/* 아이디 (수정 불가) */}
         <div className={styles.inputGroup}>
           <label className={styles.label}>아이디</label>

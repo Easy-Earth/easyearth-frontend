@@ -12,10 +12,14 @@ const FileUploadButton = ({ onFileUploaded, disabled }) => {
 
         setUploading(true);
         try {
+            console.log("Starting file upload...");
             const fileUrl = await uploadFile(file);
+            console.log("File uploaded successfully:", fileUrl);
+            
             // Decide content type based on file extension
             const isImage = file.type.startsWith('image/');
             const contentType = isImage ? 'IMAGE' : 'FILE';
+            console.log("Determined content type:", contentType);
             
             if (onFileUploaded) {
                 onFileUploaded(fileUrl, contentType);

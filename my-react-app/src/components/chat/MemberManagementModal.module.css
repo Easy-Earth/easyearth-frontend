@@ -103,6 +103,21 @@
     margin-left: 8px;
 }
 
+.actionBtns {
+    display: flex;
+    gap: 8px;
+}
+
+.delegateBtn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
 .kickBtn {
     background: #ef4444;
     color: white;

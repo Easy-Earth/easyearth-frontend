@@ -83,7 +83,30 @@ export const ChatProvider = ({ children }) => {
               }
               loadChatRooms(); // 채팅 목록 내, 상대방 프로필 갱신 등을 위해 목록 다시 로드
               return;
+              loadChatRooms(); // 채팅 목록 내, 상대방 프로필 갱신 등을 위해 목록 다시 로드
+              return;
           }
+
+          // [Real-time] 강퇴 이벤트 처리
+           if (notification.type === 'KICK') {
+              console.log('🚫 강퇴 알림 수신:', notification);
+              loadChatRooms(); // 목록 갱신 (방이 목록에서 사라져야 함)
+              
+              // 현재 그 방에 있다면 나가기 처리 (Redirect)
+              const currentPath = window.location.pathname;
+              if (currentPath.includes(`/chat/${notification.chatRoomId}`)) {
+                  alert("강퇴당했습니다.");
+                  window.location.href = '/chat'; // Force redirect or use navigation if available (but Context isn't Router)
+              }
+              
+              // 알림 센터에도 추가
+              addNotification({
+                  id: Date.now() + Math.random(),
+                  ...notification,
+                  read: false
+              });
+              return;
+           }
 
           // [Fix] 현재 보고 있는 채팅방이면 알림(종)에 추가하지 않음
           const currentPath = window.location.pathname;

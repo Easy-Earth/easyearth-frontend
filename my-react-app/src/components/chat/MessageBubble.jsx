@@ -1,10 +1,16 @@
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import styles from './MessageBubble.module.css';
+import { getFullUrl } from '../../utils/imageUtil';
+import MessageContextMenu from './MessageContextMenu';
+import { toggleReaction, deleteMessage } from '../../apis/chatApi';
 
-const MessageBubble = ({ message }) => {
+const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) => {
     const { user } = useAuth();
-    
+    const [showMenu, setShowMenu] = useState(false);
+    const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const longPressTimer = useRef(null);
+
     // 메시지가 없거나 시스템 메시지인 경우 처리
     if (!message) return null;
     
@@ -12,6 +18,7 @@ const MessageBubble = ({ message }) => {
     const isSystem = message.messageType === 'ENTER' || 
                      message.messageType === 'LEAVE' || 
                      message.messageType === 'SYSTEM' ||
+                     message.messageType === 'NOTICE' || // Notice might be a type too
                      message.senderId === 1 || 
                      message.senderName === '시스템' || 
                      message.senderName === '관리자';
@@ -23,6 +30,65 @@ const MessageBubble = ({ message }) => {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    // 컨텍스트 메뉴 핸들러
+    const handleContextMenu = (e) => {
+        e.preventDefault();
+        setMenuPosition({ x: e.clientX, y: e.clientY });
+        setShowMenu(true);
+    };
+
+    const handleTouchStart = (e) => {
+        longPressTimer.current = setTimeout(() => {
+            const touch = e.touches[0];
+            setMenuPosition({ x: touch.clientX, y: touch.clientY });
+            setShowMenu(true);
+        }, 800); // 0.8초 롱프레스
+    };
+
+    const handleTouchEnd = () => {
+        if (longPressTimer.current) {
+            clearTimeout(longPressTimer.current);
+        }
+    };
+
+    // 메뉴 액션
+    const handleReaction = async (emoji) => {
+        try {
+            await toggleReaction(message.messageId, user.memberId, emoji);
+            if (onRefresh) onRefresh();
+        } catch (error) {
+            console.error("리액션 실패", error);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (window.confirm("메시지를 삭제하시겠습니까?")) {
+            try {
+                await deleteMessage(message.messageId, user.memberId);
+                if (onRefresh) onRefresh();
+            } catch (error) {
+                console.error("삭제 실패", error);
+            }
+        }
+    };
+
+    // 유틸: 파일명 추출
+    const getFileName = (url) => {
+        try {
+            const decoded = decodeURIComponent(url);
+            return decoded.split('/').pop().split('?')[0]; // simple extraction
+        } catch (e) {
+            return "파일 다운로드";
+        }
+    };
+
+    const menuOptions = [
+        { label: "답장", icon: "↩️", action: () => onReply(message) },
+        // notice / delete only
+        ...(isOwner ? [{ label: "공지 등록", icon: "📢", action: () => onSetNotice(message) }] : []),
+        ...(isMine ? [{ label: "삭제", icon: "🗑️", action: handleDelete }] : [])
+    ];
+
     if (isSystem) {
         return (
             <div className={styles.systemMessage}>
@@ -32,12 +98,17 @@ const MessageBubble = ({ message }) => {
     }
 
     return (
-        <div className={`${styles.wrapper} ${isMine ? styles.myMessage : ''}`}>
+        <div 
+            className={`${styles.wrapper} ${isMine ? styles.myMessage : ''}`}
+            onContextMenu={handleContextMenu}
+            onTouchStart={handleTouchStart}
+            onTouchEnd={handleTouchEnd}
+        >
             {/* 상대방일 경우에만 아바타 표시 */}
             {!isMine && (
                 <div className={styles.avatar}>
                     <img 
-                        src={message.senderProfile || "/default-profile.png"} 
+                        src={getFullUrl(message.senderProfileImage) || "/default-profile.png"} 
                         alt="Profile"
                         onError={(e) => {
                             if (e.target.dataset.failed) return;
@@ -51,21 +122,36 @@ const MessageBubble = ({ message }) => {
             <div className={styles.content}>
                 {!isMine && <div className={styles.name}>{message.senderName || "알 수 없음"}</div>}
                 
+                {/* 답장 인용 표시 */}
+                {message.parentMessageId && (
+                     <div className={styles.replyPreview}>
+                        <span className={styles.replyName}>{message.parentMessageSenderName}에게 답장:</span>
+                        <div className={styles.replyContent}>{message.parentMessageContent}</div>
+                     </div>
+                )}
+
                 <div className={styles.bubbleRow}>
-                    <div className={styles.bubble}>
-                        {/* 텍스트 메시지 */}
-                        {(message.contentType === 'TEXT' || message.messageType === 'TEXT') && message.content}
-                        
-                        {/* 이미지 메시지 */}
-                        {message.contentType === 'IMAGE' && (
-                            <img src={message.content} alt="Image" className={styles.imageContent} />
-                        )}
-                        
-                        {/* 파일 메시지 (추가 확장 가능) */}
-                        {message.contentType === 'FILE' && (
-                            <a href={message.content} target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
-                                📎 파일 다운로드
-                            </a>
+                    <div className={`${styles.bubble} ${message.messageType === 'DELETED' ? styles.deletedBubble : ''}`}>
+                        {/* 삭제된 메시지 */}
+                        {message.messageType === 'DELETED' ? (
+                            <span className={styles.deletedText}>삭제된 메시지입니다.</span>
+                        ) : (
+                            <>
+                                {/* 텍스트 메시지 */}
+                                {(message.contentType === 'TEXT' || message.messageType === 'TEXT') && message.content}
+                                
+                                {/* 이미지 메시지 */}
+                                {(message.contentType === 'IMAGE' || message.messageType === 'IMAGE') && (
+                                    <img src={getFullUrl(message.content)} alt="Image" className={styles.imageContent} />
+                                )}
+                                
+                                {/* 파일 메시지 */}
+                                {(message.contentType === 'FILE' || message.messageType === 'FILE') && (
+                                    <a href={getFullUrl(message.content)} download target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
+                                        📎 {getFileName(message.content)}
+                                    </a>
+                                )}
+                            </>
                         )}
                     </div>
                     
@@ -77,7 +163,32 @@ const MessageBubble = ({ message }) => {
                         <span className={styles.time}>{formatTime(message.createdAt)}</span>
                     </div>
                 </div>
+
+                {/* 리액션 표시 */}
+                {message.reactions && message.reactions.length > 0 && (
+                    <div className={styles.reactions}>
+                        {message.reactions.map((r, i) => (
+                            <button 
+                                key={i} 
+                                className={`${styles.reaction} ${r.selectedByMe ? styles.myReaction : ''}`}
+                                onClick={() => handleReaction(r.emojiType)} // ✨ Add click handler
+                            >
+                                {r.emojiType} {r.count}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
+
+            {showMenu && (
+                <MessageContextMenu 
+                    x={menuPosition.x} 
+                    y={menuPosition.y} 
+                    options={menuOptions} 
+                    onClose={() => setShowMenu(false)} 
+                    onReaction={handleReaction} // ✨ Pass handler
+                />
+            )}
         </div>
     );
 };

@@ -1,10 +1,8 @@
 .wrapper {
     display: flex;
-    margin-bottom: 6px; /* Reduced vertical spacing */
-    align-items: flex-start;
-    padding: 0 16px;
-    width: 100%;
-    box-sizing: border-box;
+    margin-bottom: 20px;
+    align-items: flex-end; /* 시간, 읽음 확인을 아래쪽에 */
+    user-select: none; /* 롱프레스 시 텍스트 선택 방지 */
 }
 
 .myMessage {
@@ -12,13 +10,13 @@
 }
 
 .avatar {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
+    margin-right: 10px;
+    background-color: #ddd;
     overflow: hidden;
-    margin-right: 8px;
-    background: #e5e7eb;
-    margin-top: 2px; /* Slight adjustment */
+    flex-shrink: 0;
 }
 
 .avatar img {
@@ -28,26 +26,21 @@
 }
 
 .content {
-    max-width: 70%;
     display: flex;
     flex-direction: column;
-}
-
-.myMessage .content {
-    align-items: flex-end;
+    max-width: 70%;
 }
 
 .name {
-    font-size: 12px;
-    color: #4b5563;
-    margin-bottom: 2px;
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #555;
     margin-left: 2px;
 }
 
 .bubbleRow {
     display: flex;
     align-items: flex-end;
-    gap: 4px;
 }
 
 .myMessage .bubbleRow {
@@ -55,74 +48,144 @@
 }
 
 .bubble {
-    padding: 8px 12px;
+    background-color: #fff;
+    padding: 10px 14px;
     border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
     font-size: 14px;
     line-height: 1.5;
-    word-break: break-word; /* Prevent overflow */
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow */
-}
-
-/* Colors */
-.wrapper:not(.myMessage) .bubble {
-    background-color: #ffffff;
+    word-break: break-all;
+    position: relative;
     border: 1px solid #e5e7eb;
-    color: #1f2937;
-    border-top-left-radius: 2px;
 }
 
 .myMessage .bubble {
-    background-color: #3b82f6; /* Blue for my messages */
-    color: white;
+    background-color: #dbeafe; /* Light Blue */
+    border-color: #bfdbfe;
+    color: #1e3a8a;
     border-top-right-radius: 2px;
 }
 
+.wrapper:not(.myMessage) .bubble {
+    border-top-left-radius: 2px;
+}
+
 .info {
+    font-size: 11px;
+    color: #999;
+    margin-left: 6px;
+    margin-right: 6px;
     display: flex;
     flex-direction: column;
+    min-width: 45px;
     justify-content: flex-end;
-    min-width: 40px; /* Ensure space for time */
 }
 
 .myMessage .info {
     align-items: flex-end;
 }
 
-.time {
-    font-size: 10px;
-    color: #9ca3af;
-    margin-bottom: 2px;
-}
-
 .unread {
-    color: #fbbf24; /* Yellow/Orange for unread count */
-    font-size: 10px;
+    color: #f59e0b; /* Yellow/Orange */
     font-weight: bold;
     margin-bottom: 2px;
+    font-size: 10px;
 }
 
 .systemMessage {
-    display: flex;
-    justify-content: center;
-    margin: 16px 0;
+    text-align: center;
+    margin: 20px 0;
 }
 
 .systemText {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: #6b7280;
-    font-size: 12px;
+    background-color: rgba(0,0,0,0.05);
     padding: 4px 12px;
-    border-radius: 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #666;
 }
 
 .imageContent {
-    max-width: 200px;
+    max-width: 100%;
     border-radius: 8px;
-    border: 1px solid rgba(0,0,0,0.1);
+    display: block;
 }
 
 .fileLink {
-    color: inherit;
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 500;
+}
+.fileLink:hover {
     text-decoration: underline;
+}
+
+/* Reply Preview Style in Bubble */
+.replyPreview {
+    background: rgba(0,0,0,0.04);
+    border-left: 3px solid #cbd5e1;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+}
+.replyName {
+    font-weight: bold;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.replyContent {
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Reactions Display */
+.reactions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+.reaction {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    cursor: pointer; /* ✨ Clickable */
+    font-family: inherit; /* Reset button font */
+    transition: background-color 0.2s;
+}
+.reaction:hover {
+    background-color: #f9fafb;
+}
+
+.myReaction {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+.myReaction:hover {
+    background: #dbeafe;
+}
+
+/* ✨ Deleted Message Style */
+.deletedBubble {
+    background-color: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+    color: #9ca3af !important;
+    box-shadow: none;
+}
+
+.deletedText {
+    font-style: italic;
     font-size: 13px;
+    color: #9ca3af;
 }

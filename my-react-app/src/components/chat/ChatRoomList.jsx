@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { createChatRoom, toggleFavorite, acceptInvitation, rejectInvitation, uploadFile, updateProfile } from '../../apis/chatApi';
+import { getFullUrl } from '../../utils/imageUtil'; // Import utility
 import ChatRoomTypeModal from './ChatRoomTypeModal';
 import CustomModal from '../common/CustomModal'; // Use Common CustomModal
 import styles from './ChatRoomList.module.css';
@@ -210,7 +211,7 @@ const ChatRoomList = () => {
                 {/* 내 프로필 영역 (클릭하여 이미지 변경) */}
                 <div className={styles.myProfile} onClick={handleProfileClick} title="내 프로필 이미지 변경">
                      <img 
-                        src={user?.profileImageUrl || "/default-profile.png"} 
+                        src={getFullUrl(user?.profileImageUrl) || "/default-profile.png"} 
                         alt="My Profile" 
                         className={styles.myProfileImg}
                         onError={(e) => {
@@ -249,7 +250,7 @@ const ChatRoomList = () => {
                             >
                                 <div className={styles.avatar}>
                                     <img 
-                                        src={room.otherMemberProfile || "/default-profile.png"} 
+                                        src={getFullUrl(room.otherMemberProfile) || "/default-profile.png"} 
                                         alt="Profile"
                                         onError={(e) => {
                                             if (e.target.dataset.failed) return;
@@ -299,7 +300,7 @@ const ChatRoomList = () => {
                         <div className={styles.avatar}>
                             {/* 1:1 채팅은 상대방 프로필, 그룹 채팅은 기본 이미지 */}
                             <img 
-                                src={room.otherMemberProfile || "/default-profile.png"} 
+                                src={getFullUrl(room.otherMemberProfile) || "/default-profile.png"} 
                                 alt="Profile"
                                 onError={(e) => {
                                     if (e.target.dataset.failed) return;
