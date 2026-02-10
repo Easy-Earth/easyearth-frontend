@@ -4,15 +4,19 @@ import Button from "../common/Button";
 import CustomModal from "../common/CustomModal";
 import Profile from "../common/Profile";
 import UserDetailModal from "../common/UserDatailModal";
+import ReportModal from "./ReportModal";
 import ReviewFormModal from "./ReviewFormModal";
 import styles from "./ReviewList.module.css";
 
-function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews }) {
+function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopName, refreshReviews }) {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedEsrId, setSelectedEsrId] = useState(null);
-
-  // --- 유저 상세 모달 관련 상태 ---
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [selectedReportReviewId, setSelectedReportReviewId] = useState(null); 
+  const [reportTargetId, setReportTargetId] = useState(null);
+  const [reportTargetInfo, setReportTargetInfo] = useState({ id: null, name: "" });
+ 
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
 
@@ -55,6 +59,58 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
     setRating(5);
     setIsReviewModalOpen(true);
   };
+  const onReport = async (currentMemberId, currentMemberName, targetMemberId, targetName, esrId) => {
+      try {
+      const data = {
+        reviewId : esrId,
+        postId : 0,
+        replyId : 0
+      };
+      await reviewApi.reviewCheck(currentMemberId,targetMemberId, data);
+      setSelectedReportReviewId(esrId);
+      setReportTargetInfo({ id: targetMemberId, name: targetName });
+      setIsReportModalOpen(true);
+    } catch (error) {
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: "신고 내역이 존재합니다.",
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      setIsReportModalOpen(false);
+    }
+    
+  };
+  const handleReportSubmit = async (reportData) => {
+    try {
+      const data = {
+        memberId : reportData.reporterId,
+        targetMemberId : reportData.targetId,
+        postId: 0,
+        replyId: 0,
+        reviewId : selectedReportReviewId,
+        type: "REVIEW",
+        reason : reportData.reportTag,
+        detail : reportData.details
+      };
+      
+      await reviewApi.reviewReport(data);
+      
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: '신고가 정상적으로 접수되었습니다.',
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
+      
+    } catch (error) {
+      console.error("신고 실패:", error);
+      alert(error.response?.data || "신고 처리 중 오류가 발생했습니다.");
+    }
+    
+    setIsReportModalOpen(false);
+};
+  
 
   const handleReviewSubmit = async () => {
     if (!content.trim()) {
@@ -155,7 +211,6 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
             <div key={rev.esrId} className={styles.reviewCard}>
               <div className={styles.header}>
                 <div className={styles.profileArea}>
-                  {/* ✅ Profile 컴포넌트에 onClick 전달 */}
                   <Profile 
                     size="small" 
                     memberId={rev.memberId} 
@@ -174,6 +229,9 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
                         <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId)}>삭제</button>
                       </div>
                     )}
+                    {currentMemberId && Number(rev.memberId)!=Number(currentMemberId) && (
+                      <div onClick={() => onReport(currentMemberId, currentMemberName, rev.memberId, rev.name, rev.esrId)} style={{ cursor: 'pointer' }}>🚨</div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -190,9 +248,6 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
         )}
       </div>
 
-      {/* --- 각종 모달 섹션 --- */}
-      
-      {/* 1. 리뷰 작성/수정 모달 */}
       <ReviewFormModal 
         isOpen={isReviewModalOpen}
         onClose={() => setIsReviewModalOpen(false)}
@@ -206,7 +261,6 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
         isEditMode={isEditMode}
       />
 
-      {/* 2. 공통 알림/확인 모달 */}
       <CustomModal
         isOpen={modalConfig.isOpen}
         type={modalConfig.type}
@@ -215,11 +269,21 @@ function ReviewList({ reviews, currentMemberId, shopId, shopName, refreshReviews
         onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
       />
 
-      {/* 3. 유저 상세 정보 모달 ✅ 추가됨 */}
       <UserDetailModal 
         isOpen={isUserModalOpen}
         onClose={() => setIsUserModalOpen(false)}
         memberId={selectedMemberId}
+      />
+
+      <ReportModal 
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        reporterId={currentMemberId}
+        reporterName={currentMemberName} 
+        targetName={reportTargetInfo.name}
+        targetId={reportTargetInfo.id} 
+        onSubmit={handleReportSubmit}
+        esrId = {selectedReportReviewId}
       />
     </div>
   );

@@ -25,7 +25,9 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
 
   const loginUser = JSON.parse(localStorage.getItem("user"));
   const currentMemberId = loginUser ? loginUser.memberId : null;
+  const currentMemberName = loginUser ? loginUser.name : null;
 
+  console.log(currentMemberName);
   const fetchDetailAndReviews = async () => {
     if (!item?.COT_CONTS_ID) return;
     try {
@@ -137,6 +139,7 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
             <ReviewList 
               reviews={reviews} 
               currentMemberId={currentMemberId}
+              currentMemberName={currentMemberName}
               shopId={displayItem.shopId || item.shopId}
               shopName={displayItem.COT_CONTS_NAME}
               refreshReviews={fetchDetailAndReviews}
