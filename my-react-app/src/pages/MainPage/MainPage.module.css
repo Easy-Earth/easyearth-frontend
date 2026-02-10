@@ -42,7 +42,8 @@
 .tab:hover {
     background: var(--green-600);
     color: white;
-    transform: translateX(10px);
+    padding-right: 34px;
+    /* Expand to the right */
     box-shadow: 6px 6px 20px rgba(22, 163, 74, 0.2);
 }
 
