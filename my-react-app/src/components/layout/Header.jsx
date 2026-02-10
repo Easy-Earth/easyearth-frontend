@@ -13,6 +13,7 @@ const Header = ({ openLoginModal }) => {
     { id: 3, title: "커뮤니티", link: "/community" },
     { id: 4, title: "건의사항", link: "/suggestions" },
     { id: 5, title: "포인트샵", link: "/shop" },
+    { id: 6, title: "채팅", link: "/chat" },
   ];
 
   return (

@@ -66,7 +66,7 @@ const ChatRoomList = () => {
             // 1. 파일 업로드
             const fileUrl = await uploadFile(file);
             // 2. 프로필 업데이트
-            await updateProfile(user.id, fileUrl);
+            await updateProfile(user.memberId, fileUrl);
             
             showAlert("프로필 이미지가 변경되었습니다.", "알림", () => {
                 if (updateUser) {
@@ -88,7 +88,7 @@ const ChatRoomList = () => {
     const handleToggleFavorite = async (chatRoomId, e) => {
         e.stopPropagation(); // 채팅방 열리는 것 방지
         try {
-            await toggleFavorite(chatRoomId, user.id);
+            await toggleFavorite(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
         } catch (error) {
             console.error("즐겨찾기 토글 실패", error);
@@ -99,7 +99,7 @@ const ChatRoomList = () => {
     const handleAcceptInvitation = async (chatRoomId, e) => {
         e.stopPropagation();
         try {
-            await acceptInvitation(chatRoomId, user.id);
+            await acceptInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
         } catch (error) {
             console.error("초대 수락 실패", error);
@@ -111,7 +111,7 @@ const ChatRoomList = () => {
     const handleRejectInvitation = async (chatRoomId, e) => {
         e.stopPropagation();
         try {
-            await rejectInvitation(chatRoomId, user.id);
+            await rejectInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
         } catch (error) {
             console.error("초대 거절 실패", error);
@@ -126,7 +126,7 @@ const ChatRoomList = () => {
                 const newRoom = await createChatRoom({
                     title: value,
                     roomType: "GROUP",
-                    creatorId: user.id,
+                    creatorId: user.memberId,
                     invitedMemberIds: invitedMemberIds // 초대 멤버 리스트 전달
                 });
                 loadChatRooms();
@@ -150,7 +150,7 @@ const ChatRoomList = () => {
                 const newRoom = await createChatRoom({
                     title: "",
                     roomType: "SINGLE",
-                    creatorId: user.id,
+                    creatorId: user.memberId,
                     targetMemberId: targetMember.memberId
                 });
                 

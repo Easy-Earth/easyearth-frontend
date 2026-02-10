@@ -21,7 +21,7 @@ const ChatJoinPage = () => {
 
         const join = async () => {
             try {
-                await joinChatRoom(roomId, user.id);
+                await joinChatRoom(roomId, user.memberId);
                 // Success - redirect to chat room
                 navigate(`/chat/${roomId}`);
             } catch (error) {

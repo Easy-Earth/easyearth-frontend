@@ -55,6 +55,17 @@ export const getChatRoomDetail = async (roomId) => {
   }
 };
 
+// 3.1 채팅방 멤버 조회
+export const getChatRoomUsers = async (roomId) => {
+    try {
+      const response = await api.get(`/chat/room/${roomId}/members`); // Backend endpoint needs verification
+      return response.data;
+    } catch (error) {
+      console.error("채팅방 멤버 조회 실패", error);
+      throw error;
+    }
+  };
+
 // 4. 채팅방 참여
 export const joinChatRoom = async (roomId, memberId) => {
   try {

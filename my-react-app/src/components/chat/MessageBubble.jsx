@@ -8,8 +8,13 @@ const MessageBubble = ({ message }) => {
     // 메시지가 없거나 시스템 메시지인 경우 처리
     if (!message) return null;
     
-    const isMine = message.senderId === user?.id;
-    const isSystem = message.type === 'SYSTEM';
+    const isMine = message.senderId === user?.memberId;
+    const isSystem = message.messageType === 'ENTER' || 
+                     message.messageType === 'LEAVE' || 
+                     message.messageType === 'SYSTEM' ||
+                     message.senderId === 1 || 
+                     message.senderName === '시스템' || 
+                     message.senderName === '관리자';
 
     // 시간 포맷팅
     const formatTime = (isoString) => {
@@ -21,7 +26,7 @@ const MessageBubble = ({ message }) => {
     if (isSystem) {
         return (
             <div className={styles.systemMessage}>
-                <span>{message.content}</span>
+                <span className={styles.systemText}>{message.content}</span>
             </div>
         );
     }
@@ -49,7 +54,7 @@ const MessageBubble = ({ message }) => {
                 <div className={styles.bubbleRow}>
                     <div className={styles.bubble}>
                         {/* 텍스트 메시지 */}
-                        {message.contentType === 'TEXT' && message.content}
+                        {(message.contentType === 'TEXT' || message.messageType === 'TEXT') && message.content}
                         
                         {/* 이미지 메시지 */}
                         {message.contentType === 'IMAGE' && (

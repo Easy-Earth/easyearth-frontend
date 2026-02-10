@@ -107,7 +107,7 @@
     margin: 16px 0;
 }
 
-.systemMessage span {
+.systemText {
     background-color: rgba(0, 0, 0, 0.05);
     color: #6b7280;
     font-size: 12px;

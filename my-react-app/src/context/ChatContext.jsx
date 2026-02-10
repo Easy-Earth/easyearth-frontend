@@ -25,9 +25,9 @@ export const ChatProvider = ({ children }) => {
 
   // 1. 채팅방 목록 로딩 함수
   const loadChatRooms = useCallback(async () => {
-    if (!user?.id) return;
+    if (!user?.memberId) return;
     try {
-      const rooms = await getChatRooms(user.id);
+      const rooms = await getChatRooms(user.memberId);
       setChatRooms(rooms);
       
       // 전체 안 읽은 메시지 수 계산
@@ -36,20 +36,28 @@ export const ChatProvider = ({ children }) => {
     } catch (error) {
       console.error("채팅방 목록 로드 실패", error);
     }
-  }, [user?.id]);
+  }, [user?.memberId]);
 
   // 2. WebSocket 연결 (앱 실행 시 1번만)
   useEffect(() => {
-    if (!user?.id) return; // user.id가 없으면 연결 시도 안 함
+    console.log('ChatContext: useEffect triggered. User:', user);
+    if (!user?.memberId) {
+        console.log('ChatContext: No user memberId, skipping connection.');
+        return; 
+    }
 
     loadChatRooms();
 
-    //WebSocket 연결
-    const socket = new SockJS('/spring/ws-chat');
-    
     //STOMP 클라이언트 생성
+    const token = localStorage.getItem('accessToken');
     const stompClient = new Client({
-      webSocketFactory: () => socket,
+      webSocketFactory: () => new SockJS('http://localhost:8080/spring/ws-chat'),
+      connectHeaders: {
+        Authorization: token ? `Bearer ${token}` : '',
+      },
+      debug: (str) => {
+        console.log('STOMP: ' + str);
+      },
       reconnectDelay: 5000,
       //연결 성공 시
       onConnect: () => {
@@ -57,7 +65,7 @@ export const ChatProvider = ({ children }) => {
         setConnected(true);
 
         // 내 전용 알림 채널 구독 (새 메시지, 초대 등)
-        stompClient.subscribe(`/topic/user/${user.id}`, (message) => {
+        stompClient.subscribe(`/topic/user/${user.memberId}`, (message) => {
           const notification = JSON.parse(message.body);
           console.log('Global Notification:', notification);
           
@@ -113,7 +121,7 @@ export const ChatProvider = ({ children }) => {
         stompClientRef.current.deactivate();
       }
     };
-  }, [user?.id, loadChatRooms]);
+  }, [user?.memberId, loadChatRooms]);
 
   return (
     <ChatContext.Provider value={{ 

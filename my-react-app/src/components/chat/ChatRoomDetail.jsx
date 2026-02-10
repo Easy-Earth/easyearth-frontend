@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
-import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember } from '../../apis/chatApi';
+import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember, getChatRoomUsers } from '../../apis/chatApi';
 import MessageBubble from './MessageBubble';
 import FileUploadButton from './FileUploadButton';
 import MemberManagementModal from './MemberManagementModal';
@@ -22,6 +22,7 @@ const ChatRoomDetail = ({ roomId }) => {
     const observerTarget = useRef(null); // For infinite scroll detection
     
     const [showMemberModal, setShowMemberModal] = useState(false);
+    const [roomMembers, setRoomMembers] = useState([]);
     const [roomInfo, setRoomInfo] = useState({ title: '', type: 'SINGLE', members: [], creatorId: null });
 
     // ✨ Modal state
@@ -74,31 +75,39 @@ const ChatRoomDetail = ({ roomId }) => {
         fetchMessages(0);
 
         // Subscribe to room topic
-        const subscription = client.subscribe(`/topic/room/${roomId}`, (message) => {
+        const roomSubscription = client.subscribe(`/topic/chat/room/${roomId}`, (message) => {
             const receivedMsg = JSON.parse(message.body);
             setMessages(prev => [...prev, receivedMsg]);
             
             // If it's a message I didn't send, mark as read immediately if window focused
-            if (receivedMsg.senderId !== user.id) {
-                markAsRead(roomId, user.id, receivedMsg.id);
+            if (receivedMsg.senderId !== user.memberId) {
+                markAsRead(roomId, user.memberId, receivedMsg.id);
             }
         });
 
-        // 2. 채팅방 상세 정보 로드 (멤버 리스트 등을 위해 - ChatList에서 일부 가져올 수도 있지만 API로 확실하게)
-        // getChatRoomDetail API가 있다면 좋지만, 여기선 채팅방 목록에서 찾는 방식으로 대체하거나 별도 호출
-        // 일단 userCount, title 등은 ws 메시지나 ChatList context에서 가져와야 함.
-        // 편의상 ChatList의 rooms에서 현재 room 정보 찾기
-        // (실제로는 getChatRoomDetail API를 호출하는 것이 정석)
+        // Subscribe to read updates
+        const readSubscription = client.subscribe(`/topic/chat/room/${roomId}/read`, (message) => {
+            const readEvent = JSON.parse(message.body);
+            if (readEvent.type === 'READ_UPDATE') {
+                setMessages(prev => prev.map(msg => {
+                    if (readEvent.unreadCountMap && readEvent.unreadCountMap[msg.id] !== undefined) {
+                        return { ...msg, unreadCount: readEvent.unreadCountMap[msg.id] };
+                    }
+                    return msg;
+                }));
+            }
+        });
 
         return () => {
-            subscription.unsubscribe();
+            roomSubscription.unsubscribe();
+            readSubscription.unsubscribe();
         };
     }, [roomId, client, connected]);
 
     // 2. 메시지 가져오기
     const fetchMessages = async (cursorId) => {
         try {
-            const data = await getMessages(roomId, cursorId, user.id); // API adjusted for simplicity
+            const data = await getMessages(roomId, cursorId, user.memberId); // API adjusted for simplicity
             // Assuming API returns { content: [], lastId: ... } or just list
             // If just list:
             if (Array.isArray(data)) {
@@ -120,14 +129,20 @@ const ChatRoomDetail = ({ roomId }) => {
         
         const message = {
             chatRoomId: roomId,
-            senderId: user.id,
+            senderId: user.memberId,
             content: input,
-            contentType: 'TEXT'
+            contentType: 'TEXT' // DTO field name might be messageType? Let's check DTO. DTO has messageType, not contentType.
         };
 
+        // WARNING: frontend sends 'contentType' but backend DTO has 'messageType'.
+        // Let's fix this property name too if the backend DTO uses 'messageType'.
+        // Checking ChatController: public void sendMessage(ChatMessageDto messageDto)
+        // ChatMessageDto has private String messageType;
+        // So we must send 'messageType'.
+
         client.publish({
-            destination: '/app/chat/send',
-            body: JSON.stringify(message)
+            destination: '/app/chat/message',
+            body: JSON.stringify({ ...message, messageType: 'TEXT' }) // Send both to be safe or just correct one
         });
 
         setInput('');
@@ -136,21 +151,21 @@ const ChatRoomDetail = ({ roomId }) => {
     const handleFileUpload = (fileUrl, type) => {
         const message = {
             chatRoomId: roomId,
-            senderId: user.id,
+            senderId: user.memberId,
             content: fileUrl,
             contentType: type // 'IMAGE' or 'FILE'
         };
         
         client.publish({
-            destination: '/app/chat/send',
-            body: JSON.stringify(message)
+            destination: '/app/chat/message',
+            body: JSON.stringify({ ...message, messageType: type })
         });
     };
 
     const handleLeave = () => {
         showConfirm("채팅방을 나가시겠습니까?", async () => {
             try {
-                await leaveChatRoom(roomId, user.id);
+                await leaveChatRoom(roomId, user.memberId);
                 loadChatRooms(); // ChatContext refresh
                 navigate('/chat');
             } catch (error) {
@@ -166,6 +181,15 @@ const ChatRoomDetail = ({ roomId }) => {
             handleSend();
         }
     };
+
+    // 멤버 모달 열릴 때 멤버 리스트 갱신
+    useEffect(() => {
+        if (showMemberModal && roomId) {
+            getChatRoomUsers(roomId)
+                .then(data => setRoomMembers(data))
+                .catch(err => console.error("멤버 조회 실패", err));
+        }
+    }, [showMemberModal, roomId]);
 
     return (
         <div className={styles.container}>
@@ -207,8 +231,8 @@ const ChatRoomDetail = ({ roomId }) => {
                 <MemberManagementModal 
                     onClose={() => setShowMemberModal(false)}
                     roomId={roomId}
-                    currentMembers={[]} // API call or Context required to populate this properly
-                    currentUserId={user.id}
+                    currentMembers={roomMembers}
+                    currentUserId={user.memberId}
                     isOwner={false} // Logic needed to check ownership
                     showAlert={showAlert}
                 />
