@@ -53,7 +53,7 @@ function ReviewFormModal({
               disabled={!content.trim()}
               type="button"
             >
-              {isEditMode ? "리뷰 수정하기" : "리뷰 등록하기"} {/* ✅ 텍스트 가변 */}
+              {isEditMode ? "리뷰 수정하기" : "리뷰 등록하기"}
             </button>
           </div>
         </div>

@@ -159,7 +159,13 @@ const ShopPage = () => {
 
   const handleRandomPull = () => {
     if (!memberId) {
-      setModalConfig({ isOpen: true, type: 'alert', message: '로그인이 필요합니다.' });
+      setModalConfig({ 
+        isOpen: true, 
+        type: 'alert', 
+        message: '로그인이 필요합니다.',
+        // 확인 버튼을 눌렀을 때 모달을 닫도록 추가
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false })) 
+      });
       return;
     }
     setModalConfig({

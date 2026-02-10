@@ -1,0 +1,92 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 5000;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: white;
+  width: 90%;
+  max-width: 400px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.header {
+  padding: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h3 { margin: 0; font-size: 18px; color: #1e293b; }
+
+.closeBtn {
+  background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer;
+}
+
+.form { padding: 20px; }
+
+.infoGroup {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.infoItem { display: flex; justify-content: space-between; font-size: 14px; }
+.label { font-weight: 700; color: #64748b; font-size: 13px; margin-bottom: 8px; display: block; }
+.value { color: #1e293b; font-weight: 600; }
+
+.inputGroup { margin-bottom: 20px; }
+
+.select, .textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.select:focus, .textarea:focus {
+  outline: none;
+  border-color: #ef4444; /* 신고 모달은 강조색으로 레드 계열 사용 */
+}
+
+.textarea { height: 100px; resize: none; }
+
+.buttonGroup {
+  display: flex;
+  gap: 10px;
+}
+
+.buttonGroup button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+}
+
+.cancelBtn { background: #f1f5f9; color: #64748b; }
+.submitBtn { background: #ef4444; color: white; }
+.submitBtn:hover { background: #dc2626; }
