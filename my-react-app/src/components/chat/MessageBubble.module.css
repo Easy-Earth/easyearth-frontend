@@ -1,0 +1,191 @@
+.wrapper {
+    display: flex;
+    margin-bottom: 20px;
+    align-items: flex-end; /* 시간, 읽음 확인을 아래쪽에 */
+    user-select: none; /* 롱프레스 시 텍스트 선택 방지 */
+}
+
+.myMessage {
+    flex-direction: row-reverse;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    background-color: #ddd;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    max-width: 70%;
+}
+
+.name {
+    font-size: 13px;
+    margin-bottom: 4px;
+    color: #555;
+    margin-left: 2px;
+}
+
+.bubbleRow {
+    display: flex;
+    align-items: flex-end;
+}
+
+.myMessage .bubbleRow {
+    flex-direction: row-reverse;
+}
+
+.bubble {
+    background-color: #fff;
+    padding: 10px 14px;
+    border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-all;
+    position: relative;
+    border: 1px solid #e5e7eb;
+}
+
+.myMessage .bubble {
+    background-color: #dbeafe; /* Light Blue */
+    border-color: #bfdbfe;
+    color: #1e3a8a;
+    border-top-right-radius: 2px;
+}
+
+.wrapper:not(.myMessage) .bubble {
+    border-top-left-radius: 2px;
+}
+
+.info {
+    font-size: 11px;
+    color: #999;
+    margin-left: 6px;
+    margin-right: 6px;
+    display: flex;
+    flex-direction: column;
+    min-width: 45px;
+    justify-content: flex-end;
+}
+
+.myMessage .info {
+    align-items: flex-end;
+}
+
+.unread {
+    color: #f59e0b; /* Yellow/Orange */
+    font-weight: bold;
+    margin-bottom: 2px;
+    font-size: 10px;
+}
+
+.systemMessage {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.systemText {
+    background-color: rgba(0,0,0,0.05);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #666;
+}
+
+.imageContent {
+    max-width: 100%;
+    border-radius: 8px;
+    display: block;
+}
+
+.fileLink {
+    text-decoration: none;
+    color: #2563eb;
+    font-weight: 500;
+}
+.fileLink:hover {
+    text-decoration: underline;
+}
+
+/* Reply Preview Style in Bubble */
+.replyPreview {
+    background: rgba(0,0,0,0.04);
+    border-left: 3px solid #cbd5e1;
+    padding: 4px 8px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+}
+.replyName {
+    font-weight: bold;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.replyContent {
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Reactions Display */
+.reactions {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+}
+.reaction {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    cursor: pointer; /* ✨ Clickable */
+    font-family: inherit; /* Reset button font */
+    transition: background-color 0.2s;
+}
+.reaction:hover {
+    background-color: #f9fafb;
+}
+
+.myReaction {
+    background: #eff6ff;
+    border-color: #3b82f6;
+    color: #1e40af;
+}
+.myReaction:hover {
+    background: #dbeafe;
+}
+
+/* ✨ Deleted Message Style */
+.deletedBubble {
+    background-color: #f3f4f6 !important;
+    border-color: #e5e7eb !important;
+    color: #9ca3af !important;
+    box-shadow: none;
+}
+
+.deletedText {
+    font-style: italic;
+    font-size: 13px;
+    color: #9ca3af;
+}

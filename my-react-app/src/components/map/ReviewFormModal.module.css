@@ -1,0 +1,101 @@
+/* ✅ 배경 블러: 뒤쪽 지도가 아주 부드럽게 뭉개져야 합니다 */
+.reviewModalOverlay {
+  position: fixed !important;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.4) !important;
+  backdrop-filter: blur(10px) !important; /* 이미지의 그 느낌 */
+  display: flex; align-items: center; justify-content: center;
+  z-index: 99999 !important;
+}
+
+/* ✅ 모달 컨테이너: 30px 이상의 아주 둥근 모서리 */
+.reviewModalContent {
+  position: relative;
+  background: white !important;
+  width: 420px;
+  padding: 45px 35px;
+  border-radius: 32px !important;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15) !important;
+  display: flex; flex-direction: column;
+  border: none !important;
+  outline: none !important;
+}
+
+.closeCircleBtn {
+  position: absolute; top: 25px; right: 25px;
+  width: 35px; height: 35px;
+  border-radius: 50%; border: none !important;
+  background: #f1f5f9 !important; color: #64748b;
+  cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;
+}
+
+.newWriteTitle {
+  font-size: 22px; font-weight: 800; text-align: center;
+  margin: 0 0 25px 0; color: #1e293b;
+}
+
+/* ✅ 매장 정보 카드: 연한 그레이 박스 */
+.newShopCard {
+  background: #f8fafc !important;
+  padding: 20px; border-radius: 20px;
+  text-align: center; margin-bottom: 25px;
+  border: 1px solid #f1f5f9;
+}
+.newShopLabel { font-size: 13px; color: #94a3b8; font-weight: 600; display: block; margin-bottom: 4px; }
+.newShopName { font-size: 19px; font-weight: 800; color: #0f172a; margin: 0; }
+
+/* ✅ 별점: 사각형 상자 절대 안 생기게 설정 */
+.newStarSection { text-align: center; margin-bottom: 25px; }
+.newStarQuestion { font-size: 15px; color: #475569; margin-bottom: 15px; }
+.newStarsContainer { display: flex; justify-content: center; gap: 6px; margin-bottom: 8px; }
+
+.starIcon {
+  font-size: 45px !important; /* 이미지처럼 크게 */
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  line-height: 1;
+  display: inline-block;
+}
+.starOn { color: #FFC107 !important; } /* 쨍한 노란색 */
+.starOff { color: #E2E8F0 !important; }
+.starIcon:hover { transform: scale(1.15); }
+
+.ratingBadgeText { font-size: 15px; font-weight: 800; color: #d97706; }
+
+/* ✅ 텍스트 입력창: 민트색 테두리 핵심 */
+.newTextArea {
+  width: 100% !important;
+  height: 140px !important;
+  padding: 20px !important;
+  border: 2px solid #5eead4 !important; /* 이미지 속 민트색 */
+  border-radius: 20px !important;
+  background: #ffffff !important;
+  font-size: 15px !important;
+  resize: none !important;
+  outline: none !important;
+  appearance: none !important;
+  box-sizing: border-box;
+}
+
+/* ✅ 하단 버튼 그룹 */
+.newBtnGroup { display: flex; gap: 12px; margin-top: 30px; }
+
+.newCancelBtn {
+  flex: 1; padding: 16px; border-radius: 16px; border: none !important;
+  background: #f1f5f9 !important; color: #64748b !important;
+  font-weight: 700; cursor: pointer; font-size: 16px;
+}
+
+.newSubmitBtn {
+  flex: 1.5; padding: 16px; border-radius: 16px; border: none !important;
+  background: #5cc2b1 !important; /* 이미지 속 민트 그린 버튼 */
+  color: white !important; font-weight: 700; cursor: pointer; font-size: 16px;
+  box-shadow: 0 4px 10px rgba(92, 194, 177, 0.2);
+}
+
+.newSubmitBtn:disabled {
+  background: #cbd5e1 !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}

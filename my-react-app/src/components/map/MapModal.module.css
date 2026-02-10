@@ -1,86 +1,121 @@
+/* --- 상세창(사이드바) 스타일 --- */
 .modalContainer {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 380px;
-  height: 100%;
+  top: 0; left: 0;
+  width: 380px; height: 100%;
   background: white;
-  z-index: 1001; /* 지도(100)보다 높고 네비게이션바보다 낮게 설정 */
+  z-index: 1001;
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   animation: slideIn 0.3s ease-out;
 }
 
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
+@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }
 
-.closeBtn {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  font-size: 32px;
-  line-height: 1;
-  background: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.scrollContent { flex: 1; overflow-y: auto; }
+
+.imageBox { width: 100%; height: 250px; background: #f1f5f9; }
+.imageBox img { width: 100%; height: 100%; object-fit: cover; }
+.noImage { display: flex; align-items: center; justify-content: center; height: 100%; color: #94a3b8; }
+
+.infoBox { padding: 24px; }
+.categoryTag { display: inline-block; padding: 4px 10px; background: #f1f5f9; color: #64748b; border-radius: 4px; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.title { font-size: 22px; font-weight: 700; color: #1e293b; margin: 0 0 16px 0; }
+.divider { height: 1px; background: #e2e8f0; margin-bottom: 20px; }
+
+.detailList { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+.detailItem { display: flex; flex-direction: column; gap: 4px; }
+.detailItem strong { font-size: 13px; color: #94a3b8; }
+.detailItem span { font-size: 15px; color: #334155; }
+.description { line-height: 1.6; color: #475569; font-size: 15px; }
+
+.closeBtnWrapper { position: absolute; top: 15px; right: 15px; z-index: 10; display: flex; justify-content: flex-end; }
+.closeBtnWrapper button { display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 1px solid var(--green-200); box-shadow: 0 2px 5px rgba(0,0,0,0.1); white-space: nowrap; padding: 0 8px; }
+
+/* --- ✅ 리뷰 작성 모달 (중앙 배치 핵심) --- */
+.reviewModalOverlay {
+  position: fixed;      /* 👈 상세창을 무시하고 브라우저 화면 전체 기준 */
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5); /* 어두운 배경 */
   display: flex;
-  align-items: center;    /* 세로 중앙 */
+  align-items: center;  /* 세로 중앙 */
   justify-content: center; /* 가로 중앙 */
+  z-index: 9999;        /* 👈 1001보다 훨씬 높은 값으로 설정 */
+  backdrop-filter: blur(2px);
 }
 
-.scrollContent {
-  flex: 1;
-  overflow-y: auto;
-}
-
-.imageBox {
-  width: 100%;
-  height: 250px;
-  background: #f1f5f9;
-}
-
-.imageBox img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.noImage {
+.reviewModalContent {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 380px;         /* 모달 너비 */
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: #94a3b8;
+  flex-direction: column;
+  gap: 15px;
+  animation: popUp 0.2s ease-out;
 }
 
-.infoBox {
-  padding: 24px;
+@keyframes popUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.writeTitle { font-size: 20px; font-weight: 800; color: #1e293b; margin: 0; }
+.writeSub { font-size: 14px; color: #64748b; margin: 0; }
+
+.ratingBox { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.ratingSelect { flex: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px; }
+
+.reviewTextArea { width: 100%; height: 140px; padding: 15px; border: 1px solid #e2e8f0; border-radius: 12px; resize: none; outline-color: #14b8a6; }
+
+.reviewModalBtns { display: flex; gap: 10px; }
+.cancelBtn { flex: 1; padding: 12px; background: #f1f5f9; color: #64748b; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+.submitBtn { flex: 1; padding: 12px; background: #14b8a6; color: white; border-radius: 10px; border: none; font-weight: 600; cursor: pointer; }
+
+/* --- 리뷰 리스트 내부 버튼 --- */
+.authButtons { display: flex; gap: 10px; }
+.editBtn, .deleteBtn { background: none; border: none; font-size: 13px; cursor: pointer; color: #94a3b8; }
+.editBtn:hover { color: #14b8a6; }
+.deleteBtn:hover { color: #f43f5e; }
+
+/* --- 평균 평점 디자인 --- */
+.ratingScoreBox {
+  display: flex;
+  align-items: baseline; /* 텍스트 하단 정렬 */
+  gap: 4px;
+  background: #f8fafc;   /* 아주 연한 회색 배경 */
+  padding: 8px 14px;
+  border-radius: 12px;
+  width: fit-content;    /* 내용만큼만 너비 차지 */
+  margin-bottom: 20px;
+  border: 1px solid #f1f5f9;
 }
 
-.categoryTag {
-  display: inline-block;
-  padding: 4px 10px;
-  background: #f1f5f9;
-  color: #64748b;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: 600;
-  margin-bottom: 8px;
+.starIconLarge {
+  color: #fbbf24;        /* 황금색 별 */
+  font-size: 20px;
+  margin-right: 2px;
 }
 
+.ratingValue {
+  font-size: 24px;
+  font-weight: 800;
+  color: #1e293b;
+  font-family: 'Pretendard', sans-serif;
+}
+
+.ratingMax {
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;        /* 흐릿한 회색 */
+}
+
+/* 기존 title 마진 수정 (평점 박스와의 간격 조절) */
 .title {
   font-size: 22px;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 16px 0;
+  margin: 0 0 10px 0;    /* 아래 마진을 살짝 줄임 */
 }
 
 .divider {
@@ -89,66 +124,342 @@
   margin-bottom: 20px;
 }
 
-.detailList {
+/* --- [추가] 평점과 길찾기 버튼 레이아웃 --- */
+.ratingAndRouteRow {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 20px;
 }
 
-.detailItem {
+/* ratingScoreBox의 마진을 제거하여 Row 안에서 정렬되게 수정 */
+.ratingScoreBox {
   display: flex;
-  flex-direction: column;
+  align-items: baseline;
   gap: 4px;
+  background: #f8fafc;
+  padding: 8px 14px;
+  border-radius: 12px;
+  width: fit-content;
+  border: 1px solid #f1f5f9;
+  margin-bottom: 0; /* Row 내부이므로 0으로 변경 */
 }
 
-.detailItem strong {
-  font-size: 13px;
-  color: #94a3b8;
-}
-
-.detailItem span {
-  font-size: 15px;
-  color: #334155;
-}
-
-.description {
-  line-height: 1.6;
-  color: #475569;
-  font-size: 15px;
-}
-.closeBtnWrapper {
-  position: absolute;
-  top: 15px;
-  right: 15px; 
-  z-index: 10;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.closeBtnWrapper button {
-  display: flex;
-  align-items: center;    /* 세로 중앙 */
-  justify-content: center; /* 가로 중앙 */
-  border-radius: 8px;      /* 닫기 글자가 들어갈 수 있게 약간 사각형으로 변경 */
-  border: 1px solid var(--green-200);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  white-space: nowrap;     /* ✅ 글자가 세로로 꺾이지 않고 가로로 유지되게 함 */
-  padding: 0 8px;          /* 좌우 여유 공간 */
-}
-/* 리뷰 버튼 스타일 */
-.authButtons {
-  display: flex;
-  gap: 10px;
-}
-
-.editBtn, .deleteBtn {
-  background: none;
+/* 길찾기 버튼 트리거 */
+.routeTriggerBtn {
+  background: #14b8a6;
+  color: white;
   border: none;
-  font-size: 13px;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(20, 184, 166, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.routeTriggerBtn:hover {
+  background: #0d9488;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(20, 184, 166, 0.3);
+}
+
+/* --- [추가] 길찾기 전용 모달 (유저 제공 클래스 기반) --- */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000; /* 리뷰 모달급으로 높게 설정 */
+  backdrop-filter: blur(2px);
+}
+
+.modal {
+  background: white;
+  border-radius: 20px; /* 기존 리뷰모달과 통일감 */
+  padding: 24px;
+  width: 400px;
+  max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  animation: popUp 0.2s ease-out;
+}
+
+.modal.md { width: 450px; }
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.closeBtn {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
   cursor: pointer;
   color: #94a3b8;
+  line-height: 1;
 }
 
-.editBtn:hover { color: #14b8a6; }
-.deleteBtn:hover { color: #f43f5e; }
+.body {
+  margin-top: 10px;
+}
+
+/* --- [추가] 길찾기 탭 스타일 --- */
+.tabContainer {
+  display: flex;
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 12px;
+  gap: 4px;
+  margin-bottom: 20px;
+}
+
+.tabContainer button {
+  flex: 1;
+  padding: 10px 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.2s;
+}
+
+.activeTab {
+  background: white !important;
+  color: #14b8a6 !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* --- [추가] 경로 결과창 디자인 --- */
+.routeResultArea {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8fafc;
+  border-radius: 16px;
+  border: 1px dashed #e2e8f0;
+}
+
+.routeDataCard {
+  width: 100%;
+  padding: 20px;
+}
+
+.routeTimeRow {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.resTime {
+  font-size: 32px;
+  font-weight: 900;
+  color: #14b8a6;
+}
+
+.resDist {
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.resPay {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f43f5e;
+  background: #fff1f2;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.ecoRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.ecoBadge {
+  background: #f0fdf4;
+  color: #15803d;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid #dcfce7;
+}
+
+.transitInfo {
+  font-size: 13px;
+  color: #475569;
+  background: #ffffff;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  margin-top: 10px;
+}
+
+.placeholder {
+  color: #94a3b8;
+  font-weight: 500;
+  text-align: center;
+}
+
+.routeLoading {
+  color: #14b8a6;
+  font-weight: 700;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.notice {
+  display: block;
+  margin-top: 15px;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+}
+/* 길찾기 결과 카드 내부 레이아웃 */
+.topInfoRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.timeMain {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.resTime {
+  font-size: 42px;
+  font-weight: 900;
+  color: #14b8a6;
+  line-height: 1;
+}
+
+.resUnit {
+  font-size: 16px;
+  font-weight: 700;
+  color: #14b8a6;
+}
+
+.resDist {
+  font-size: 18px;
+  font-weight: 600;
+  color: #64748b;
+  padding: 0 15px;
+}
+
+/* 탄소절감 / 나무심기 세로 나열 */
+.ecoStatsCol {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-left: 1px solid #e2e8f0;
+  padding-left: 15px;
+}
+
+.ecoItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.ecoLabel {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.ecoValue {
+  color: #059669;
+  font-weight: 700;
+}
+
+/* 대중교통 상세 경로 박스 */
+.transitSummaryBox {
+  background: white;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.transitTotalInfo {
+  font-size: 14px;
+  color: #334155;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pathSteps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stepItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.lineBadge {
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 11px;
+}
+
+.stationName {
+  color: #475569;
+}
+
+.submitBtn {
+  width: 100%;
+  padding: 14px;
+  background: #14b8a6;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.submitBtn:hover {
+  background: #0d9488;
+}

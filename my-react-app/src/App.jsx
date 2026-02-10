@@ -16,6 +16,13 @@ import SuggestionPage from "./pages/SuggestionPage/SuggestionPage";
 
 import { PrivateRoute, PublicRoute } from "./router/PrivateRouter";
 import PasswordFindPage from "./components/member/PasswordFindPage";
+import InventoryPage from "./pages/InventoryPage/InventoryPage";
+
+// 채팅 관련 Import
+import { ChatProvider } from "./context/ChatContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import ChatPage from "./pages/ChatPage/ChatPage";
+import ChatJoinPage from "./pages/ChatPage/ChatJoinPage";
 
 // 🚀 수정된 모달 관리자: 네비게이션 state를 감시하고 즉시 비웁니다.
 const ModalManager = ({ openLoginModal }) => {
@@ -46,40 +53,63 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        {/* Router 내부에 위치해야 useLocation과 useNavigate를 사용할 수 있습니다 */}
-        <ModalManager openLoginModal={openLoginModal} />
-        
-        <div className="app-container">
-          <Header openLoginModal={openLoginModal} />
-          
-          {/* 로그인 성공 시 내부에서 호출하는 onClose가 closeLoginModal(false)을 실행합니다 */}
-          <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} />
-
-          <main className="main-content">
-            <Routes>
-              <Route path="/" element={<MainPage />} />
-              <Route path="/map" element={<MapPage />} />
-              <Route path="/community" element={<CommunityPage />} />
-              <Route path="/suggestions" element={<SuggestionPage />} />
-              <Route path="/shop" element={<ShopPage />} />
-              <Route path="/find-password" element={<PasswordFindPage />} />
+      <NotificationProvider>
+        <ChatProvider>
+          <Router>
+            {/* Router 내부에 위치해야 useLocation과 useNavigate를 사용할 수 있습니다 */}
+            <ModalManager openLoginModal={openLoginModal} />
+            
+            <div className="app-container">
+              <Header openLoginModal={openLoginModal} />
               
-              <Route path="/join" element={
-                <PublicRoute>
-                  <SignupPage />
-                </PublicRoute>
-              } />
+              {/* 로그인 성공 시 내부에서 호출하는 onClose가 closeLoginModal(false)을 실행합니다 */}
+              <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} />
 
-              <Route path="/mypage" element={
-                <PrivateRoute>
-                  <MyPage />
-                </PrivateRoute>
-              } />
-            </Routes>
-          </main>
-        </div>
-      </Router>
+              <main className="main-content">
+                <Routes>
+                  <Route path="/" element={<MainPage />} />
+                  <Route path="/map" element={<MapPage />} />
+                  <Route path="/community" element={<CommunityPage />} />
+                  <Route path="/suggestions" element={<SuggestionPage />} />
+                  <Route path="/shop" element={<ShopPage />} />
+                  <Route path="/find-password" element={<PasswordFindPage />} />
+                  <Route path="/inventory" element={<InventoryPage />} />
+                  
+                  <Route path="/join" element={
+                    <PublicRoute>
+                      <SignupPage />
+                    </PublicRoute>
+                  } />
+
+                  <Route path="/mypage" element={
+                    <PrivateRoute>
+                      <MyPage />
+                    </PrivateRoute>
+                  } />
+
+                  {/* 채팅 관련 라우트 */}
+                  <Route path="/chat" element={
+                    <PrivateRoute>
+                      <ChatPage />
+                    </PrivateRoute>
+                  } />
+                  <Route path="/chat/:roomId" element={
+                    <PrivateRoute>
+                      <ChatPage />
+                    </PrivateRoute>
+                  } />
+                  <Route path="/chat/join/:roomId" element={
+                    <PrivateRoute>
+                      <ChatJoinPage />
+                    </PrivateRoute>
+                  } />
+
+                </Routes>
+              </main>
+            </div>
+          </Router>
+        </ChatProvider>
+      </NotificationProvider>
     </AuthProvider>
   );
 }

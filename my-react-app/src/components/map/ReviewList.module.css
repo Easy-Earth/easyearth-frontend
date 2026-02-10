@@ -5,129 +5,145 @@
 }
 
 .sectionTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   font-size: 18px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
-.sectionTitle span {
-  color: var(--green-600);
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.count {
+  color: #14b8a6;
   font-size: 16px;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
+
+/* .reviewCard {
+  background: white;
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+} */
 
 .reviewCard {
   background: white;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
-}
-
-.userInfo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.userAvatar {
-  width: 36px;
-  height: 36px;
-  background-color: var(--green-100);
-  color: var(--green-700);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 14px;
-}
-
-.nameGroup {
+  padding: 24px; /* 여백을 조금 더 넉넉히 */
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
   display: flex;
   flex-direction: column;
+  
+  /* ✅ 핵심: 고정 height 대신 min-height 사용 */
+  min-height: 180px; 
+  height: auto; /* 내용에 따라 자동으로 늘어남 */
+  
+  /* ✅ 아래 요소(날짜 등)와 겹치지 않게 하단 여백 확보 */
+  padding-bottom: 50px; 
+}
+.header {
+  display: flex;
+  margin-bottom: 12px;
 }
 
-.userName {
-  font-size: 14px;
-  font-weight: 600;
-  color: #334155;
+.profileArea {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.ratingAndActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  padding: 0 4px;
+}
+
+.ratingWrapper {
+  display: flex;
+  align-items: center;
 }
 
 .rating {
-  color: #f59e0b; 
-  font-size: 12px;
-  letter-spacing: 1px;
+  color: #f59e0b;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.authButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.editBtn, .deleteBtn {
+  font-size: 11px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #64748b;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.editBtn:hover {
+  color: #14b8a6;
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.deleteBtn:hover {
+  color: #f43f5e;
+  background: #fff1f2;
+  border-color: #fecdd3;
 }
 
 .content {
   font-size: 14px;
-  line-height: 1.5;
-  color: #475569;
+  line-height: 1.6;
+  color: #334155;
+  margin-top: 8px;
+  margin-bottom: 30px;
   word-break: break-all;
+  white-space: pre-wrap;
+}
+
+.reviewFooter {
+  position: absolute;
+  right: 20px;
+  bottom: 15px;
+}
+
+.date {
+  font-size: 11px;
+  color: #94a3b8;
 }
 
 .noReview {
-  padding: 40px 0;
+  padding: 60px 0;
   text-align: center;
   color: #94a3b8;
   font-size: 14px;
-}
-/* 본인 확인 버튼 컨테이너 */
-.authButtons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-/* 공통 버튼 스타일 */
-.editBtn, .deleteBtn {
-  padding: 4px 8px;
-  font-size: 12px;
-  font-weight: 600;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  background-color: transparent;
-}
-
-/* 수정 버튼: 부드러운 회색 -> 청록색 호버 */
-.editBtn {
-  color: var(--gray-600);
-  background-color: var(--gray-200);
-}
-
-.editBtn:hover {
-  color: var(--eco-teal);
-  background-color: #f0fdfa;
-  border-color: #99f6e4;
-}
-
-/* 삭제 버튼: 부드러운 회색 -> 붉은색 호버 */
-.deleteBtn {
-  color: var(--gray-600);
-  background-color: var(--gray-200);
-}
-
-.deleteBtn:hover {
-  color: var(--danger);
-  background-color: #fef2f2;
-  border-color: #fecaca;
-}
-
-.editBtn:active, .deleteBtn:active {
-  transform: scale(0.95);
+  background: white;
+  border-radius: 12px;
+  border: 1px dashed #e2e8f0;
 }

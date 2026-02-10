@@ -36,7 +36,9 @@ api.interceptors.response.use(
 
         if(response){
             switch(response.status) {
-
+                case 400 :
+                    console.error("예외 처리입니다.");
+                    break;
                 case 401 : //토큰 만료 
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');

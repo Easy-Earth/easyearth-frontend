@@ -1,0 +1,31 @@
+.container {
+    display: inline-block;
+}
+
+.button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #6b7280;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    padding-bottom: 2px; /* Center alignment adjustment */
+}
+
+.button:hover:not(:disabled) {
+    background: #f3f4f6;
+    color: #3b82f6;
+    border-color: #d1d5db;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f9fafb;
+}
