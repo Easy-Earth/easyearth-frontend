@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // 페이지 이동을 위해 추가
 import authApi from "../../apis/authApi";
 import styles from "./DeleteMember.module.css";
 
@@ -11,13 +12,14 @@ const DeleteAccount = ({ user, onLogout }) => {
   const [password, setPassword] = useState("");
   const [confirmText, setConfirmText] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // navigate 훅 사용
 
   // 회원 탈퇴 처리 함수
   const handleDelete = async (e) => {
     e.preventDefault();
     
-    // 유저 객체에서 식별 가능한 ID 추출 (다양한 DB 구조 대응)
-    const userId = user?.memberId || user?.memberNo || user?.id;
+    // 유저 객체에서 식별 가능한 ID 추출
+    const userId = user?.memberNo || user?.memberId || user?.id;
 
     // 1. 확인 문구 검증
     if (confirmText !== "탈퇴확인") {
@@ -25,7 +27,7 @@ const DeleteAccount = ({ user, onLogout }) => {
       return;
     }
 
-    // 2. 최종 의사 확인 (브라우저 기본 confirm 사용)
+    // 2. 최종 의사 확인
     const isFinalAnswer = window.confirm(
       "정말로 탈퇴하시겠습니까?\n이 작업은 취소할 수 없으며 모든 데이터가 즉시 삭제됩니다."
     );
@@ -34,15 +36,17 @@ const DeleteAccount = ({ user, onLogout }) => {
 
     setLoading(true);
     try {
-      // 이전에 수정한 authApi.deleteMember 호출
+      // authApi.deleteMember 호출
       const response = await authApi.deleteMember(userId, password);
       
       alert(response || "회원 탈퇴가 정상적으로 처리되었습니다. 이용해주셔서 감사합니다.");
       
-      // 탈퇴 성공 시 토큰 삭제 및 메인 페이지 이동 처리
-      onLogout(); 
+      // 탈퇴 성공 시 토큰 삭제 및 클라이언트 로그아웃 처리
+      if (onLogout) onLogout(); 
+
+      // 메인 페이지로 이동
+      navigate("/");
     } catch (error) {
-      // 백엔드 에러 메시지 처리 (비밀번호 불일치 등)
       console.error("탈퇴 오류:", error);
       const errorMsg = error.response?.data || "탈퇴 처리 중 예상치 못한 오류가 발생했습니다.";
       alert(errorMsg);
