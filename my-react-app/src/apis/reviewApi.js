@@ -20,6 +20,17 @@ export const reviewApi = {
     reviewUpdate: async (reviewData) => {
         const response = await api.put(`/eco/review/update`, reviewData);
         return response.data;
-    }
-    
+    },
+    reviewReport: async (reportData) => {
+    const response = await api.post('/reports/insert', null, {
+        params: reportData 
+    });
+    return response.data;
+    },
+    reviewCheck: async (memberId, targetMemberId, reportCheckData) => {
+    const response = await api.get(`/reports/check/${memberId}/${targetMemberId}`, {
+        params: reportCheckData 
+    });
+    return response.data;
+}
 }

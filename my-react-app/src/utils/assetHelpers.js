@@ -1,5 +1,3 @@
-// src/shared/utils/assetHelpers.js
-
 // 지금까지 만든 배지 데이터 매칭 (예시)
 export const getBadgeImage = (badgeId) => {
   if (!badgeId) return null;

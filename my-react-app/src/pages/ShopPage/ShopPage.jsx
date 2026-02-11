@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import * as itemApi from "../../apis/itemApi";
+import authApi from "../../apis/authApi"; 
 import Button from "../../components/common/Button";
 import CustomModal from "../../components/common/CustomModal";
 import ItemCssPreview from "../../components/item/ItemCssPreview";
@@ -12,6 +13,7 @@ const defaultImg = "https://via.placeholder.com/150?text=No+Image";
 
 const ShopPage = () => {
   const { user } = useAuth();
+  // user 객체 내의 고유 식별자 추출 (VO 구조에 따라 memberNo 또는 memberId)
   const memberId = user?.memberNo || user?.memberId || user?.id;
 
   const [allItems, setAllItems] = useState([]);      
@@ -21,6 +23,9 @@ const ShopPage = () => {
   const [pullResult, setPullResult] = useState(null);
   const [isDuplicate, setIsDuplicate] = useState(false); 
   const [selectedItem, setSelectedItem] = useState(null);
+  
+  // 💰 사용자 포인트 상태
+  const [userPoint, setUserPoint] = useState(0);
 
   const [modalConfig, setModalConfig] = useState({
     isOpen: false, type: 'alert', message: '', onConfirm: () => {}
@@ -43,6 +48,19 @@ const ShopPage = () => {
     { label: "EPIC", value: "EPIC" },
     { label: "LEGENDARY", value: "LEGENDARY" },
   ];
+
+  // 💰 포인트 조회 함수 (authApi 사용 및 MemberWalletVO 필드명 반영)
+  const fetchUserPoint = useCallback(async () => {
+    if (!memberId) return;
+    try {
+      // MemberController의 @GetMapping("/point/{memberId}") 호출
+      const walletData = await authApi.getMemberPoint(memberId); 
+      // MemberWalletVO의 실제 필드명인 nowPoint를 사용하여 상태 업데이트
+      setUserPoint(walletData.nowPoint ?? 0);
+    } catch (error) {
+      console.error("포인트 조회 실패:", error);
+    }
+  }, [memberId]);
 
   const getItemImage = (item) => {
     if (!item || typeof item === 'string') return defaultImg;
@@ -69,12 +87,15 @@ const ShopPage = () => {
       setAllItems(Array.isArray(storeData) ? storeData : []);
       const myData = Array.isArray(myDataResponse) ? myDataResponse : (myDataResponse?.data || []);
       setMyItems(myData.map(item => String(item.itemId || item.ITEM_ID || "")));
+      
+      // 데이터 로드 시 포인트도 함께 조회
+      if (memberId) fetchUserPoint();
     } catch (error) {
       console.error("데이터 로드 실패:", error);
     } finally {
       setLoading(false);
     }
-  }, [memberId]);
+  }, [memberId, fetchUserPoint]);
 
   useEffect(() => { fetchInitialData(); }, [fetchInitialData]);
 
@@ -103,16 +124,32 @@ const ShopPage = () => {
       message: `[${item.name || item.itemName}] 구매하시겠습니까?`,
       onConfirm: async () => {
         try {
-          await itemApi.buyItem({ userId: memberId, itemId: id, price: item.price || item.PRICE });
+          const purchaseData = {
+            userId: memberId,
+            itemId: id,
+            price: item.price || item.PRICE,
+            category: item.category || item.CATEGORY
+          };
+
+          await itemApi.buyItem(purchaseData);
+
           setMyItems(prev => [...prev, String(id)]);
           setSelectedItem(null);
+          
+          // 💰 구매 성공 후 포인트 갱신
+          fetchUserPoint();
+
           setModalConfig({
-            isOpen: true, type: 'alert', message: '🎉 구매 완료되었습니다!',
+            isOpen: true, 
+            type: 'alert', 
+            message: '🎉 구매 완료되었습니다!',
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
         } catch (error) {
           setModalConfig({
-            isOpen: true, type: 'alert', message: error.response?.data || "구매 중 오류가 발생했습니다.",
+            isOpen: true, 
+            type: 'alert', 
+            message: error.response?.data || "구매 중 오류가 발생했습니다.",
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
         }
@@ -122,7 +159,13 @@ const ShopPage = () => {
 
   const handleRandomPull = () => {
     if (!memberId) {
-      setModalConfig({ isOpen: true, type: 'alert', message: '로그인이 필요합니다.' });
+      setModalConfig({ 
+        isOpen: true, 
+        type: 'alert', 
+        message: '로그인이 필요합니다.',
+        // 확인 버튼을 눌렀을 때 모달을 닫도록 추가
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false })) 
+      });
       return;
     }
     setModalConfig({
@@ -136,13 +179,11 @@ const ShopPage = () => {
         setIsDuplicate(false);
         try {
           const result = await itemApi.randomPull(memberId);
-          console.log("서버 응답 전체 구조:", result); 
           
           setTimeout(() => {
-            // 서버 응답이 문자열(환급 안내)인 경우 처리
             if (typeof result === 'string') {
               setIsDuplicate(true);
-              setPullResult({ itemName: "이미 보유 중인 아이템", rarity: "common" }); // UI 구조 유지용 임시 데이터
+              setPullResult({ itemName: "이미 보유 중인 아이템", rarity: "common" });
             } else {
               setPullResult(result);
               const newItemId = String(result.itemId || result.ITEM_ID || "");
@@ -152,6 +193,8 @@ const ShopPage = () => {
                 setMyItems(prev => [...prev, newItemId]);
               }
             }
+            // 💰 뽑기 연출 종료 시 포인트 갱신
+            fetchUserPoint();
           }, 1500);
         } catch (error) {
           setIsPulling(false);
@@ -164,7 +207,19 @@ const ShopPage = () => {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1 className={styles.pageTitle}>🌱 에코 포인트 상점</h1>
+        <div className={styles.headerTop}>
+          <h1 className={styles.pageTitle}>🌱 에코 포인트 상점</h1>
+          {/* 💰 실시간 포인트 표시 영역 */}
+          {memberId && (
+            <div className={styles.userPointDisplay}>
+              <span className={styles.pointLabel}>내 보유 포인트</span>
+              <span className={styles.pointValue}>
+                <i className={styles.coinIcon}>P</i> {userPoint.toLocaleString()}
+              </span>
+            </div>
+          )}
+        </div>
+
         <div className={styles.gachaBanner}>
           <div className={styles.gachaText}>
             <h3>행운의 랜덤 뽑기</h3>
@@ -254,8 +309,6 @@ const ShopPage = () => {
               {pullResult && (
                 <>
                   <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{ (pullResult.rarity || pullResult.RARITY || 'common').toUpperCase() }</span>
-                  
-                  {/* 중복이 아닐 때만 이미지/프리뷰 렌더링 */}
                   {!isDuplicate ? (
                     <div className={styles.resultVisual}>
                       {(pullResult.itemCategory || pullResult.category) === "BADGE" ? (
@@ -265,7 +318,6 @@ const ShopPage = () => {
                       )}
                     </div>
                   ) : (
-                    /* 중복일 때 이미지를 대체하는 텍스트 영역 */
                     <div className={styles.resultVisual} style={{ flexDirection: 'column', gap: '10px' }}>
                       <span style={{ fontSize: '50px' }}>♻️</span>
                       <p style={{ fontWeight: '800', color: '#64748b', margin: 0 }}>중복 아이템 확인</p>

@@ -13,6 +13,7 @@ const EditProfile = ({ user }) => {
     birthday: user?.birthday || "",
     gender: user?.gender || "",
     address: user?.address || "",
+    statusMessage: user?.statusMessage || "", // 초기값 설정
     password: "",
     confirmPassword: "",
   });
@@ -57,17 +58,18 @@ const EditProfile = ({ user }) => {
     setMessage({ type: "", text: "" });
 
     try {
-      // API 호출 (비밀번호가 빈 문자열이면 백엔드에서 변경 안함)
+      // API 호출
       await authApi.updateMember(formData); 
       setMessage({ type: "success", text: "정보가 성공적으로 수정되었습니다." });
       
-      // 로컬스토리지 유저 정보 동기화
+      // 로컬스토리지 유저 정보 동기화 (상태 메시지 포함)
       const updatedUser = { 
         ...user, 
         name: formData.name,
         address: formData.address,
         birthday: formData.birthday,
-        gender: formData.gender
+        gender: formData.gender,
+        statusMessage: formData.statusMessage
       };
       localStorage.setItem("user", JSON.stringify(updatedUser));
 
@@ -217,6 +219,24 @@ const EditProfile = ({ user }) => {
               /> 여성
             </label>
           </div>
+        </div>
+
+        {/* 상태 메시지 섹션 (현재 메시지 표시 추가) */}
+        <div className={styles.inputGroup}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+            <label className={styles.label}>상태 메시지</label>
+            <span style={{ fontSize: '12px', color: '#64748b' }}>
+              현재: {user?.statusMessage || "없음"}
+            </span>
+          </div>
+          <input
+            type="text"
+            name="statusMessage"
+            value={formData.statusMessage}
+            onChange={handleChange}
+            className={styles.input}
+            placeholder="새로운 상태 메시지를 입력하세요"
+          />
         </div>
 
         {/* 주소 (카카오 API) */}

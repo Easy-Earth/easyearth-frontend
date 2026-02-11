@@ -40,13 +40,13 @@ const Header = ({ openLoginModal }) => {
       <div className={styles.auth}>
         {!isAuthenticated ? (
           <>
-            <button className={styles.loginBtn} onClick={openLoginModal}>Sign in</button>
-            <button className={styles.registerBtn} onClick={() => navigate("/join")}>Sign up</button>
+            <button className={styles.loginBtn} onClick={openLoginModal}>Sign In</button>
+            <button className={styles.registerBtn} onClick={() => navigate("/join")}>Sign Up</button>
           </>
         ) : (
           <>
             <span className={styles.welcome}>{user?.name || "회원"}님</span>
-            <button className={styles.logoutBtn} onClick={() => { logout(); navigate("/"); }}>로그아웃</button>
+            <button className={styles.logoutBtn} onClick={() => { logout(); navigate("/"); }}>Sign Out</button>
           </>
         )}
         {isAuthenticated && <NotificationCenter />}

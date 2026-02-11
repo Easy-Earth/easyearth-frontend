@@ -118,7 +118,6 @@ const Profile = ({ size = "big", memberId, userName = "사용자", onClick }) =>
             )}
           </div>
         </div>
-
         <div className={styles.rightSide}>
           {/* 칭호 등급 클래스 적용 (t-rarity-...) */}
           <div className={`t-rarity-${titleData.grade}`}>

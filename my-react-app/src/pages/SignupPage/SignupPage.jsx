@@ -19,6 +19,7 @@ function SignupPage() {
     gender: "",
     address: "",
     detailAddress: "",
+    statusMessage: "", // [추가] 상태 메시지 필드 추가
   });
 
   const [errors, setErrors] = useState({});
@@ -108,6 +109,7 @@ function SignupPage() {
         birthday: formData.birthday,
         gender: formData.gender,
         address: finalAddress,
+        statusMessage: formData.statusMessage, // [추가] 데이터 전송에 포함
       };
 
       const registerResult = await register(submitData);
@@ -186,6 +188,18 @@ function SignupPage() {
             </label>
           </div>
           {errors.gender && <span className={styles.error}>{errors.gender}</span>}
+        </div>
+
+        {/* [추가] 상태 메시지 필드 UI */}
+        <div className={styles.fieldContainer}>
+          <label className={styles.label}>상태 메시지</label>
+          <input 
+            name="statusMessage" 
+            value={formData.statusMessage} 
+            onChange={handleChange} 
+            placeholder="자신을 소개하는 한마디를 입력하세요 (선택)" 
+            className={styles.input} 
+          />
         </div>
 
         <div className={styles.fieldContainer}>

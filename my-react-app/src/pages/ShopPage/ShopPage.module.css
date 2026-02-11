@@ -1,8 +1,65 @@
 /* ---------------------------------------------------------
+   0. [추가] 상단 포인트 표시 레이아웃 (기존 CSS 유지 + 상단 추가)
+--------------------------------------------------------- */
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.userPointDisplay {
+  background: white;
+  padding: 10px 22px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 4px 15px rgba(20, 184, 166, 0.1);
+  border: 2px solid #14b8a6;
+  transition: transform 0.2s ease;
+}
+
+.userPointDisplay:hover {
+  transform: scale(1.05);
+}
+
+.pointLabel {
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 800;
+}
+
+.pointValue {
+  font-size: 20px;
+  font-weight: 900;
+  color: #14b8a6;
+  display: flex;
+  align-items: center;
+}
+
+.coinIcon {
+  width: 24px;
+  height: 24px;
+  background: #fbbf24;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 900;
+  font-style: normal;
+  margin-right: 6px;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+}
+
+/* ---------------------------------------------------------
    1. 기본 레이아웃 및 컨테이너
 --------------------------------------------------------- */
 .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; font-family: 'Pretendard', sans-serif; }
-.pageTitle { font-size: 32px; font-weight: 900; color: #1e293b; margin-bottom: 40px; text-align: center; }
+.pageTitle { font-size: 32px; font-weight: 900; color: #1e293b; margin: 0; text-align: left; }
 
 .gachaBanner {
   background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
@@ -202,24 +259,8 @@
   50% { box-shadow: 0 0 30px #86efac, 0 0 40px #86efac; }
 }
 
-/* 결과창 뒷면 기본 설정 (overflow visible이어야 빛이 밖으로 나갑니다) */
-.cardBack {
-  position: absolute; inset: 0; backface-visibility: hidden;
-  border-radius: 25px; display: flex; flex-direction: column;
-  align-items: center; background: white; transform: rotateY(180deg);
-  padding: 30px; text-align: center; justify-content: space-between;
-  overflow: visible; /* 빛이 카드 밖으로 퍼지게 설정 */
-}
-
 /* JS에서 등급별로 갈아끼울 클래스 */
 .res_legendary { animation: glow_legendary 1.5s infinite ease-in-out; border: 4px solid #f59e0b !important; }
 .res_epic { animation: glow_epic 2s infinite ease-in-out; border: 3px solid #8b5cf6 !important; }
 .res_rare { animation: glow_rare 2s infinite ease-in-out; border: 3px solid #3b82f6 !important; }
 .res_common { animation: glow_common 2.5s infinite ease-in-out; border: 2px solid #94a3b8 !important; }
-
-/* 기존 이미지 및 레이아웃 유지 */
-.pullOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; perspective: 1200px; backdrop-filter: blur(8px); }
-.pullCard { width: 300px; height: 450px; position: relative; transform-style: preserve-3d; transition: 0.8s; }
-.pullCard.isFlipped { transform: rotateY(180deg); }
-.cardFront { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 25px; display: flex; flex-direction: column; align-items: center; background: linear-gradient(135deg, #14b8a6, #0f766e); color: white; justify-content: center; font-size: 80px; font-weight: 900; border: 4px solid #fbbf24; }
-.resultVisual { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; position: relative; z-index: 1; }
