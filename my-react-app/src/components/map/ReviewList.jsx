@@ -30,7 +30,6 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
     onConfirm: () => {}
   });
 
-  // 날짜 포맷 함수
   const formatDate = (dateString) => {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -38,7 +37,6 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
     return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
   };
 
-  // 프로필 클릭 핸들러 (Profile 컴포넌트의 onClick으로 전달됨)
   const handleProfileClick = (memberId) => {
     setSelectedMemberId(memberId);
     setIsUserModalOpen(true);
@@ -191,14 +189,15 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
       <div className={styles.titleGroup}>
         방문자 리뷰 <span className={styles.count}>{reviews?.length || 0}</span>
       </div>
+      {currentMemberId &&
       <Button 
         width="100px" 
         height="34px" 
         color="var(--eco-teal)" 
         onClick={handleOpenWriteModal} 
-      >
+      >{}
         <span style={{ color: "white", fontSize: "13px", fontWeight: "600" }}>리뷰 작성</span>
-      </Button>
+      </Button>}
     </h3>
   );
 
