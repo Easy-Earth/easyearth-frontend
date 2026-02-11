@@ -12,6 +12,7 @@ function Modal({
     size = 'md',
     children,
     showCloseButton = true,
+    zIndex, // ✨ zIndex prop 추가
 }){
 
     //모달창 ESC키로 닫기 
@@ -45,8 +46,11 @@ function Modal({
 
     if(!isOpen) return null;
 
+    // ✨ zIndex 스타일 적용
+    const overlayStyle = zIndex ? { zIndex: zIndex } : {};
+
     return createPortal(
-        <div className={styles.overlay} onClick={handleoverlayClick}>
+        <div className={styles.overlay} onClick={handleoverlayClick} style={overlayStyle}>
             <div className={`${styles.modal} ${styles[size]}`} role='dialog' aria-modal='true'>
                 {/*헤더 */}
                 <div className={styles.header}>

@@ -55,6 +55,13 @@ const Header = ({ openLoginModal }) => {
   );
 };
 
+// Helper function to get full image URL
+const getFullUrl = (path) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    return `http://localhost:8080${path}`;
+};
+
 // Internal Component for Notification Center
 const NotificationCenter = () => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
@@ -83,6 +90,19 @@ const NotificationCenter = () => {
         setIsOpen(false);
     };
 
+    // ✨ 알림 메시지 변환 함수
+    const getNotificationMessage = (notification) => {
+        // 1. messageType이 있으면 우선 사용
+        if (notification.messageType === 'IMAGE') return '사진을 보냈습니다.';
+        if (notification.messageType === 'FILE') return '파일을 보냈습니다.';
+        
+        // 2. 없으면 content 패턴 매칭 (fallback - 구 버전 호환)
+        if (notification.content && notification.content.includes('/chat/file/message')) {
+             return '파일을 보냈습니다.';
+        }
+        return notification.content;
+    };
+
     return (
         <div className={styles.notificationCenter} ref={dropdownRef}>
             <button 
@@ -109,18 +129,18 @@ const NotificationCenter = () => {
                                 <li key={notification.id} className={`${styles.notificationItem} ${notification.read ? styles.read : ''}`}>
                                     <div className={styles.notificationContent} onClick={() => handleNotificationClick(notification)}>
                                         <div className={styles.notificationHeader}>
-                                            {/* ✨ 프로필 이미지 표시 */}
-                                            {notification.senderProfileImage && (
-                                                <img 
-                                                    src={notification.senderProfileImage} // getFullUrl logic might be needed if relative path
-                                                    alt="Profile" 
-                                                    className={styles.notificationProfile}
-                                                />
-                                            )}
-                                            <span className={styles.notificationSender}>{notification.senderName}</span>
-                                            <span className={styles.notificationTime}>{new Date(notification.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                            <div className={styles.headerText}>
+                                                <div className={styles.senderInfo}>
+                                                    {/* ✨ 채팅방 이름이 있으면 표시 (그룹챗 등) */}
+                                                    {notification.roomName && (
+                                                        <span className={styles.roomName}>[{notification.roomName}]</span>
+                                                    )}
+                                                    <span className={styles.notificationSender}>{notification.senderName}</span>
+                                                </div>
+                                                <span className={styles.notificationTime}>{new Date(notification.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                            </div>
                                         </div>
-                                        <div className={styles.notificationText}>{notification.content}</div>
+                                        <div className={styles.notificationText}>{getNotificationMessage(notification)}</div>
                                     </div>
                                     <button 
                                         className={styles.deleteBtn} 
