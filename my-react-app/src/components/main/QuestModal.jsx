@@ -41,7 +41,11 @@ const QuestModal = ({ isOpen, onClose }) => {
         formData.append("file", file);
 
         try {
-            const resultMsg = await certifyQuest(questNo, formData);
+            const userStr = localStorage.getItem("user");
+            const user = userStr ? JSON.parse(userStr) : null;
+            const userId = user?.memberId || 1;
+
+            const resultMsg = await certifyQuest(questNo, userId, formData);
             setSubmittedQuests((prev) => ({ ...prev, [questNo]: true }));
             setMsg({ text: resultMsg, type: "ok" });
         } catch (error) {
