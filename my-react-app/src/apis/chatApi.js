@@ -17,13 +17,13 @@ export const getChatRooms = async (memberId) => {
   }
 };
 
-// 1.1 회원 검색 (Login ID)
-export const searchMember = async (loginId) => {
+// 1.1 회원 검색 (이름/닉네임 - 목록 반환)
+export const searchMember = async (keyword) => {
   try {
     const response = await api.get(`/chat/users/search`, {
-      params: { loginId }
+      params: { keyword }
     });
-    return response.data;
+    return response.data; // List of members
   } catch (error) {
     if (error.response && error.response.status === 404) {
       return null;
@@ -119,11 +119,11 @@ export const markAsRead = async (roomId, memberId, lastMessageId) => {
   }
 };
 
-// 8. 메시지 검색
-export const searchMessages = async (roomId, memberId, keyword) => {
+// 8. 메시지 검색 (페이징 지원)
+export const searchMessages = async (roomId, memberId, keyword, limit = 10, offset = 0) => {
   try {
     const response = await api.get(`/chat/room/${roomId}/search`, {
-      params: { memberId, keyword }
+      params: { memberId, keyword, limit, offset }
     });
     return response.data;
   } catch (error) {
@@ -294,6 +294,45 @@ export const updateProfile = async (memberId, profileImageUrl) => {
     });
   } catch (error) {
     console.error("프로필 변경 실패", error);
+    throw error;
+  }
+};
+
+// 17. 방 제목 변경 (방장 전용)
+export const updateChatRoomTitle = async (roomId, memberId, newTitle) => {
+  try {
+    await api.patch(`/chat/room/${roomId}/title`, null, {
+      params: { memberId, newTitle }
+    });
+  } catch (error) {
+    console.error("방 이름 변경 실패", error);
+    throw error;
+  }
+};
+// 18. 방 이미지 변경 (방장 전용)
+export const updateRoomImage = async (roomId, memberId, imageUrl) => {
+  try {
+    await api.patch(`/chat/room/${roomId}/image`, null, {
+      params: { memberId, imageUrl }
+    });
+  } catch (error) {
+    console.error("방 이미지 변경 실패", error);
+    throw error;
+  }
+};
+
+// ============================================
+// 회원 온라인 상태 업데이트
+// ============================================
+
+export const updateOnlineStatus = async (memberId, isOnline) => {
+  try {
+    const response = await api.put(`/member/status/${memberId}`, null, {
+      params: { isOnline }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("온라인 상태 업데이트 실패", error);
     throw error;
   }
 };

@@ -4,11 +4,13 @@ import styles from './MessageBubble.module.css';
 import { getFullUrl } from '../../utils/imageUtil';
 import MessageContextMenu from './MessageContextMenu';
 import { toggleReaction, deleteMessage } from '../../apis/chatApi';
+import UserDatailModal from '../common/UserDatailModal';
 
-const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) => {
+const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted }) => {
     const { user } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [showProfileModal, setShowProfileModal] = useState(false); // Added state for profile modal
     const longPressTimer = useRef(null);
 
     // 메시지가 없거나 시스템 메시지인 경우 처리
@@ -55,20 +57,18 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
     const handleReaction = async (emoji) => {
         try {
             await toggleReaction(message.messageId, user.memberId, emoji);
-            if (onRefresh) onRefresh();
+            // onRefresh() 제거 (WebSocket에서 처리)
         } catch (error) {
             console.error("리액션 실패", error);
         }
     };
 
     const handleDelete = async () => {
-        if (window.confirm("메시지를 삭제하시겠습니까?")) {
-            try {
-                await deleteMessage(message.messageId, user.memberId);
-                if (onRefresh) onRefresh();
-            } catch (error) {
-                console.error("삭제 실패", error);
-            }
+        try {
+            await deleteMessage(message.messageId, user.memberId);
+            // onRefresh() 제거 (WebSocket에서 처리)
+        } catch (error) {
+            console.error("삭제 실패", error);
         }
     };
 
@@ -99,16 +99,16 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
 
     return (
         <div 
-            className={`${styles.wrapper} ${isMine ? styles.myMessage : ''}`}
+            className={`${styles.wrapper} ${isMine ? styles.myMessage : ''} ${isHighlighted ? styles.highlighted : ''}`}
             onContextMenu={handleContextMenu}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
             {/* 상대방일 경우에만 아바타 표시 */}
             {!isMine && (
-                <div className={styles.avatar}>
+                <div className={styles.avatar} onClick={() => setShowProfileModal(true)}> {/* Added onClick to show profile modal */}
                     <img 
-                        src={getFullUrl(message.senderProfileImage) || "/default-profile.png"} 
+                        src={getFullUrl(message.senderProfileImage) || "/default-profile.svg"} 
                         alt="Profile"
                         onError={(e) => {
                             if (e.target.dataset.failed) return;
@@ -142,7 +142,12 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                                 
                                 {/* 이미지 메시지 */}
                                 {(message.contentType === 'IMAGE' || message.messageType === 'IMAGE') && (
-                                    <img src={getFullUrl(message.content)} alt="Image" className={styles.imageContent} />
+                                    <img 
+                                        src={getFullUrl(message.content)} 
+                                        alt="Image" 
+                                        className={styles.imageContent} 
+                                        onLoad={onImageLoad} // ✨ 이미지 로드 감지
+                                    />
                                 )}
                                 
                                 {/* 파일 메시지 */}
@@ -162,22 +167,22 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                         )}
                         <span className={styles.time}>{formatTime(message.createdAt)}</span>
                     </div>
-                </div>
 
-                {/* 리액션 표시 */}
-                {message.reactions && message.reactions.length > 0 && (
-                    <div className={styles.reactions}>
-                        {message.reactions.map((r, i) => (
-                            <button 
-                                key={i} 
-                                className={`${styles.reaction} ${r.selectedByMe ? styles.myReaction : ''}`}
-                                onClick={() => handleReaction(r.emojiType)} // ✨ Add click handler
-                            >
-                                {r.emojiType} {r.count}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    {/* ✨ 리액션 위치 이동: 말풍선 옆, 시간 옆 */}
+                    {message.reactions && message.reactions.length > 0 && (
+                        <div className={styles.reactions}>
+                            {message.reactions.map((r, i) => (
+                                <button 
+                                    key={i} 
+                                    className={`${styles.reaction} ${r.selectedByMe ? styles.myReaction : ''}`}
+                                    onClick={() => handleReaction(r.emojiType)}
+                                >
+                                    {r.emojiType} {r.count}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {showMenu && (
@@ -187,6 +192,16 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                     options={menuOptions} 
                     onClose={() => setShowMenu(false)} 
                     onReaction={handleReaction} // ✨ Pass handler
+                />
+            )}
+
+            {/* 프로필 모달 */}
+            {showProfileModal && (
+                <UserDatailModal
+                    isOpen={showProfileModal}
+                    onClose={() => setShowProfileModal(false)}
+                    memberId={message.senderId}
+                    zIndex={15000}
                 />
             )}
         </div>

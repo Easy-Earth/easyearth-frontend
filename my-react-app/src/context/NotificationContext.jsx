@@ -29,7 +29,13 @@ export const NotificationProvider = ({ children }) => {
 
   // 알림 추가
   const addNotification = (notification) => {
-    setNotifications(prev => [notification, ...prev].slice(0, 50)); // 최대 50개
+    const safeNotification = {
+      ...notification,
+      id: notification.id || `noti-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      read: notification.read || false,
+      createdAt: notification.createdAt || new Date().toISOString()
+    };
+    setNotifications(prev => [safeNotification, ...prev].slice(0, 50)); // 최대 50개
   };
 
   // 알림 읽음 처리

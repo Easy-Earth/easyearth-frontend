@@ -1,10 +1,12 @@
 import styles from './CustomModal.module.css';
 
-function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'alert' }) {
+function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'alert', zIndex }) {
   if (!isOpen) return null;
 
+  const overlayStyle = zIndex ? { zIndex } : {};
+
   return (
-    <div className={styles.overlay}>
+    <div className={styles.overlay} style={overlayStyle}>
       <div className={styles.modal}>
         <div className={styles.content}>
           {title && <h4 className={styles.title}>{title}</h4>}
