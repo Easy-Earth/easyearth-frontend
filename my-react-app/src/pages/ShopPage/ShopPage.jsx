@@ -110,6 +110,7 @@ const ShopPage = () => {
   }, [allItems, categoryFilter, rarityFilter]);
 
   const handleBuy = (item) => {
+    console.log("item : " + item.category);
     const id = item.itemId || item.ITEM_ID; 
     if (!memberId) {
       setModalConfig({
@@ -288,16 +289,19 @@ const ShopPage = () => {
                     <ItemCssPreview item={item} />
                   )}
                 </div>
+                
                 <div className={styles.infoArea} style={{ position: 'relative', zIndex: 1 }}>
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
                   <div className={styles.cardFooter}>
                     <span className={styles.priceTag}>{rarityLower === 'legendary' ? '비매품' : `${(item.price || item.PRICE).toLocaleString()} P`}</span>
-                    {isOwned ? <span className={styles.ownedLabel}>보유 중</span> : <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">구매</Button>}
+                    {rarityLower === 'legendary' ? isOwned ? <span className={styles.ownedLabel}>보유 중</span> : 
+                    <span className={styles.ownedLabel}>뽑기 전용</span> : 
+                     <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">구매</Button>}
                   </div>
                 </div>
               </div>
             );
-          })}
+          })} A ? B 
         </div>
       )}
 

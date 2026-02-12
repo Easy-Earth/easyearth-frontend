@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data);
       return { success: false, message: err.response?.data || "로그인 실패" };
     }
   };

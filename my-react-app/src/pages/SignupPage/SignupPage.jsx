@@ -10,6 +10,9 @@ function SignupPage() {
   const { register, login } = useAuth();
   const navigate = useNavigate();
 
+  // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오기 (날짜 제한용)
+  const today = new Date().toISOString().split("T")[0];
+
   const [formData, setFormData] = useState({
     userId: "",
     password: "",
@@ -19,7 +22,7 @@ function SignupPage() {
     gender: "",
     address: "",
     detailAddress: "",
-    statusMessage: "", // [추가] 상태 메시지 필드 추가
+    statusMessage: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -77,6 +80,13 @@ function SignupPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // 생년월일 미래 날짜 입력 방지 로직
+    if (name === "birthday" && value > today) {
+      setErrors(prev => ({ ...prev, birthday: "미래 날짜는 선택할 수 없습니다." }));
+      return; 
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
     setErrors(prev => ({ ...prev, [name]: "" }));
   };
@@ -109,7 +119,7 @@ function SignupPage() {
         birthday: formData.birthday,
         gender: formData.gender,
         address: finalAddress,
-        statusMessage: formData.statusMessage, // [추가] 데이터 전송에 포함
+        statusMessage: formData.statusMessage,
       };
 
       const registerResult = await register(submitData);
@@ -173,7 +183,14 @@ function SignupPage() {
 
         <div className={styles.fieldContainer}>
           <label className={styles.label}>생년월일</label>
-          <input name="birthday" type="date" value={formData.birthday} onChange={handleChange} className={styles.input} />
+          <input 
+            name="birthday" 
+            type="date" 
+            value={formData.birthday} 
+            onChange={handleChange} 
+            max={today} // 오늘 이후 날짜 선택 비활성화
+            className={styles.input} 
+          />
           {errors.birthday && <span className={styles.error}>{errors.birthday}</span>}
         </div>
 
@@ -190,7 +207,6 @@ function SignupPage() {
           {errors.gender && <span className={styles.error}>{errors.gender}</span>}
         </div>
 
-        {/* [추가] 상태 메시지 필드 UI */}
         <div className={styles.fieldContainer}>
           <label className={styles.label}>상태 메시지</label>
           <input 
