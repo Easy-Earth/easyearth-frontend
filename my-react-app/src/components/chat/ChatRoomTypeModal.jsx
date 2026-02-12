@@ -1,17 +1,37 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react'; // useRef added
+import { uploadFile } from '../../apis/chatApi'; // ✨ import added
+import { getFullUrl } from '../../utils/imageUtil'; // ✨ import added
 import styles from './ChatRoomTypeModal.module.css';
-import Modal from '../common/Modal'; // Using common Modal for the container
+import Modal from '../common/Modal'; 
 
 const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
-    const [roomType, setRoomType] = useState('SINGLE'); // 'SINGLE' or 'GROUP'
+    const [roomType, setRoomType] = useState('SINGLE'); 
     const [searchValue, setSearchValue] = useState('');
     const [roomTitle, setRoomTitle] = useState('');
     const [invitedMemberIds, setInvitedMemberIds] = useState([]);
+    
+    // ✨ 이미지 관련 State
+    const [roomImage, setRoomImage] = useState(null);
+    const fileInputRef = useRef(null);
+
+    // ✨ 이미지 변경 핸들러
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            const fileUrl = await uploadFile(file);
+            setRoomImage(fileUrl);
+        } catch (error) {
+            console.error("이미지 업로드 실패", error);
+            showAlert("이미지 업로드에 실패했습니다.");
+        }
+    };
 
     const handleSubmit = () => {
         if (roomType === 'SINGLE') {
             if (!searchValue.trim()) {
-                showAlert("대화할 상대방의 ID를 입력해주세요.");
+                showAlert("대화할 상대방의 닉네임을 입력해주세요.");
                 return;
             }
             onCreate({ roomType, value: searchValue });
@@ -20,15 +40,14 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                 showAlert("채팅방 제목을 입력해주세요.");
                 return;
             }
-            // Group chat logic would go here (adding members logic needed)
-            // For now, simple version
-            onCreate({ roomType, value: roomTitle, invitedMemberIds });
+            // Pass roomImage to onCreate
+            onCreate({ roomType, value: roomTitle, invitedMemberIds, roomImage });
         }
     };
 
     return (
         <Modal
-            isOpen={true} // Controlled by parent rendering
+            isOpen={true} 
             onClose={onClose}
             title="새 채팅방 만들기"
         >
@@ -51,28 +70,55 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                 <div className={styles.formBody}>
                     {roomType === 'SINGLE' ? (
                         <div className={styles.inputGroup}>
-                            <label>상대방 아이디 (Login ID)</label>
+                            <label>상대방 닉네임</label>
                             <input 
                                 type="text" 
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
-                                placeholder="상대방 아이디를 입력하세요"
+                                placeholder="상대방 닉네임을 입력하세요"
                                 className={styles.input}
                             />
                         </div>
                     ) : (
-                        <div className={styles.inputGroup}>
-                            <label>채팅방 제목</label>
-                            <input 
-                                type="text" 
-                                value={roomTitle}
-                                onChange={(e) => setRoomTitle(e.target.value)}
-                                placeholder="채팅방 제목을 입력하세요"
-                                className={styles.input}
-                            />
-                            {/* Member invitation UI would be here */}
-                            <p className={styles.hint}>* 그룹 채팅 멤버 초대는 방 생성 후에도 가능합니다.</p>
-                        </div>
+                        <>
+                            {/* ✨ 그룹 채팅 이미지 업로드 */}
+                            <div className={styles.inputGroup}>
+                                <label>대표 이미지</label>
+                                <div className={styles.imageUpload}>
+                                    <div 
+                                        className={styles.imagePreview} 
+                                        onClick={() => fileInputRef.current.click()}
+                                    >
+                                        <img 
+                                            src={getFullUrl(roomImage) || "/default-room.svg"}  // ✨ .svg로 변경
+                                            alt="Room Preview" 
+                                            className={styles.roomImg}
+                                            onError={(e) => { e.target.src = "/default-room.svg"; }} // ✨ .svg로 변경
+                                        />
+                                        <div className={styles.cameraOverlay}>📷</div>
+                                    </div>
+                                    <input 
+                                        type="file" 
+                                        ref={fileInputRef}
+                                        style={{ display: 'none' }}
+                                        accept="image/*"
+                                        onChange={handleImageChange}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className={styles.inputGroup}>
+                                <label>채팅방 제목</label>
+                                <input 
+                                    type="text" 
+                                    value={roomTitle}
+                                    onChange={(e) => setRoomTitle(e.target.value)}
+                                    placeholder="채팅방 제목을 입력하세요"
+                                    className={styles.input}
+                                />
+                                <p className={styles.hint}>* 그룹 채팅 멤버 초대는 방 생성 후에도 가능합니다.</p>
+                            </div>
+                        </>
                     )}
                 </div>
 

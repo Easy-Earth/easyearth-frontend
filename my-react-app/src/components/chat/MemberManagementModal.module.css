@@ -22,14 +22,24 @@
     font-weight: 600;
 }
 
+/* content 스타일 수정 */
 .content {
     min-height: 200px;
+    display: flex;
+    flex-direction: column; 
+}
+
+/* 초대 섹션 스타일 */
+.inviteSection {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f3f4f6; /* 구분선 추가 */
 }
 
 .searchBox {
     display: flex;
     gap: 8px;
-    margin-bottom: 16px;
+    /* margin-bottom 제거 (inviteSection padding으로 대체) */
 }
 
 .input {
@@ -38,6 +48,7 @@
     border: 1px solid #e5e7eb;
     border-radius: 6px;
     outline: none;
+    font-size: 14px;
 }
 
 .searchBtn {
@@ -47,6 +58,7 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
+    font-weight: 500;
 }
 
 .resultItem {
@@ -56,6 +68,8 @@
     padding: 12px;
     background: #f9fafb;
     border-radius: 6px;
+    margin-top: 12px; /* 상단 여백 추가 */
+    border: 1px solid #e5e7eb;
 }
 
 .existsBadge {
@@ -73,6 +87,44 @@
     padding: 4px 12px;
     border-radius: 4px;
     cursor: pointer;
+}
+
+/* ✨ 검색 결과 리스트 스타일 */
+.searchResultList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 12px;
+}
+
+.resultInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.resultAvatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e5e7eb;
+}
+
+.resultText {
+    display: flex;
+    flex-direction: column;
+}
+
+.resultName {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+}
+
+.resultId {
+    font-size: 12px;
+    color: #9ca3af;
 }
 
 .memberList {
@@ -141,4 +193,99 @@
     border: none;
     border-radius: 6px;
     cursor: pointer;
+}
+
+/* ✨ Settings Tab Styles */
+.settingsSection {
+    padding: 8px 0;
+}
+
+.settingItem {
+    margin-bottom: 20px;
+}
+
+.settingLabel {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.settingRow {
+    display: flex;
+    gap: 8px;
+}
+
+.settingRow .input {
+    flex: 1;
+}
+
+.actionBtn {
+     padding: 8px 16px;
+     border-radius: 6px;
+     border: none;
+     background-color: #3b82f6;
+     color: white;
+     cursor: pointer;
+     font-size: 14px;
+     white-space: nowrap;
+}
+
+.actionBtn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.noPermission {
+    text-align: center;
+    color: #6b7280;
+    padding: 32px 0;
+    background-color: #f9fafb;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+/* ✨ 이미지 설정 스타일 */
+.imageSetting {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+}
+
+.imagePreview {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    border: 3px solid #e5e7eb;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.roomImg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cameraOverlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30px;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.imagePreview:hover .cameraOverlay {
+    opacity: 1;
 }
