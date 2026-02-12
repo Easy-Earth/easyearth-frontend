@@ -13,7 +13,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
-    if (token && savedUser) setUser(JSON.parse(savedUser));
+    if (token && savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      
+      // ✨ [수정] 자동 로그인 시 온라인 상태 업데이트 추가
+      updateOnlineStatus(parsedUser.memberId, 1).catch(err => {
+        console.error("자동 로그인 온라인 상태 업데이트 실패", err);
+      });
+    }
     setIsLoading(false);
   }, []);
 

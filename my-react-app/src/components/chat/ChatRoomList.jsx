@@ -93,6 +93,7 @@ const ChatRoomList = () => {
             loadChatRooms(); // 목록 새로고침
         } catch (error) {
             console.error("즐겨찾기 토글 실패", error);
+            showAlert("즐겨찾기 설정에 실패했습니다.");
         }
     };
 
@@ -388,6 +389,7 @@ const ChatRoomList = () => {
                 type={modalConfig.type}
                 onConfirm={modalConfig.onConfirm}
                 onCancel={modalConfig.onCancel}
+                zIndex={11000} // ✨ z-index 추가 (ChatRoomTypeModal보다 높게)
             />
         </div>
     );

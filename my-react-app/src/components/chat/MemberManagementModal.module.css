@@ -148,10 +148,20 @@
 
 .roleBadge {
     font-size: 11px;
-    background: #fbbf24;
-    color: white;
-    padding: 2px 6px;
-    border-radius: 4px;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: 8px;
+}
+
+/* 초대 대기중 배지 */
+.pendingBadge {
+    font-size: 11px;
+    background: #fef3c7;
+    color: #92400e;
+    padding: 2px 8px;
+    border-radius: 12px;
     margin-left: 8px;
 }
 
@@ -194,6 +204,42 @@
     border-radius: 6px;
     cursor: pointer;
 }
+
+/* ✨ Horizontal Chip Style for Search Results */
+.searchResultGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 0 4px;
+}
+
+.searchResultChip {
+    display: flex;
+    align-items: center;
+    padding: 8px 14px;
+    background-color: #fff;
+    border: 1px solid #d1d5db;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #374151;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.searchResultChip:hover:not(:disabled) {
+    background-color: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+.searchResultChip:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: default;
+    border-color: #e5e7eb;
+}
+
 
 /* ✨ Settings Tab Styles */
 .settingsSection {

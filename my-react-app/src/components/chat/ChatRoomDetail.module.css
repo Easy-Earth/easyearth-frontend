@@ -341,3 +341,16 @@
     transform: scale(1.05);
 }
 
+/* ✨ Highlight Animation */
+@keyframes highlightPulse {
+    0% { background-color: rgba(250, 204, 21, 0.5); transform: scale(1.02); }
+    50% { background-color: rgba(250, 204, 21, 0.3); transform: scale(1.02); }
+    100% { background-color: transparent; transform: scale(1); }
+}
+
+.highlight {
+    animation: highlightPulse 2s ease-out forwards;
+    border-radius: 8px;
+    transition: all 0.3s;
+}
+

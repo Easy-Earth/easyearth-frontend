@@ -4,7 +4,7 @@ import { getFullUrl } from '../../utils/imageUtil'; // ✨ import 추가
 import Modal from '../common/Modal'; 
 import styles from './MemberManagementModal.module.css';
 
-const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomImage, currentMembers, currentUserId, isOwner, roomType, showAlert, showConfirm }) => {
+const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomImage, currentMembers, currentUserId, isOwner, roomType, showAlert, showConfirm, onMemberUpdate }) => {
     const [activeTab, setActiveTab] = useState('MANAGE'); 
     const [searchValue, setSearchValue] = useState('');
     const [searchResult, setSearchResult] = useState(null);
@@ -18,6 +18,16 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
     useEffect(() => {
         setPreviewImage(currentRoomImage);
     }, [currentRoomImage]);
+
+    // ✨ currentMembers 변경 시 검색 결과 업데이트 (실시간 반영)
+    useEffect(() => {
+        if (searchResult) {
+            setSearchResult(prev => prev.map(member => ({
+                ...member,
+                exists: currentMembers.some(m => String(m.memberId) === String(member.memberId))
+            })));
+        }
+    }, [currentMembers]);
 
     // Filter members for management list (exclude self)
     const otherMembers = currentMembers.filter(m => String(m.memberId) !== String(currentUserId));
@@ -48,10 +58,11 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         if (!targetMember) return;
         try {
             await inviteUser(roomId, targetMember.memberId, currentUserId);
-            showAlert(`${targetMember.nickname}님을 초대했습니다!`);
-            setSearchValue('');
-            setSearchResult(null);
-            onClose();
+            showAlert(`${targetMember.name || targetMember.loginId}님을 초대했습니다!`);
+            // setSearchValue(''); // ✨ 검색 값 유지
+            // setSearchResult(null); // ✨ 검색 결과 유지
+            onMemberUpdate(); // ✨ 멤버 목록 갱신 트리거
+            // onClose(); // ✨ 계속 초대할 수 있도록 닫지 않음
         } catch (error) {
             console.error(error);
             showAlert("초대에 실패했습니다.");
@@ -64,6 +75,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
              try {
                 await kickMember(roomId, targetId, currentUserId);
                 showAlert(`${targetName}님을 강퇴했습니다.`);
+                onMemberUpdate(); // ✨ 멤버 목록 갱신 트리거
             } catch (error) {
                 console.error(error);
                 showAlert("강퇴 실패.");
@@ -71,12 +83,20 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         });
     };
 
-    const handleDelegate = (targetId, targetName) => {
+    const handleDelegate = (targetId, targetName, invitationStatus) => {
+        // 초대 수락한 사용자만 위임 가능
+        if (invitationStatus !== 'ACCEPTED') {
+            showAlert("초대를 수락한 사용자에게만 방장 권한을 위임할 수 있습니다.");
+            return;
+        }
+        
         showConfirm(`${targetName}님에게 방장 권한을 위임하시겠습니까?\n위임 후에는 일반 멤버로 변경됩니다.`, async () => {
              try {
                 await updateRole(roomId, targetId, currentUserId, "OWNER");
                 showAlert(`${targetName}님에게 방장 권한을 위임했습니다.`);
                 onClose(); 
+                // 페이지 새로고침하여 권한 업데이트
+                window.location.reload();
             } catch (error) {
                 console.error(error);
                 showAlert("권한 위임 실패.");
@@ -168,22 +188,19 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                 </div>
                                 
                                 {searchResult && searchResult.length > 0 && (
-                                    <ul className={styles.memberList}>
+                                    <div className={styles.searchResultGrid}>
                                         {searchResult.map(member => (
-                                            <li key={member.memberId} className={styles.memberItem}>
-                                                <div className={styles.memberInfo}>
-                                                    <span className={styles.memberName}>{member.name}</span>
-                                                </div>
-                                                <button 
-                                                    onClick={() => handleInvite(member)} 
-                                                    className={member.exists ? styles.disabledBtn : styles.inviteBtn}
-                                                    disabled={member.exists}
-                                                >
-                                                    {member.exists ? "이미 멤버" : "초대"}
-                                                </button>
-                                            </li>
+                                            <button 
+                                                key={member.memberId} 
+                                                className={styles.searchResultChip}
+                                                onClick={() => !member.exists && handleInvite(member)}
+                                                disabled={member.exists}
+                                                title={member.exists ? "이미 멤버입니다" : "클릭하여 초대"}
+                                            >
+                                                {member.name} {!member.exists ? "초대하기" : "(참여중)"}
+                                            </button>
                                         ))}
-                                    </ul>
+                                    </div>
                                 )}
                             </div>
                         )}
@@ -203,11 +220,15 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                 <li key={member.memberId} className={styles.memberItem}>
                                     <div className={styles.memberInfo}>
                                         <span className={styles.memberName}>{member.name}</span>
+                                        {member.invitationStatus === 'PENDING' && (
+                                            <span className={styles.pendingBadge}>초대 대기중</span>
+                                        )}
                                         {isOwner && (
                                             <div className={styles.actionBtns}>
                                                 <button 
                                                     className={styles.delegateBtn}
-                                                    onClick={() => handleDelegate(member.memberId, member.name)}
+                                                    onClick={() => handleDelegate(member.memberId, member.name, member.invitationStatus)}
+                                                    disabled={member.invitationStatus === 'PENDING'}
                                                 >
                                                     위임
                                                 </button>
@@ -266,7 +287,8 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                             className={styles.input}
                                             value={newTitle}
                                             onChange={(e) => setNewTitle(e.target.value)}
-                                            placeholder="채팅방 이름을 입력하세요"
+                                            placeholder="채팅방 이름을 입력하세요(최대 15글자)"
+                                            maxLength={15} // ✨ 10글자 제한
                                         />
                                         <button 
                                             className={styles.actionBtn}

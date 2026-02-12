@@ -6,7 +6,7 @@ import MessageContextMenu from './MessageContextMenu';
 import { toggleReaction, deleteMessage } from '../../apis/chatApi';
 import UserDatailModal from '../common/UserDatailModal';
 
-const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted }) => {
+const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted, showAlert, onReplyClick }) => {
     const { user } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -28,8 +28,13 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onIm
     // 시간 포맷팅
     const formatTime = (isoString) => {
         if (!isoString) return "";
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        try {
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return ""; // 유효하지 않은 날짜 처리
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return "";
+        }
     };
 
     // 컨텍스트 메뉴 핸들러
@@ -60,6 +65,9 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onIm
             // onRefresh() 제거 (WebSocket에서 처리)
         } catch (error) {
             console.error("리액션 실패", error);
+            if (showAlert) {
+                showAlert("리액션을 추가하는데 실패했습니다.");
+            }
         }
     };
 
@@ -69,6 +77,9 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onIm
             // onRefresh() 제거 (WebSocket에서 처리)
         } catch (error) {
             console.error("삭제 실패", error);
+            if (showAlert) {
+                showAlert("메시지 삭제에 실패했습니다.");
+            }
         }
     };
 
@@ -124,7 +135,11 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onIm
                 
                 {/* 답장 인용 표시 */}
                 {message.parentMessageId && (
-                     <div className={styles.replyPreview}>
+                     <div 
+                        className={styles.replyPreview} 
+                        onClick={() => onReplyClick && onReplyClick(message.parentMessageId)}
+                        style={{ cursor: 'pointer' }}
+                     >
                         <span className={styles.replyName}>{message.parentMessageSenderName}에게 답장:</span>
                         <div className={styles.replyContent}>{message.parentMessageContent}</div>
                      </div>
