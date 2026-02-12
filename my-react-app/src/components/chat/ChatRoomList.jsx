@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext'; // ✨ Import
 import { createChatRoom, toggleFavorite, acceptInvitation, rejectInvitation, uploadFile, updateProfile } from '../../apis/chatApi';
 import { getFullUrl } from '../../utils/imageUtil'; // Import utility
 import ChatRoomTypeModal from './ChatRoomTypeModal';
@@ -11,6 +12,7 @@ import styles from './ChatRoomList.module.css';
 const ChatRoomList = () => {
     const { chatRooms, loadChatRooms, connected } = useChat();
     const { user, updateUser } = useAuth();
+    const { markNotificationsAsReadForRoom } = useNotification(); // ✨ Destructure
     const navigate = useNavigate();
     const { roomId } = useParams();
     const [showTypeModal, setShowTypeModal] = useState(false);
@@ -103,6 +105,7 @@ const ChatRoomList = () => {
         try {
             await acceptInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
+            markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
         } catch (error) {
             console.error("초대 수락 실패", error);
             showAlert("초대 수락에 실패했습니다.");
@@ -115,6 +118,7 @@ const ChatRoomList = () => {
         try {
             await rejectInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
+            markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
         } catch (error) {
             console.error("초대 거절 실패", error);
             showAlert("초대 거절에 실패했습니다.");
@@ -234,11 +238,13 @@ const ChatRoomList = () => {
                 <div className={styles.headerRight}>
                     {/* 닉네임 표시 */}
                     <span className={styles.myNickname}>{user?.name}</span>
+                    {/* Debugging User Object */}
+                    {console.log("Current User in ChatRoomList:", user)}
 
                     {/* 내 프로필 */}
                     <div className={styles.myProfile} onClick={handleProfileClick} title="내 프로필 이미지 변경">
                          <img 
-                            src={getFullUrl(user?.profileImageUrl) || "/default-profile.png"} 
+                            src={getFullUrl(user?.profileImageUrl || user?.profileImage) || "/default-profile.png"} 
                             alt="My Profile" 
                             className={styles.myProfileImg}
                             onError={(e) => {

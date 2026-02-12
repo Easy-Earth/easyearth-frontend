@@ -98,6 +98,11 @@
     flex: 1;
     overflow: hidden;
     white-space: nowrap; /* Single line */
+    cursor: pointer; /* ✨ Clickable */
+    transition: opacity 0.2s;
+}
+.noticeContentWrapper:hover {
+    opacity: 0.7;
 }
 .noticeIcon {
     font-size: 16px;
@@ -165,6 +170,8 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    align-items: flex-start; /* ✨ Force left alignment */
+    text-align: left;
 }
 .replyToName {
     font-weight: bold;
@@ -342,15 +349,77 @@
 }
 
 /* ✨ Highlight Animation */
+/* ✨ Highlight Animation */
 @keyframes highlightPulse {
-    0% { background-color: rgba(250, 204, 21, 0.5); transform: scale(1.02); }
-    50% { background-color: rgba(250, 204, 21, 0.3); transform: scale(1.02); }
-    100% { background-color: transparent; transform: scale(1); }
+    0% { background-color: rgba(0, 0, 0, 0.0); }
+    15% { background-color: rgba(255, 247, 237, 1); } /* Soft Orange/Yellow tint */
+    100% { background-color: rgba(0, 0, 0, 0.0); }
 }
 
 .highlight {
     animation: highlightPulse 2s ease-out forwards;
-    border-radius: 8px;
-    transition: all 0.3s;
+    border-radius: 12px;
 }
 
+
+/* ✨ New Message Notification Banner */
+.newMessageNotification {
+    position: absolute;
+    bottom: 80px; /* inputAreaWrapper(padding) + input height 고려 */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(58, 58, 58, 0.9);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.2s ease;
+    animation: slideUp 0.3s ease-out;
+    max-width: 80%;
+}
+
+.newMessageNotification:hover {
+    background-color: rgba(40, 40, 40, 0.95);
+    transform: translateX(-50%) translateY(-2px);
+}
+
+.notificationIcon {
+    font-size: 1.2rem;
+}
+
+.notificationContent {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    overflow: hidden;
+}
+
+.notificationSender {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #4CAF50; /* Accent color */
+}
+
+.notificationText {
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}

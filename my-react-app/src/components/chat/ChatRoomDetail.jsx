@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember, getChatRoomUsers, setNotice, clearNotice, getChatRoomDetail, searchMessages } from '../../apis/chatApi'; // searchMessages 추가
 import { getFullUrl } from '../../utils/imageUtil';
+import { extractOriginalFileName } from './chatFileUtil';
 import MessageBubble from './MessageBubble';
 import FileUploadButton from './FileUploadButton';
 import MemberManagementModal from './MemberManagementModal';
@@ -37,6 +38,7 @@ const ChatRoomDetail = ({ roomId }) => {
     const [roomInfo, setRoomInfo] = useState({ title: '', type: 'SINGLE', members: [], creatorId: null, noticeContent: null, noticeMessageId: null, roomImage: null });
     
     const [replyTo, setReplyTo] = useState(null);
+    const [newlyArrivedMessage, setNewlyArrivedMessage] = useState(null); // ✨ New state for notification
     const [modalConfig, setModalConfig] = useState({
         isOpen: false, title: "", message: "", type: "alert", onConfirm: null, onCancel: null
     });
@@ -88,6 +90,10 @@ const ChatRoomDetail = ({ roomId }) => {
             if (cursorId === 0) {
                 setMessages(data);
             } else {
+                // ✨ 목록 앞부분에 추가될 때 현재 스크롤 높이 저장
+                if (messagesContainerRef.current) {
+                    prevScrollHeight.current = messagesContainerRef.current.scrollHeight;
+                }
                 setMessages(prev => [...data, ...prev]);
             }
             
@@ -192,6 +198,12 @@ const ChatRoomDetail = ({ roomId }) => {
             
             if (receivedMsg.senderId !== user.memberId) {
                 markAsRead(roomId, user.memberId, receivedMsg.messageId).then(() => { loadChatRooms(); });
+                
+                // ✨ [New] Check if user is NOT at bottom
+                if (!isUserAtBottomRef.current) {
+                    console.log("🔔 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
+                    setNewlyArrivedMessage(receivedMsg);
+                }
             }
             // Notice type handling logic removed/moved up
             if (receivedMsg.messageType === 'NOTICE' || receivedMsg.type === 'NOTICE') { fetchRoomInfo(); }
@@ -286,7 +298,13 @@ const ChatRoomDetail = ({ roomId }) => {
         const handleScroll = () => {
             const { scrollTop, scrollHeight, clientHeight } = container;
             // 하단에서 100px 이내면 하단으로 간주
-            isUserAtBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+            isUserAtBottomRef.current = isAtBottom;
+
+            // ✨ [New] 하단 도달 시 알림 해제
+            if (isAtBottom) {
+                setNewlyArrivedMessage(null);
+            }
         };
         
         container.addEventListener('scroll', handleScroll);
@@ -302,6 +320,7 @@ const ChatRoomDetail = ({ roomId }) => {
             isFirstLoad.current = false;
             previousMessageCountRef.current = messages.length;
             isUserAtBottomRef.current = true;
+            setNewlyArrivedMessage(null); // Clear on first load
         } 
         // ✨ 새 메시지가 추가되고 사용자가 하단에 있을 때만 스크롤
         else if (messages.length > previousMessageCountRef.current && isUserAtBottomRef.current) {
@@ -312,6 +331,21 @@ const ChatRoomDetail = ({ roomId }) => {
             previousMessageCountRef.current = messages.length;
         }
         // 무한 스크롤로 과거 메시지 로드 시에는 스크롤 하지 않음
+    }, [messages]);
+
+    // ✨ [Fix] 과거 메시지 로드 시 스크롤 위치 유지 (깜빡임 방지용 useLayoutEffect)
+    useLayoutEffect(() => {
+        if (prevScrollHeight.current > 0 && messagesContainerRef.current) {
+            const container = messagesContainerRef.current;
+            const currentScrollHeight = container.scrollHeight;
+            const diff = currentScrollHeight - prevScrollHeight.current;
+
+            if (diff > 0) {
+                console.log(`📜 스크롤 보정: +${diff}px (과거 메시지 로드)`);
+                container.scrollTop = diff; // 기존 스크롤 위치(0 근처) + 늘어난 높이
+            }
+            prevScrollHeight.current = 0; // Reset
+        }
     }, [messages]);
 
     const handleSend = () => {
@@ -398,7 +432,12 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     const handleRefresh = () => { fetchRoomInfo(); fetchMessages(0); };
-    const handleImageLoad = () => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+    // ✨ [Fix] 이미지가 로드될 때, 사용자가 이미 하단에 있는 경우에만 스크롤
+    const handleImageLoad = () => { 
+        if (isUserAtBottomRef.current) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
+        }
+    };
 
     // ✨ 검색 핸들러 함수들
     const handleSearch = async () => {
@@ -478,8 +517,17 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     // ✨ [Refactor] 메시지 스크롤 공통 함수 (하이라이트 포함)
+    // ✨ [Refactor] 메시지 스크롤 공통 함수 (하이라이트 포함)
+    const highlightTimeoutRef = useRef(null); // ✨ Timer Ref
+
     const scrollToMessage = (messageId) => {
         console.log("📜 스크롤 시도: messageId =", messageId);
+        
+        // ✨ 기존 타이머 제거 (하이라이트 끊김 방지)
+        if (highlightTimeoutRef.current) {
+            clearTimeout(highlightTimeoutRef.current);
+        }
+
         setHighlightedMessageId(messageId); // ✨ State 하이라이트 활성화
 
         // DOM 요소 찾기 (약간의 지연을 두어 렌더링 확보)
@@ -489,19 +537,16 @@ const ChatRoomDetail = ({ roomId }) => {
             if (element) {
                 console.log("✅ 요소 찾음, 스크롤 실행");
                 element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                
-                // ✨ CSS 애니메이션 클래스 추가
-                element.classList.add(styles.highlight);
-                setTimeout(() => element.classList.remove(styles.highlight), 2000);
             } else {
                 console.warn("❌ 메시지를 찾을 수 없습니다 (DOM 미존재):", messageId);
                 showAlert("해당 메시지를 찾을 수 없습니다. (스크롤 위쪽에 있을 수 있습니다)");
             }
         }, 100);
 
-        // ✨ 3초 후 State 하이라이트 해제
-        setTimeout(() => {
+        // ✨ 3초 후 State 하이라이트 해제 (Timer ID 저장)
+        highlightTimeoutRef.current = setTimeout(() => {
             setHighlightedMessageId(null);
+            highlightTimeoutRef.current = null;
         }, 3000);
     };
 
@@ -565,10 +610,14 @@ const ChatRoomDetail = ({ roomId }) => {
             {/* ✨ Notice Banner */}
             {roomInfo.noticeContent && (
                 <div className={styles.noticeBanner}>
-                    <div className={styles.noticeContentWrapper}>
+                    <div 
+                        className={styles.noticeContentWrapper} 
+                        onClick={() => scrollToMessage(roomInfo.noticeMessageId)} // ✨ Click handler added
+                        title="공지 메시지로 이동"
+                    >
                         <span className={styles.noticeIcon}>📢</span>
                         <div className={styles.noticeTextContainer}>
-                             <span className={styles.noticeText}>{roomInfo.noticeContent}</span>
+                             <span className={styles.noticeText}>{extractOriginalFileName(roomInfo.noticeContent)}</span>
                              {roomInfo.noticeSenderName && (
                                 <span className={styles.noticeSender}> - {roomInfo.noticeSenderName}</span>
                              )}
@@ -639,6 +688,9 @@ const ChatRoomDetail = ({ roomId }) => {
                                     onRefresh={handleRefresh}
                                     onImageLoad={handleImageLoad}
                                     isHighlighted={highlightedMessageId === (msg.messageId || msg.id)}
+                                    // ✨ 하이라이트 여부 전달
+                                    showAlert={showAlert} // Pass showAlert
+                                    onReplyClick={scrollToMessage} // ✨ 답장 클릭 핸들러 전달
                                 />
                             </div>
                         </React.Fragment>
@@ -649,11 +701,31 @@ const ChatRoomDetail = ({ roomId }) => {
 
             {/* Input Area */}
             <div className={styles.inputAreaWrapper}>
+                {/* ✨ New Message Notification */}
+                {newlyArrivedMessage && (
+                    <div 
+                        className={styles.newMessageNotification} 
+                        onClick={() => {
+                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                            setNewlyArrivedMessage(null);
+                        }}
+                    >
+                        <span className={styles.notificationIcon}>⬇️</span>
+                        <div className={styles.notificationContent}>
+                            <span className={styles.notificationSender}>{newlyArrivedMessage.senderName}</span>
+                            <span className={styles.notificationText}>
+                                {newlyArrivedMessage.contentType === 'IMAGE' ? '사진' : 
+                                 newlyArrivedMessage.contentType === 'FILE' ? '파일' : 
+                                 newlyArrivedMessage.content}
+                            </span>
+                        </div>
+                    </div>
+                )}
                 {replyTo && (
                     <div className={styles.replyBanner}>
                         <div className={styles.replyInfo}>
                             <span className={styles.replyToName}>To. {replyTo.senderName}</span>
-                            <span className={styles.replyToContent}>{replyTo.content}</span>
+                            <span className={styles.replyToContent}>{extractOriginalFileName(replyTo.content)}</span>
                         </div>
                         <button onClick={() => setReplyTo(null)} className={styles.replyCloseBtn}>✖</button>
                     </div>

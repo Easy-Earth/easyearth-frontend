@@ -150,6 +150,12 @@
     display: block;
 }
 
+.imageLink {
+    display: block; /* Ensure it behaves as a block container for the image */
+    cursor: pointer;
+    text-decoration: none;
+}
+
 .fileLink {
     text-decoration: none;
     color: #2563eb;
@@ -232,9 +238,15 @@
     color: #9ca3af;
 }
 
-/* ✨ 검색 결과 하이라이트 */
+/* ✨ 검색 결과 하이라이트 (버블 자체 강조) */
+.highlighted .bubble {
+    background-color: #fee500 !important; /* Kakao Yellow for strong visibility */
+    transition: background-color 0.5s ease;
+    box-shadow: 0 0 10px rgba(254, 229, 0, 0.5); /* Glowing effect */
+}
+
+/* 래퍼 배경 제거 */
 .highlighted {
-    background-color: rgba(255, 235, 59, 0.4) !important;
-    transition: background-color 0.3s ease;
+    background-color: transparent !important;
 }
 
