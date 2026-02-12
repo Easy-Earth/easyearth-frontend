@@ -95,18 +95,35 @@
   border-color: var(--btn-primary-hover);
 }
 
+/* 기본 버튼 스타일 */
 .logoutBtn {
-  background: transparent;
-  color: var(--gray-400);
-  border: none;
-  font-size: 0.9rem;
+  font-family: inherit;
+  padding: 6px 20px;
+  border-radius: 6px;
   cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s;
 }
 
-.logoutBtn:hover {
+/* Login: 테두리 버튼 형태 */
+.logoutBtn {
+  background: transparent;
+  border: 1px solid var(--gray-400);
   color: var(--gray-100);
 }
 
+/* .logoutBtn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: rgba(222, 74, 81, 0.1); 
+} */
+
+.logoutBtn:hover {
+  border-color: rgb(255, 145, 0);
+  color: rgb(255, 145, 0);
+  background: rgba(255, 145, 0, 0.1); 
+}
 .welcome {
   color: var(--gray-100);
   font-size: 0.9rem;
