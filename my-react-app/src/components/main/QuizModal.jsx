@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Modal from "../common/Modal";
-import { getQuizByDifficulty, saveQuizResult } from "../../apis/quizApi";
+import { getQuizByDifficulty, saveQuizAttempt } from "../../apis/quizApi";
 import styles from "./QuizModal.module.css";
 
 const QuizModal = ({ isOpen, onClose }) => {
@@ -56,7 +56,7 @@ const QuizModal = ({ isOpen, onClose }) => {
         setSelectedPicks(newSelectedPicks);
     };
 
-    const handleVerify = () => {
+    const handleVerify = async () => {
         const selection = selectedPicks[currentIndex];
         if (selection === null || verifiedStatus[currentIndex]) return;
 
@@ -69,26 +69,31 @@ const QuizModal = ({ isOpen, onClose }) => {
         setPicks(newPicks);
 
         const quiz = quizzes[currentIndex];
-        if (selection === quiz.quizAnswer) {
+        const isCorrect = selection === quiz.quizAnswer;
+
+        if (isCorrect) {
             setScore(score + quiz.point);
+        }
+
+        // 📝 문제별 이력 저장 (즉시 전송)
+        try {
+            const userStr = localStorage.getItem("user");
+            const user = userStr ? JSON.parse(userStr) : null;
+            const userId = user?.memberId || 1;
+
+            await saveQuizAttempt(userId, quiz.quizNo, isCorrect, quiz.point);
+            console.log("Quiz attempt saved:", { quizNo: quiz.quizNo, isCorrect, point: quiz.point });
+        } catch (error) {
+            console.error("Failed to save quiz attempt", error);
         }
     };
 
 
-    const handleNext = async () => {
+    const handleNext = () => {
         if (currentIndex < quizzes.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
-            // 퀴즈 종료 시 결과 저장
-            try {
-                const userStr = localStorage.getItem("user");
-                const user = userStr ? JSON.parse(userStr) : null;
-                const userId = user?.memberId || 1;
-
-                await saveQuizResult(userId, difficulty, score);
-            } catch (error) {
-                console.error("Failed to save quiz result", error);
-            }
+            // 퀴즈 종료 -> 결과 화면으로 이동 (저장은 이미 완료됨)
             setStep("result");
         }
     };
