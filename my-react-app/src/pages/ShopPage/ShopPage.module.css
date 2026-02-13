@@ -1,5 +1,7 @@
+/* ShopPage.module.css */
+
 /* ---------------------------------------------------------
-   0. [추가] 상단 포인트 표시 레이아웃 (기존 CSS 유지 + 상단 추가)
+   0. 상단 포인트 표시 레이아웃
 --------------------------------------------------------- */
 .headerTop {
   display: flex;
@@ -58,209 +60,297 @@
 /* ---------------------------------------------------------
    1. 기본 레이아웃 및 컨테이너
 --------------------------------------------------------- */
-.container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; font-family: 'Pretendard', sans-serif; }
-.pageTitle { font-size: 32px; font-weight: 900; color: #1e293b; margin: 0; text-align: left; }
+.container { 
+  max-width: 1100px; 
+  margin: 0 auto; 
+  padding: 40px 20px; 
+  font-family: 'Pretendard', sans-serif; 
+}
+
+.pageTitle { 
+  font-size: 32px; 
+  font-weight: 900; 
+  color: #1e293b; 
+  margin: 0; 
+  text-align: left; 
+}
 
 .gachaBanner {
   background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
-  border: 2px dashed #99f6e4; border-radius: 30px;
-  padding: 45px 20px; display: flex; flex-direction: column; 
-  justify-content: center; align-items: center; text-align: center;
-  gap: 25px; margin-bottom: 50px; box-shadow: 0 10px 25px rgba(20, 184, 166, 0.05);
+  border: 2px dashed #99f6e4; 
+  border-radius: 30px;
+  padding: 45px 20px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  text-align: center;
+  gap: 25px; 
+  margin-bottom: 50px; 
+  box-shadow: 0 10px 25px rgba(20, 184, 166, 0.05);
 }
 
 .gachaText h3 { font-weight: 900; color: #0f766e; font-size: 28px; margin: 0; }
 .gachaText p { color: #64748b; font-size: 16px; margin: 0; }
 
-.filterWrapper { display: flex; flex-direction: column; gap: 15px; background: #f8fafc; padding: 25px; border-radius: 20px; margin-bottom: 40px; }
+/* 🌟 버튼 텍스트 중앙 정렬 및 흰색 고정 */
+.buyBtnText, .btnText {
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  line-height: 1;      /* 텍스트 줄높이 제거로 수직 중앙 확보 */
+  margin: 0;
+  padding: 0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.filterWrapper { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 15px; 
+  background: #f8fafc; 
+  padding: 25px; 
+  border-radius: 20px; 
+  margin-bottom: 40px; 
+}
+
 .filterGroup { display: flex; align-items: center; gap: 20px; }
 .filterLabel { font-weight: 800; color: #64748b; font-size: 14px; min-width: 55px; }
 .categoryBar { display: flex; gap: 10px; flex-wrap: wrap; }
-.categoryTab { padding: 8px 18px; border-radius: 20px; border: 1px solid #e2e8f0; background: white; font-weight: 700; cursor: pointer; color: #94a3b8; font-size: 14px; transition: all 0.2s ease; }
+
+.categoryTab { 
+  padding: 8px 18px; 
+  border-radius: 20px; 
+  border: 1px solid #e2e8f0; 
+  background: white; 
+  font-weight: 700; 
+  cursor: pointer; 
+  color: #94a3b8; 
+  font-size: 14px; 
+  transition: all 0.2s ease; 
+}
+
 .categoryTab.active { background: #14b8a6; color: white; border-color: #14b8a6; }
 
 /* ---------------------------------------------------------
-   2. 아이템 카드 & 카드 배경 글로우 (카드 자체 효과)
+   2. 아이템 카드 스타일
 --------------------------------------------------------- */
-.itemGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
-.itemCard {
-  background: white; border-radius: 20px; border: 1px solid #f1f5f9;
-  overflow: hidden; display: flex; flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer;
-  position: relative; animation: fadeIn 0.4s ease-out;
+.itemGrid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); 
+  gap: 25px; 
 }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.itemCard:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+.itemCard {
+  background: white; 
+  border-radius: 20px; 
+  border: 1px solid #f1f5f9;
+  overflow: hidden; 
+  display: flex; 
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+  cursor: pointer;
+  position: relative; 
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn { 
+  from { opacity: 0; transform: translateY(10px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+.itemCard:hover { 
+  transform: translateY(-10px); 
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); 
+}
 
 .legendary { border-top: 6px solid #f59e0b !important; }
 .epic { border-top: 6px solid #8b5cf6 !important; }
 .rare { border-top: 6px solid #3b82f6 !important; }
 .common { border-top: 6px solid #94a3b8 !important; }
 
-.imageArea { height: 180px; background: #fff; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.imageArea { 
+  height: 180px; 
+  background: #fff; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  position: relative; 
+  overflow: hidden; 
+}
 
-/* 카드 내부 등급별 배경 은은한 효과 */
-.cardRarityBg { position: absolute; width: 140%; height: 140%; z-index: 0; opacity: 0.15; filter: blur(40px); transition: 0.3s; }
-.common .cardRarityBg { background: radial-gradient(circle, #94a3b8 0%, transparent 70%); }
-.rare .cardRarityBg { background: radial-gradient(circle, #3b82f6 0%, transparent 70%); opacity: 0.2; }
-.epic .cardRarityBg { background: radial-gradient(circle, #8b5cf6 0%, transparent 70%); opacity: 0.25; }
-.legendary .cardRarityBg { background: radial-gradient(circle, #f59e0b 0%, transparent 70%); opacity: 0.3; }
+.badgeImg { 
+  max-width: 65%; 
+  max-height: 110px; 
+  object-fit: contain; 
+  z-index: 1; 
+  filter: drop-shadow(0 5px 15px rgba(0,0,0,0.15)); 
+}
 
-.badgeImg { max-width: 65%; max-height: 110px; object-fit: contain; z-index: 1; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.15)); }
-.rarityTag { position: absolute; top: 15px; right: 15px; font-size: 11px; font-weight: 800; padding: 4px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.9); z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-
-/* ---------------------------------------------------------
-   3. [해결] 프리뷰 배경 및 칭호 텍스트 컬러 복구
---------------------------------------------------------- */
-.badgeCard { position: relative; width: 100%; height: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center; z-index: 1; }
-.isBackgroundOnly { background: #000; }
-.isTitleOnly { background: transparent; }
-
-/* COMMON, RARE 포함 모든 프리뷰 배경 글로우 레이어 */
-.badgeGlow { 
+.rarityTag { 
   position: absolute; 
-  inset: -20%; 
-  z-index: 0; 
-  background: radial-gradient(circle at 20% 30%, var(--g1), transparent 55%), 
-              radial-gradient(circle at 80% 35%, var(--g2), transparent 60%); 
+  top: 15px; 
+  right: 15px; 
+  font-size: 11px; 
+  font-weight: 800; 
+  padding: 4px 10px; 
+  border-radius: 12px; 
+  background: rgba(255, 255, 255, 0.9); 
+  z-index: 10; 
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); 
 }
-
-/* 배경일 경우에만 어두운 톤 추가 */
-.isBackgroundOnly .badgeGlow {
-  background: radial-gradient(circle at 20% 30%, var(--g1), transparent 55%), 
-              radial-gradient(circle at 80% 35%, var(--g2), transparent 60%),
-              linear-gradient(135deg, rgba(12, 18, 28, 0.96), rgba(8, 30, 34, 0.94));
-}
-
-/* 칭호 스타일 및 글자색 수정 */
-.titleArea { position: relative; display: flex; align-items: center; justify-content: center; padding: 8px 24px; min-width: 170px; z-index: 15; border-radius: 12px; overflow: hidden; transition: 0.3s; }
-.mainTitle { font-family: 'GmarketSansBold', sans-serif; font-weight: 900; z-index: 10; text-align: center; }
-
-/* COMMON 칭호 - 글자색 잘 보이도록 수정 */
-.common .titleArea { background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.1); }
-.isTitleOnly.common .mainTitle { color: #334155 !important; } /* 어두운 회색으로 변경 */
-
-/* RARE 칭호 - 파란색 테마 및 글자색 복구 */
-.rare .titleArea { background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(var(--ring-rgb), 0.1)); border: 1.5px solid var(--ring); box-shadow: 0 0 10px rgba(var(--ring-rgb), 0.3); }
-.isTitleOnly.rare .mainTitle { color: var(--ring) !important; text-shadow: none; }
-
-/* EPIC & LEGENDARY (보존) */
-@keyframes spin { to { transform: rotate(360deg); } }
-@keyframes sweep { 0% { left: -150%; } 25% { left: 150%; } 100% { left: 150%; } }
-@keyframes legendaryRainbow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
-@keyframes legendaryFlow { to { background-position: 200% center; } }
-@keyframes starShower { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: 1; } 40% { transform: translate(-100px, 100px); opacity: 0; } 100% { transform: translate(-100px, 100px); opacity: 0; } }
-
-/* 전설 서서히 색 변하는 애니메이션 */
-@keyframes legendaryColorShift {
-  0% { filter: hue-rotate(0deg) brightness(1.1); }
-  50% { filter: hue-rotate(180deg) brightness(1.2); }
-  100% { filter: hue-rotate(360deg) brightness(1.1); }
-}
-
-/* 후광 애니메이션 정의 */
-@keyframes glow-legendary {
-  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b; }
-  50% { box-shadow: 0 0 40px #fbbf24, 0 0 80px #fbbf24; }
-}
-@keyframes glow-epic {
-  0%, 100% { box-shadow: 0 0 20px #8b5cf6, 0 0 40px #8b5cf6; }
-  50% { box-shadow: 0 0 40px #a78bfa, 0 0 80px #a78bfa; }
-}
-@keyframes glow-rare {
-  0%, 100% { box-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6; }
-  50% { box-shadow: 0 0 30px #60a5fa, 0 0 60px #60a5fa; }
-}
-@keyframes glow-common {
-  0%, 100% { box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80; }
-  50% { box-shadow: 0 0 20px #86efac, 0 0 40px #86efac; }
-}
-
-.epic .badgeGlow { animation: epicGlow 3s ease-in-out infinite alternate; }
-@keyframes epicGlow { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
-
-/* 뽑기용 링 제거하고 광선만 남김 */
-.legendary .rays { display: block; position: absolute; inset: -60%; z-index: 1; background: conic-gradient(from 0deg, transparent 0deg, var(--ring) 45deg, transparent 90deg, var(--g1) 135deg, transparent 180deg, var(--ring) 225deg, transparent 270deg, var(--g2) 315deg, transparent 360deg); opacity: 0.7; animation: spin 4s linear infinite, legendaryRainbow 8s linear infinite; }
-
-.epic .titleArea { background: linear-gradient(45deg, #0f0c29, #302b63, #24243e); border: 1.5px solid #fff; box-shadow: 0 0 20px var(--ring); }
-.epic .titleArea::after { content: ""; position: absolute; top: 0; left: -150%; width: 50%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transform: skewX(-30deg); animation: sweep 4s infinite; }
-.epic .mainTitle { color: #fff; text-shadow: 0 0 10px #fff, 0 0 20px var(--ring); }
-
-.legendary .titleArea { background: #000; border: 2px solid #fff; box-shadow: 0 0 30px var(--ring); animation: legendaryColorShift 10s linear infinite; }
-.legendary .titleArea::after { content: ""; position: absolute; top: -100px; left: -50px; width: 200%; height: 200%; background-image: radial-gradient(1.5px 1.5px at 50% 50%, #fff, transparent); background-size: 50px 50px; animation: starShower 2s linear infinite; }
-.legendary .mainTitle { background: linear-gradient(to right, #fff, var(--ring), var(--g1), #fff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-size: 200% auto; animation: legendaryFlow 2s linear infinite; filter: drop-shadow(0 0 12px var(--ring)); }
 
 /* ---------------------------------------------------------
-   4. 하단 정보 및 기타 스타일 유지
+   3. 카드 정보 영역
 --------------------------------------------------------- */
-.infoArea { padding: 20px; flex: 1; display: flex; flex-direction: column; background: #fff; z-index: 2; }
-.itemName { font-size: 18px; font-weight: 800; color: #1e293b; margin-bottom: 12px; height: 48px; line-height: 1.4; }
-.cardFooter { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 15px; margin-top: auto; }
-.priceTag { font-weight: 900; color: #0d9488; font-size: 18px; display: flex; align-items: center; }
-.pCircle { width: 22px; height: 22px; background: #fbbf24; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; margin-right: 6px; font-weight: 900; font-style: normal; }
-.ownedLabel { color: #94a3b8; font-size: 13px; font-weight: 600; background-color: #f1f5f9; padding: 6px 12px; border-radius: 10px; }
-.notForSale, .gachaOnlyLabel { color: #94a3b8; font-size: 13px; font-weight: 600; }
+.infoArea { 
+  padding: 20px; 
+  flex: 1; 
+  display: flex; 
+  flex-direction: column; 
+  background: #fff; 
+  z-index: 2; 
+}
 
-.pullOverlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.9); z-index: 3000; display: flex; justify-content: center; align-items: center; perspective: 1200px; backdrop-filter: blur(8px); }
-.pullCard { width: 300px; height: 450px; position: relative; transform-style: preserve-3d; transition: 0.8s; }
+.itemName { 
+  font-size: 18px; 
+  font-weight: 800; 
+  color: #1e293b; 
+  margin-bottom: 12px; 
+  height: 48px; 
+  line-height: 1.4; 
+}
+
+.cardFooter { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  border-top: 1px solid #f1f5f9; 
+  padding-top: 15px; 
+  margin-top: auto; 
+}
+
+.priceTag { 
+  font-weight: 900; 
+  color: #0d9488; 
+  font-size: 18px; 
+  display: flex; 
+  align-items: center; 
+}
+
+.ownedLabel { 
+  color: #94a3b8; 
+  font-size: 13px; 
+  font-weight: 600; 
+  background-color: #f1f5f9; 
+  padding: 6px 12px; 
+  border-radius: 10px; 
+}
+
+/* ---------------------------------------------------------
+   4. 뽑기 애니메이션 및 결과 오버레이
+--------------------------------------------------------- */
+.pullOverlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.9); 
+  z-index: 3000; 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  perspective: 1200px; 
+  backdrop-filter: blur(8px); 
+}
+
+.pullCard { 
+  width: 300px; 
+  height: 450px; 
+  position: relative; 
+  transform-style: preserve-3d; 
+  transition: 0.8s; 
+}
+
 .pullCard.isFlipped { transform: rotateY(180deg); }
-.cardFront, .cardBack { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 25px; display: flex; flex-direction: column; align-items: center; overflow: visible; }
-.cardFront { background: linear-gradient(135deg, #14b8a6, #0f766e); color: white; justify-content: center; font-size: 80px; font-weight: 900; border: 4px solid #fbbf24; }
 
-/* [수정] 결과창 뒷면 등급별 화려한 후광 효과 추가 */
-.cardBack { background: white; transform: rotateY(180deg); padding: 30px; text-align: center; justify-content: space-between; border: 2px solid #e2e8f0; }
-
-.cardBack.legendary { 
-  border: 3px solid #f59e0b !important; 
-  animation: legendaryColorShift 10s linear infinite, glow-legendary 2s ease-in-out infinite !important; 
-}
-.cardBack.epic { 
-  border: 3px solid #8b5cf6 !important; 
-  animation: glow-epic 2s ease-in-out infinite !important;
-}
-.cardBack.rare { 
-  border: 3px solid #3b82f6 !important; 
-  animation: glow-rare 2s ease-in-out infinite !important;
-}
-.cardBack.common { 
-  border: 3px solid #4ade80 !important; 
-  animation: glow-common 2s ease-in-out infinite !important;
+.cardFront, .cardBack { 
+  position: absolute; 
+  inset: 0; 
+  backface-visibility: hidden; 
+  border-radius: 25px; 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  overflow: visible; 
 }
 
-.resultVisual { width: 100%; height: 200px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border-radius: 15px; }
-.confirmBtnWrapper { margin-top: auto; padding-bottom: 10px; }
-.statusMsg { grid-column: 1 / -1; text-align: center; padding: 100px 0; color: #94a3b8; font-size: 18px; }
-.duplicateMsg { color: #ef4444; font-weight: 800; font-size: 14px; margin: 10px 0; }
+.cardFront { 
+  background: linear-gradient(135deg, #14b8a6, #0f766e); 
+  color: white; 
+  justify-content: center; 
+  font-size: 80px; 
+  font-weight: 900; 
+  border: 4px solid #fbbf24; 
+}
 
-/* --- [뽑기 결과창 등급별 번쩍임 애니메이션] --- */
+.cardBack { 
+  background: white; 
+  transform: rotateY(180deg); 
+  padding: 30px; 
+  text-align: center; 
+  justify-content: space-between; 
+  border: 2px solid #e2e8f0; 
+}
 
-/* 전설: 황금빛 노란색으로 강렬하게 번쩍 */
+/* 등급별 애니메이션 효과 */
+.res_legendary { animation: glow_legendary 1.5s infinite ease-in-out; border: 4px solid #f59e0b !important; }
+.res_epic { animation: glow_epic 2s infinite ease-in-out; border: 3px solid #8b5cf6 !important; }
+.res_rare { animation: glow_rare 2s infinite ease-in-out; border: 3px solid #3b82f6 !important; }
+.res_common { animation: glow_common 2.5s infinite ease-in-out; border: 2px solid #94a3b8 !important; }
+
 @keyframes glow_legendary {
-  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b, inset 0 0 20px #f59e0b; }
-  50% { box-shadow: 0 0 60px #fbbf24, 0 0 100px #fbbf24, inset 0 0 30px #fbbf24; }
+  0%, 100% { box-shadow: 0 0 20px #f59e0b, 0 0 40px #f59e0b; }
+  50% { box-shadow: 0 0 60px #fbbf24, 0 0 100px #fbbf24; }
 }
 
-/* 에픽: 신비로운 보라색으로 번쩍 */
 @keyframes glow_epic {
-  0%, 100% { box-shadow: 0 0 20px #8b5cf6, 0 0 40px #8b5cf6, inset 0 0 15px #8b5cf6; }
-  50% { box-shadow: 0 0 50px #a78bfa, 0 0 80px #a78bfa, inset 0 0 25px #a78bfa; }
+  0%, 100% { box-shadow: 0 0 20px #8b5cf6, 0 0 40px #8b5cf6; }
+  50% { box-shadow: 0 0 50px #a78bfa, 0 0 80px #a78bfa; }
 }
 
-/* 레어: 시원한 푸른색으로 번쩍 */
 @keyframes glow_rare {
-  0%, 100% { box-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6, inset 0 0 10px #3b82f6; }
-  50% { box-shadow: 0 0 40px #60a5fa, 0 0 60px #60a5fa, inset 0 0 20px #60a5fa; }
+  0%, 100% { box-shadow: 0 0 15px #3b82f6, 0 0 30px #3b82f6; }
+  50% { box-shadow: 0 0 40px #60a5fa, 0 0 60px #60a5fa; }
 }
 
-/* 노멀: 싱그러운 연두색으로 번쩍 */
 @keyframes glow_common {
   0%, 100% { box-shadow: 0 0 10px #4ade80, 0 0 20px #4ade80; }
   50% { box-shadow: 0 0 30px #86efac, 0 0 40px #86efac; }
 }
 
-/* JS에서 등급별로 갈아끼울 클래스 */
-.res_legendary { animation: glow_legendary 1.5s infinite ease-in-out; border: 4px solid #f59e0b !important; }
-.res_epic { animation: glow_epic 2s infinite ease-in-out; border: 3px solid #8b5cf6 !important; }
-.res_rare { animation: glow_rare 2s infinite ease-in-out; border: 3px solid #3b82f6 !important; }
-.res_common { animation: glow_common 2.5s infinite ease-in-out; border: 2px solid #94a3b8 !important; }
+.resultVisual { 
+  width: 100%; 
+  height: 200px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  position: relative; 
+}
+
+.statusMsg { 
+  grid-column: 1 / -1; 
+  text-align: center; 
+  padding: 100px 0; 
+  color: #94a3b8; 
+  font-size: 18px; 
+}
+
+.duplicateMsg { 
+  color: #ef4444; 
+  font-weight: 800; 
+  font-size: 14px; 
+  margin: 10px 0; 
+}
