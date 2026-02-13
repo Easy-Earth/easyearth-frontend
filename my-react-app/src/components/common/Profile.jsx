@@ -15,8 +15,8 @@ const Profile = ({ size = "big", memberId, userName = "사용자", onClick }) =>
         const response = await axios.get(`http://localhost:8080/spring/member/equipped/${memberId}`);
         const data = Array.isArray(response.data) ? response.data : [];
         setEquippedIds(data.map(Number)); 
-      } catch (e) {
-        console.error("데이터 로드 실패:", e);
+      } catch (err) {
+        console.error("데이터 로드 실패:", err);
         setEquippedIds([]);
       }
     };

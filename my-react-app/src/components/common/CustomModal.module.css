@@ -56,8 +56,15 @@
   background: #14b8a6;
   color: white;
 }
-
+.confirmBtn:hover {
+  background: #11a08f;
+  color: white;
+}
 .cancelBtn {
   background: #f1f5f9;
+  color: #64748b;
+}
+.cancelBtn:hover {
+  background: #dee1e3;
   color: #64748b;
 }

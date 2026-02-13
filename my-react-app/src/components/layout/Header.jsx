@@ -1,13 +1,45 @@
-// src/components/layout/Header.jsx
+import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
+import kakaoBtnImg from "../../assets/images/kakaoBtn.png";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
-import React from 'react';
+import CustomModal from "../common/CustomModal";
 import styles from "./Header.module.css";
 
 const Header = ({ openLoginModal }) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
+  
+  // ✨ 모달 상태 관리
+  const [modalConfig, setModalConfig] = useState({ 
+    isOpen: false, 
+    title: '', 
+    message: '', 
+    type: 'alert',
+    onConfirm: () => {} 
+  });
+
+  const KAKAO_CLIENT_ID = "061190308402a6afceaaba4ac72b5c83";
+  const KAKAO_REDIRECT_URI = "http://localhost:5173/kakao/callback";
+  const kakaoURL = `https://kauth.kakao.com/oauth/authorize?client_id=${KAKAO_CLIENT_ID}&redirect_uri=${KAKAO_REDIRECT_URI}&response_type=code`;
+
+  const handleKakaoLogin = () => {
+    window.location.href = kakaoURL;
+  };
+
+  const handleLogoutClick = () => {
+    setModalConfig({
+      isOpen: true,
+      title: '로그아웃',
+      message: '정말 로그아웃 하시겠습니까?',
+      type: 'confirm',
+      onConfirm: () => {
+        logout();
+        navigate("/");
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  };
 
   const menuItems = [
     { id: 1, title: "메인 페이지", link: "/" },
@@ -40,29 +72,40 @@ const Header = ({ openLoginModal }) => {
       <div className={styles.auth}>
         {!isAuthenticated ? (
           <>
+            <img 
+              src={kakaoBtnImg} 
+              alt="카카오 로그인" 
+              onClick={handleKakaoLogin}
+              style={{ cursor: 'pointer', height: '35px', marginRight: '10px' }} 
+            />
             <button className={styles.loginBtn} onClick={openLoginModal}>Sign In</button>
             <button className={styles.registerBtn} onClick={() => navigate("/join")}>Sign Up</button>
           </>
         ) : (
           <>
             <span className={styles.welcome}>{user?.name || "회원"}님</span>
-            <button className={styles.logoutBtn} onClick={() => { logout(); navigate("/"); }}>Sign Out</button>
+            <button className={styles.logoutBtn} onClick={handleLogoutClick}>Sign Out</button>
           </>
         )}
-        {isAuthenticated && <NotificationCenter />}
+        {isAuthenticated && <NotificationCenter setModalConfig={setModalConfig} />}
       </div>
+
+      {/* ✨ 헤더 공용 커스텀 모달 */}
+      <CustomModal 
+        {...modalConfig} 
+        onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+      />
     </header>
   );
 };
 
-// Internal Component for Notification Center
-const NotificationCenter = () => {
+// ... NotificationCenter 코드는 기존과 동일하되 alert 부분만 setModalConfig로 교체 ...
+const NotificationCenter = ({ setModalConfig }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
     const [isOpen, setIsOpen] = React.useState(false);
     const dropdownRef = React.useRef(null);
     const navigate = useNavigate();
 
-    // Close dropdown when clicking outside
     React.useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -78,59 +121,49 @@ const NotificationCenter = () => {
         if (notification.type === 'INVITATION' || notification.type === 'CHAT') {
              navigate(`/chat/${notification.chatRoomId}`);
         } else if (notification.type === 'KICK') {
-             alert(notification.content);
+             setModalConfig({
+                 isOpen: true,
+                 title: '알림',
+                 message: notification.content,
+                 type: 'alert',
+                 onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+             });
         }
         setIsOpen(false);
     };
 
+    const getNotificationMessage = (notification) => {
+        if (notification.messageType === 'IMAGE') return '사진을 보냈습니다.';
+        if (notification.messageType === 'FILE') return '파일을 보냈습니다.';
+        return notification.content;
+    };
+
     return (
         <div className={styles.notificationCenter} ref={dropdownRef}>
-            <button 
-                className={`${styles.bellBtn} ${unreadCount > 0 ? styles.activeBell : ''}`} 
-                onClick={() => setIsOpen(!isOpen)}
-            >
-                🔔
-                {unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
+            <button className={`${styles.bellBtn} ${unreadCount > 0 ? styles.activeBell : ''}`} onClick={() => setIsOpen(!isOpen)}>
+                🔔{unreadCount > 0 && <span className={styles.badge}>{unreadCount}</span>}
             </button>
-
             {isOpen && (
                 <div className={styles.dropdown}>
                     <div className={styles.dropdownHeader}>
                         <span>알림</span>
-                        {unreadCount > 0 && (
-                            <button className={styles.markAllBtn} onClick={markAllAsRead}>모두 읽음</button>
-                        )}
+                        {unreadCount > 0 && <button className={styles.markAllBtn} onClick={markAllAsRead}>모두 읽음</button>}
                     </div>
                     <ul className={styles.notificationList}>
-                        {notifications.length === 0 ? (
-                            <li className={styles.emptyItem}>새로운 알림이 없습니다.</li>
-                        ) : (
-                            notifications.map(notification => (
-                                <li key={notification.id} className={`${styles.notificationItem} ${notification.read ? styles.read : ''}`}>
-                                    <div className={styles.notificationContent} onClick={() => handleNotificationClick(notification)}>
-                                        <div className={styles.notificationHeader}>
-                                            {/* ✨ 프로필 이미지 표시 */}
-                                            {notification.senderProfileImage && (
-                                                <img 
-                                                    src={notification.senderProfileImage} // getFullUrl logic might be needed if relative path
-                                                    alt="Profile" 
-                                                    className={styles.notificationProfile}
-                                                />
-                                            )}
-                                            <span className={styles.notificationSender}>{notification.senderName}</span>
-                                            <span className={styles.notificationTime}>{new Date(notification.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                        {notifications.length === 0 ? <li className={styles.emptyItem}>새로운 알림이 없습니다.</li> : 
+                            notifications.map(n => (
+                                <li key={n.id} className={`${styles.notificationItem} ${n.read ? styles.read : ''}`}>
+                                    <div className={styles.notificationContent} onClick={() => handleNotificationClick(n)}>
+                                        <div className={styles.headerText}>
+                                            <span>{n.senderName}</span>
+                                            <span className={styles.notificationTime}>{new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                         </div>
-                                        <div className={styles.notificationText}>{notification.content}</div>
+                                        <div className={styles.notificationText}>{getNotificationMessage(n)}</div>
                                     </div>
-                                    <button 
-                                        className={styles.deleteBtn} 
-                                        onClick={(e) => { e.stopPropagation(); removeNotification(notification.id); }}
-                                    >
-                                        ×
-                                    </button>
+                                    <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); removeNotification(n.id); }}>×</button>
                                 </li>
                             ))
-                        )}
+                        }
                     </ul>
                 </div>
             )}

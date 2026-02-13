@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import authApi from "../../apis/authApi";
 import * as itemApi from "../../apis/itemApi";
-import authApi from "../../apis/authApi"; 
 import Button from "../../components/common/Button";
 import CustomModal from "../../components/common/CustomModal";
 import ItemCssPreview from "../../components/item/ItemCssPreview";
@@ -13,7 +13,6 @@ const defaultImg = "https://via.placeholder.com/150?text=No+Image";
 
 const ShopPage = () => {
   const { user } = useAuth();
-  // user 객체 내의 고유 식별자 추출 (VO 구조에 따라 memberNo 또는 memberId)
   const memberId = user?.memberNo || user?.memberId || user?.id;
 
   const [allItems, setAllItems] = useState([]);      
@@ -23,8 +22,6 @@ const ShopPage = () => {
   const [pullResult, setPullResult] = useState(null);
   const [isDuplicate, setIsDuplicate] = useState(false); 
   const [selectedItem, setSelectedItem] = useState(null);
-  
-  // 💰 사용자 포인트 상태
   const [userPoint, setUserPoint] = useState(0);
 
   const [modalConfig, setModalConfig] = useState({
@@ -49,13 +46,10 @@ const ShopPage = () => {
     { label: "LEGENDARY", value: "LEGENDARY" },
   ];
 
-  // 💰 포인트 조회 함수 (authApi 사용 및 MemberWalletVO 필드명 반영)
   const fetchUserPoint = useCallback(async () => {
     if (!memberId) return;
     try {
-      // MemberController의 @GetMapping("/point/{memberId}") 호출
       const walletData = await authApi.getMemberPoint(memberId); 
-      // MemberWalletVO의 실제 필드명인 nowPoint를 사용하여 상태 업데이트
       setUserPoint(walletData.nowPoint ?? 0);
     } catch (error) {
       console.error("포인트 조회 실패:", error);
@@ -87,8 +81,6 @@ const ShopPage = () => {
       setAllItems(Array.isArray(storeData) ? storeData : []);
       const myData = Array.isArray(myDataResponse) ? myDataResponse : (myDataResponse?.data || []);
       setMyItems(myData.map(item => String(item.itemId || item.ITEM_ID || "")));
-      
-      // 데이터 로드 시 포인트도 함께 조회
       if (memberId) fetchUserPoint();
     } catch (error) {
       console.error("데이터 로드 실패:", error);
@@ -110,7 +102,6 @@ const ShopPage = () => {
   }, [allItems, categoryFilter, rarityFilter]);
 
   const handleBuy = (item) => {
-    console.log("item : " + item.category);
     const id = item.itemId || item.ITEM_ID; 
     if (!memberId) {
       setModalConfig({
@@ -131,15 +122,10 @@ const ShopPage = () => {
             price: item.price || item.PRICE,
             category: item.category || item.CATEGORY
           };
-
           await itemApi.buyItem(purchaseData);
-
           setMyItems(prev => [...prev, String(id)]);
           setSelectedItem(null);
-          
-          // 💰 구매 성공 후 포인트 갱신
           fetchUserPoint();
-
           setModalConfig({
             isOpen: true, 
             type: 'alert', 
@@ -164,7 +150,6 @@ const ShopPage = () => {
         isOpen: true, 
         type: 'alert', 
         message: '로그인이 필요합니다.',
-        // 확인 버튼을 눌렀을 때 모달을 닫도록 추가
         onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false })) 
       });
       return;
@@ -180,7 +165,6 @@ const ShopPage = () => {
         setIsDuplicate(false);
         try {
           const result = await itemApi.randomPull(memberId);
-          
           setTimeout(() => {
             if (typeof result === 'string') {
               setIsDuplicate(true);
@@ -194,7 +178,6 @@ const ShopPage = () => {
                 setMyItems(prev => [...prev, newItemId]);
               }
             }
-            // 💰 뽑기 연출 종료 시 포인트 갱신
             fetchUserPoint();
           }, 1500);
         } catch (error) {
@@ -210,7 +193,6 @@ const ShopPage = () => {
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <h1 className={styles.pageTitle}>🌱 에코 포인트 상점</h1>
-          {/* 💰 실시간 포인트 표시 영역 */}
           {memberId && (
             <div className={styles.userPointDisplay}>
               <span className={styles.pointLabel}>내 보유 포인트</span>
@@ -227,7 +209,7 @@ const ShopPage = () => {
             <p>1,000P로 전설 등급 아이템에 도전하세요!</p>
           </div>
           <div className={styles.gachaBtnWrapper}>
-            <Button color="#ff9f43" onClick={handleRandomPull} width="160px" height="50px">
+            <Button color="#fbbf24" onClick={handleRandomPull} width="160px" height="50px">
               <span className={styles.btnText}>뽑기 시작</span>
             </Button>
           </div>
@@ -294,14 +276,18 @@ const ShopPage = () => {
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
                   <div className={styles.cardFooter}>
                     <span className={styles.priceTag}>{rarityLower === 'legendary' ? '비매품' : `${(item.price || item.PRICE).toLocaleString()} P`}</span>
-                    {rarityLower === 'legendary' ? isOwned ? <span className={styles.ownedLabel}>보유 중</span> : 
-                    <span className={styles.ownedLabel}>뽑기 전용</span> : 
-                     <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">구매</Button>}
+                    {rarityLower === 'legendary' ? (
+                      isOwned ? <span className={styles.ownedLabel}>보유 중</span> : <span className={styles.ownedLabel}>뽑기 전용</span>
+                    ) : (
+                      <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">
+                        <span className={styles.buyBtnText}>구매</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
             );
-          })} A ? B 
+          })} 
         </div>
       )}
 
@@ -337,7 +323,9 @@ const ShopPage = () => {
                       </div>
                     )}
                   </div>
-                  <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px" height="40px">확인</Button>
+                  <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px" height="40px">
+                    <span className={styles.buyBtnText}>확인</span>
+                  </Button>
                 </>
               )}
             </div>

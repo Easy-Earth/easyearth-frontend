@@ -68,13 +68,21 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
       setSelectedReportReviewId(esrId);
       setReportTargetInfo({ id: targetMemberId, name: targetName });
       setIsReportModalOpen(true);
-    } catch (error) {
-      setModalConfig({
-        isOpen: true,
-        type: 'alert',
-        message: "신고 내역이 존재합니다.",
-        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-      });
+    } catch (err) {
+      // setModalConfig({
+      //   isOpen: true,
+      //   type: 'alert',
+      //   message: "신고 내역이 존재합니다.",
+      //   onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      // });
+      const serverErrorMessage = err.response?.data || "서버 오류가 발생했습니다.";
+
+        setModalConfig({
+          isOpen: true,
+          type: 'alert',
+          message: serverErrorMessage,
+          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
       setIsReportModalOpen(false);
     }
     

@@ -1,6 +1,7 @@
 // src/context/AuthContext.js
 import { createContext, useState, useEffect, useContext } from "react";
 import authApi from "../apis/authApi";
+import { updateOnlineStatus } from "../apis/chatApi";
 
 export const AuthContext = createContext();
 
@@ -12,7 +13,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const savedUser = localStorage.getItem("user");
-    if (token && savedUser) setUser(JSON.parse(savedUser));
+    if (token && savedUser) {
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      
+      // ✨ [수정] 자동 로그인 시 온라인 상태 업데이트 추가
+      updateOnlineStatus(parsedUser.memberId, 1).catch(err => {
+        console.error("자동 로그인 온라인 상태 업데이트 실패", err);
+      });
+    }
     setIsLoading(false);
   }, []);
 
@@ -28,15 +37,31 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(user));
       setUser(user);
 
+      // 온라인 상태 업데이트 (로그인 시 온라인으로 설정)
+      try {
+        await updateOnlineStatus(user.memberId, 1);
+      } catch (err) {
+        console.error("온라인 상태 업데이트 실패", err);
+      }
+
       return { success: true };
     } catch (err) {
-      console.error(err);
+      console.error(err.response?.data);
       return { success: false, message: err.response?.data || "로그인 실패" };
     }
   };
 
   //로그아웃 함수
-  const logout = () => {
+  const logout = async () => {
+    // 온라인 상태 업데이트 (로그아웃 시 오프라인으로 설정)
+    if (user?.memberId) {
+      try {
+        await updateOnlineStatus(user.memberId, 0);
+      } catch (err) {
+        console.error("온라인 상태 업데이트 실패", err);
+      }
+    }
+    
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);

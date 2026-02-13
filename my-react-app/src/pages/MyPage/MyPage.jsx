@@ -5,7 +5,6 @@ import InventoryModal from "../../components/item/InventoryModal";
 import ItemCssPreview from "../../components/item/ItemCssPreview";
 import DeleteAccount from "../../components/member/DeleteMember";
 import EditProfile from "../../components/member/EditProfilePage";
-import EcoTreeSection from "../../components/main/EcoTreeSection";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/itemEffects.css";
 import styles from "./MyPage.module.css";
@@ -65,7 +64,7 @@ const MyPage = () => {
     }
     try {
       const itemId = item.itemId || item.ITEM_ID;
-      const category = item.category || item.itemCategory || "BADGE";
+      const category = item.category || item.itemCategory || "BADGE"; 
       if (!itemId) return;
       await itemApi.equipItem(itemId, userId, category);
       await fetchMyInventory();
@@ -74,10 +73,10 @@ const MyPage = () => {
     } catch (error) {
       const errorData = error.response?.data;
       if (typeof errorData === 'string' && errorData.includes("완료")) {
-        await fetchMyInventory();
-        setEquipUpdateKey(prev => prev + 1);
-        setSelectedItem(null);
-        return;
+          await fetchMyInventory(); 
+          setEquipUpdateKey(prev => prev + 1);
+          setSelectedItem(null);    
+          return;
       }
       alert(error.response?.data || "아이템 처리 중 오류 발생");
       fetchMyInventory();
@@ -128,16 +127,13 @@ const MyPage = () => {
               <p className={styles.welcome}>반가워요!</p>
               <p className={styles.nameTag}>{user?.name || "사용자"}님</p>
             </div>
-
+            
             <nav className={styles.navMenu}>
               <button className={activeTab === "inventory" ? styles.activeNav : ""} onClick={() => setActiveTab("inventory")}>
                 🎒 내 인벤토리
               </button>
               <button className={activeTab === "edit" ? styles.activeNav : ""} onClick={() => setActiveTab("edit")}>
                 ⚙️ 정보 수정
-              </button>
-              <button className={activeTab === "ecotree" ? styles.activeNav : ""} onClick={() => setActiveTab("ecotree")}>
-                🌱 에코 트리
               </button>
               <button className={activeTab === "delete" ? styles.activeNav : ""} onClick={() => setActiveTab("delete")}>
                 👤 회원 탈퇴
@@ -180,9 +176,9 @@ const MyPage = () => {
                       const category = (item.category || "BADGE").toUpperCase();
 
                       return (
-                        <div
-                          key={item.uiId}
-                          className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} border-${rarity}`}
+                        <div 
+                          key={item.uiId} 
+                          className={`${styles.itemCard} ${isEquipped ? styles.equipped : ""} border-${rarity}`} 
                           onClick={() => setSelectedItem(item)}
                           style={{ position: 'relative', overflow: 'hidden' }}
                         >
@@ -213,7 +209,6 @@ const MyPage = () => {
               </div>
             )}
             {activeTab === "edit" && <div className={styles.editWrapper}><EditProfile user={user} /></div>}
-            {activeTab === "ecotree" && <div className={styles.ecotreeWrapper}><EcoTreeSection memberId={userId} /></div>}
             {activeTab === "delete" && (
               <div className={styles.deleteWrapper}>
                 {/* onLogout 프롭스에 logout 함수를 전달합니다. */}

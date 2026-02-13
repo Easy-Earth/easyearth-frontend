@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext'; // ✨ Import
 import { createChatRoom, toggleFavorite, acceptInvitation, rejectInvitation, uploadFile, updateProfile } from '../../apis/chatApi';
 import { getFullUrl } from '../../utils/imageUtil'; // Import utility
 import ChatRoomTypeModal from './ChatRoomTypeModal';
@@ -11,6 +12,7 @@ import styles from './ChatRoomList.module.css';
 const ChatRoomList = () => {
     const { chatRooms, loadChatRooms, connected } = useChat();
     const { user, updateUser } = useAuth();
+    const { markNotificationsAsReadForRoom } = useNotification(); // ✨ Destructure
     const navigate = useNavigate();
     const { roomId } = useParams();
     const [showTypeModal, setShowTypeModal] = useState(false);
@@ -93,6 +95,7 @@ const ChatRoomList = () => {
             loadChatRooms(); // 목록 새로고침
         } catch (error) {
             console.error("즐겨찾기 토글 실패", error);
+            showAlert("즐겨찾기 설정에 실패했습니다.");
         }
     };
 
@@ -102,6 +105,7 @@ const ChatRoomList = () => {
         try {
             await acceptInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
+            markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
         } catch (error) {
             console.error("초대 수락 실패", error);
             showAlert("초대 수락에 실패했습니다.");
@@ -114,13 +118,14 @@ const ChatRoomList = () => {
         try {
             await rejectInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
+            markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
         } catch (error) {
             console.error("초대 거절 실패", error);
             showAlert("초대 거절에 실패했습니다.");
         }
     };
 
-    const handleCreateRoom = async ({ roomType, value, invitedMemberIds }) => {
+    const handleCreateRoom = async ({ roomType, value, invitedMemberIds, roomImage }) => { // ✨ roomImage 추가
         if (roomType === 'GROUP') {
             // 그룹 채팅 생성
             try {
@@ -128,7 +133,8 @@ const ChatRoomList = () => {
                     title: value,
                     roomType: "GROUP",
                     creatorId: user.memberId,
-                    invitedMemberIds: invitedMemberIds // 초대 멤버 리스트 전달
+                    invitedMemberIds: invitedMemberIds,
+                    roomImage: roomImage // ✨ 전달
                 });
                 loadChatRooms();
                 navigate(`/chat/${newRoom.chatRoomId}`);
@@ -141,12 +147,15 @@ const ChatRoomList = () => {
             // 1:1 채팅 생성
             try {
                 const { searchMember } = await import('../../apis/chatApi');
-                const targetMember = await searchMember(value);
+                const members = await searchMember(value); // ✨ [Fix] 이제 배열 반환
 
-                if (!targetMember) {
+                if (!members || members.length === 0) {
                     showAlert("해당 사용자를 찾을 수 없습니다.");
                     return;
                 }
+
+                // ✨ 첫 번째 검색 결과 사용 (정확한 닉네임이면 하나만 나올 것)
+                const targetMember = members[0];
 
                 const newRoom = await createChatRoom({
                     title: "",
@@ -195,6 +204,21 @@ const ChatRoomList = () => {
     const pendingRooms = sortedRooms.filter(room => room.invitationStatus === 'PENDING');
     const acceptedRooms = sortedRooms.filter(room => room.invitationStatus !== 'PENDING');
 
+    // ✨ 메시지 미리보기 텍스트 변환
+    const getLastMessagePreview = (room) => {
+        if (!room.lastMessageContent) return "대화가 없습니다.";
+
+        // 메시지 타입이 있는 경우 (백엔드 지원 시)
+        if (room.lastMessageType === 'IMAGE') return "사진을 보냈습니다.";
+        if (room.lastMessageType === 'FILE') return "파일을 보냈습니다.";
+        if (room.lastMessageType === 'DELETED') return "삭제된 메시지입니다.";
+
+        // 타입이 없더라도(구 데이터) content가 URL 형식이면 처리 (보완책)
+        // 하지만 백엔드에서 이제 타입을 주므로 우선순위는 낮음.
+        
+        return room.lastMessageContent;
+    };
+
     return (
         <div className={styles.container}>
             {/* 연결 상태 배너 */}
@@ -204,35 +228,44 @@ const ChatRoomList = () => {
                 </div>
             )}
             <div className={styles.header}>
-                <div className={styles.headerContent}>
-                    <h2 className={styles.title}>채팅 <span className={styles.count}>{chatRooms.length}</span></h2>
-                </div>
-                
-                {/* 내 프로필 영역 (클릭하여 이미지 변경) */}
-                <div className={styles.myProfile} onClick={handleProfileClick} title="내 프로필 이미지 변경">
-                     <img 
-                        src={getFullUrl(user?.profileImageUrl) || "/default-profile.png"} 
-                        alt="My Profile" 
-                        className={styles.myProfileImg}
-                        onError={(e) => {
-                            if (e.target.dataset.failed) return;
-                            e.target.dataset.failed = 'true';
-                            e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
-                        }}
-                     />
-                     <input 
-                         type="file" 
-                         ref={fileInputRef} 
-                         style={{ display: 'none' }} 
-                         accept="image/*" 
-                         onChange={handleProfileChange}
-                     />
+                {/* 1. 타이틀 (왼쪽 끝) */}
+                <div className={styles.headerTitle}>
+                    <h2 className={styles.title}>채팅</h2>
+                    {chatRooms.length > 0 && <span className={styles.count}>{chatRooms.length}</span>}
                 </div>
 
-                <div className={styles.actions}>
-                    <button className={styles.iconBtn} onClick={() => setShowTypeModal(true)} title="새 채팅방">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="20" height="20">
-                            <path d="M12 5v14M5 12h14" />
+                {/* 2. 닉네임 + 프로필 + 버튼 (오른쪽 끝) */}
+                <div className={styles.headerRight}>
+                    {/* 닉네임 표시 */}
+                    <span className={styles.myNickname}>{user?.name}</span>
+                    {/* Debugging User Object */}
+                    {console.log("Current User in ChatRoomList:", user)}
+
+                    {/* 내 프로필 */}
+                    <div className={styles.myProfile} onClick={handleProfileClick} title="내 프로필 이미지 변경">
+                         <img 
+                            src={getFullUrl(user?.profileImageUrl || user?.profileImage) || "/default-profile.png"} 
+                            alt="My Profile" 
+                            className={styles.myProfileImg}
+                            onError={(e) => {
+                                if (e.target.dataset.failed) return;
+                                e.target.dataset.failed = 'true';
+                                e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                            }}
+                         />
+                         <input 
+                             type="file" 
+                             ref={fileInputRef} 
+                             style={{ display: 'none' }} 
+                             accept="image/*" 
+                             onChange={handleProfileChange}
+                         />
+                    </div>
+                    
+                    <button className={styles.iconBtn} onClick={() => setShowTypeModal(true)} title="새 채팅방 생성">
+                        {/* ✨ 배경 없는 + 버튼 스타일 */}
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+                            <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                         </svg>
                     </button>
                 </div>
@@ -298,16 +331,24 @@ const ChatRoomList = () => {
                         onClick={() => navigate(`/chat/${room.chatRoomId}`)}
                     >
                         <div className={styles.avatar}>
-                            {/* 1:1 채팅은 상대방 프로필, 그룹 채팅은 기본 이미지 */}
+                            {/* ✨ 1:1 채팅은 상대방 프로필, 그룹 채팅은 방 이미지 */}
                             <img 
-                                src={getFullUrl(room.otherMemberProfile) || "/default-profile.png"} 
+                                src={
+                                    room.roomType === 'SINGLE' 
+                                        ? (getFullUrl(room.otherMemberProfile) || "/default-profile.svg") 
+                                        : (getFullUrl(room.roomImage) || "/default-room.svg") 
+                                }
                                 alt="Profile"
                                 onError={(e) => {
                                     if (e.target.dataset.failed) return;
                                     e.target.dataset.failed = 'true';
-                                    e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 24 24' fill='%23ccc'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+                                    e.target.src = room.roomType === 'SINGLE' ? "/default-profile.svg" : "/default-room.svg";
                                 }}
                             />
+                            {/* ✨ 그룹 채팅 인원수 표시 */}
+                            {room.roomType === 'GROUP' && room.memberCount > 0 && (
+                                <span className={styles.groupCount}>{room.memberCount}</span>
+                            )}
                         </div>
                         <div className={styles.content}>
                             <div className={styles.topRow}>
@@ -316,7 +357,7 @@ const ChatRoomList = () => {
                             </div>
                             <div className={styles.bottomRow}>
                                 <span className={styles.message}>
-                                    {room.lastMessageContent || "대화가 없습니다."}
+                                    {getLastMessagePreview(room)}
                                 </span>
                                 {/* 현재 보고 있는 방이 아닐 때만 unreadCount 표시 */}
                                 {room.unreadCount > 0 && parseInt(roomId) !== room.chatRoomId && (
@@ -354,6 +395,7 @@ const ChatRoomList = () => {
                 type={modalConfig.type}
                 onConfirm={modalConfig.onConfirm}
                 onCancel={modalConfig.onCancel}
+                zIndex={11000} // ✨ z-index 추가 (ChatRoomTypeModal보다 높게)
             />
         </div>
     );

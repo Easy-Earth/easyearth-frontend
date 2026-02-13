@@ -5,7 +5,7 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -18,25 +18,15 @@
   padding: 20px;
   width: 400px;
   max-width: 90%;
-  max-height: 85vh;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 
-.modal.sm {
-  width: 300px;
-}
-
-.modal.md {
-  width: 500px;
-}
+.modal.md { width: 500px; }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
   border-bottom: 1px solid #eee;
   padding-bottom: 10px;
 }
@@ -51,8 +41,6 @@
 
 .body {
   margin-top: 15px;
-  overflow-y: auto;
-  flex: 1;
 }
 
 /* --- 길찾기 전용 커스텀 스타일 --- */
@@ -74,9 +62,7 @@
   transition: 0.2s;
 }
 
-.routeTriggerBtn:hover {
-  background: #0d9488;
-}
+.routeTriggerBtn:hover { background: #0d9488; }
 
 .tabContainer {
   display: flex;
@@ -101,7 +87,7 @@
   background: white !important;
   color: #14b8a6;
   font-weight: bold;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .routeResultArea {
@@ -119,53 +105,13 @@
   border-radius: 8px;
 }
 
-.routeTimeRow {
-  margin-bottom: 12px;
-}
+.routeTimeRow { margin-bottom: 12px; }
+.resTime { font-size: 24px; font-weight: 800; color: #1e293b; margin-right: 10px; }
+.resDist { color: #64748b; font-size: 14px; }
+.resPay { background: #fee2e2; color: #b91c1c; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-left: 10px; }
 
-.resTime {
-  font-size: 24px;
-  font-weight: 800;
-  color: #1e293b;
-  margin-right: 10px;
-}
+.ecoRow { display: flex; gap: 8px; margin-bottom: 10px; }
+.ecoBadge { background: #f0fdf4; color: #166534; padding: 4px 10px; border-radius: 6px; font-size: 12px; border: 1px solid #dcfce7; }
 
-.resDist {
-  color: #64748b;
-  font-size: 14px;
-}
-
-.resPay {
-  background: #fee2e2;
-  color: #b91c1c;
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  margin-left: 10px;
-}
-
-.ecoRow {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.ecoBadge {
-  background: #f0fdf4;
-  color: #166534;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  border: 1px solid #dcfce7;
-}
-
-.placeholder {
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-.notice {
-  font-size: 11px;
-  color: #94a3b8;
-  margin-top: 10px;
-}
+.placeholder { color: #cbd5e1; font-size: 14px; }
+.notice { font-size: 11px; color: #94a3b8; margin-top: 10px; }

@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { uploadFile } from '../../apis/chatApi'; // Chat API used for upload
 import styles from './FileUploadButton.module.css';
 
-const FileUploadButton = ({ onFileUploaded, disabled }) => {
+const FileUploadButton = ({ onFileUploaded, disabled, showAlert }) => { // showAlert 추가
     const fileInputRef = useRef(null);
     const [uploading, setUploading] = useState(false);
 
@@ -26,7 +26,15 @@ const FileUploadButton = ({ onFileUploaded, disabled }) => {
             }
         } catch (error) {
             console.error("File upload failed", error);
-            alert("파일 업로드에 실패했습니다."); // Fallback, usually handled by parent
+            
+            // 사용자의 요청으로 업로드 실패 시 무조건 용량 문제로 안내
+            const errorMessage = "파일 용량이 너무 큽니다. (최대 10MB)";
+
+            if (showAlert) {
+                showAlert(errorMessage);
+            } else {
+                alert(errorMessage);
+            } 
         } finally {
             setUploading(false);
             if (fileInputRef.current) {

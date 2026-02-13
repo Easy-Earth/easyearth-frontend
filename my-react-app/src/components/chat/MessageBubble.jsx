@@ -4,11 +4,14 @@ import styles from './MessageBubble.module.css';
 import { getFullUrl } from '../../utils/imageUtil';
 import MessageContextMenu from './MessageContextMenu';
 import { toggleReaction, deleteMessage } from '../../apis/chatApi';
+import UserDatailModal from '../common/UserDatailModal';
+import { extractOriginalFileName } from './chatFileUtil'; // Import local utility
 
-const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) => {
+const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted, showAlert, onReplyClick }) => {
     const { user } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
+    const [showProfileModal, setShowProfileModal] = useState(false);
     const longPressTimer = useRef(null);
 
     // 메시지가 없거나 시스템 메시지인 경우 처리
@@ -18,7 +21,7 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
     const isSystem = message.messageType === 'ENTER' || 
                      message.messageType === 'LEAVE' || 
                      message.messageType === 'SYSTEM' ||
-                     message.messageType === 'NOTICE' || // Notice might be a type too
+                     message.messageType === 'NOTICE' ||
                      message.senderId === 1 || 
                      message.senderName === '시스템' || 
                      message.senderName === '관리자';
@@ -26,8 +29,13 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
     // 시간 포맷팅
     const formatTime = (isoString) => {
         if (!isoString) return "";
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        try {
+            const date = new Date(isoString);
+            if (isNaN(date.getTime())) return "";
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        } catch (e) {
+            return "";
+        }
     };
 
     // 컨텍스트 메뉴 핸들러
@@ -42,7 +50,7 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
             const touch = e.touches[0];
             setMenuPosition({ x: touch.clientX, y: touch.clientY });
             setShowMenu(true);
-        }, 800); // 0.8초 롱프레스
+        }, 800);
     };
 
     const handleTouchEnd = () => {
@@ -55,36 +63,27 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
     const handleReaction = async (emoji) => {
         try {
             await toggleReaction(message.messageId, user.memberId, emoji);
-            if (onRefresh) onRefresh();
         } catch (error) {
             console.error("리액션 실패", error);
-        }
-    };
-
-    const handleDelete = async () => {
-        if (window.confirm("메시지를 삭제하시겠습니까?")) {
-            try {
-                await deleteMessage(message.messageId, user.memberId);
-                if (onRefresh) onRefresh();
-            } catch (error) {
-                console.error("삭제 실패", error);
+            if (showAlert) {
+                showAlert("리액션을 추가하는데 실패했습니다.");
             }
         }
     };
 
-    // 유틸: 파일명 추출
-    const getFileName = (url) => {
+    const handleDelete = async () => {
         try {
-            const decoded = decodeURIComponent(url);
-            return decoded.split('/').pop().split('?')[0]; // simple extraction
-        } catch (e) {
-            return "파일 다운로드";
+            await deleteMessage(message.messageId, user.memberId);
+        } catch (error) {
+            console.error("삭제 실패", error);
+            if (showAlert) {
+                showAlert("메시지 삭제에 실패했습니다.");
+            }
         }
     };
 
     const menuOptions = [
         { label: "답장", icon: "↩️", action: () => onReply(message) },
-        // notice / delete only
         ...(isOwner ? [{ label: "공지 등록", icon: "📢", action: () => onSetNotice(message) }] : []),
         ...(isMine ? [{ label: "삭제", icon: "🗑️", action: handleDelete }] : [])
     ];
@@ -99,16 +98,16 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
 
     return (
         <div 
-            className={`${styles.wrapper} ${isMine ? styles.myMessage : ''}`}
+            className={`${styles.wrapper} ${isMine ? styles.myMessage : ''} ${isHighlighted ? styles.highlighted : ''}`}
             onContextMenu={handleContextMenu}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
             {/* 상대방일 경우에만 아바타 표시 */}
             {!isMine && (
-                <div className={styles.avatar}>
+                <div className={styles.avatar} onClick={() => setShowProfileModal(true)}>
                     <img 
-                        src={getFullUrl(message.senderProfileImage) || "/default-profile.png"} 
+                        src={getFullUrl(message.senderProfileImage) || "/default-profile.svg"} 
                         alt="Profile"
                         onError={(e) => {
                             if (e.target.dataset.failed) return;
@@ -124,9 +123,22 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                 
                 {/* 답장 인용 표시 */}
                 {message.parentMessageId && (
-                     <div className={styles.replyPreview}>
+                     <div 
+                        className={styles.replyPreview} 
+                        onClick={() => {
+                            if (onReplyClick) {
+                                onReplyClick(message.parentMessageId);
+                            } else {
+                                console.warn("onReplyClick prop is missing");
+                            }
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        title="클릭하여 원본 메시지로 이동"
+                     >
                         <span className={styles.replyName}>{message.parentMessageSenderName}에게 답장:</span>
-                        <div className={styles.replyContent}>{message.parentMessageContent}</div>
+                        <div className={styles.replyContent}>
+                            {extractOriginalFileName(message.parentMessageContent)}
+                        </div>
                      </div>
                 )}
 
@@ -142,13 +154,33 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                                 
                                 {/* 이미지 메시지 */}
                                 {(message.contentType === 'IMAGE' || message.messageType === 'IMAGE') && (
-                                    <img src={getFullUrl(message.content)} alt="Image" className={styles.imageContent} />
+                                    <a 
+                                        href={getFullUrl(message.content)} 
+                                        download={extractOriginalFileName(message.content)} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className={styles.imageLink} 
+                                    >
+                                        <img 
+                                            src={getFullUrl(message.content)} 
+                                            alt="Image" 
+                                            className={styles.imageContent} 
+                                            onLoad={onImageLoad} 
+                                            title={extractOriginalFileName(message.content)} 
+                                        />
+                                    </a>
                                 )}
                                 
                                 {/* 파일 메시지 */}
                                 {(message.contentType === 'FILE' || message.messageType === 'FILE') && (
-                                    <a href={getFullUrl(message.content)} download target="_blank" rel="noopener noreferrer" className={styles.fileLink}>
-                                        📎 {getFileName(message.content)}
+                                    <a 
+                                        href={getFullUrl(message.content)} 
+                                        download={extractOriginalFileName(message.content)} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className={styles.fileLink}
+                                    >
+                                        📎 {extractOriginalFileName(message.content)}
                                     </a>
                                 )}
                             </>
@@ -156,28 +188,26 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                     </div>
                     
                     <div className={styles.info}>
-                        {/* 읽지 않음 카운트 (0이면 숨김) */}
                         {message.unreadCount > 0 && (
                             <span className={styles.unread}>{message.unreadCount}</span>
                         )}
                         <span className={styles.time}>{formatTime(message.createdAt)}</span>
                     </div>
-                </div>
 
-                {/* 리액션 표시 */}
-                {message.reactions && message.reactions.length > 0 && (
-                    <div className={styles.reactions}>
-                        {message.reactions.map((r, i) => (
-                            <button 
-                                key={i} 
-                                className={`${styles.reaction} ${r.selectedByMe ? styles.myReaction : ''}`}
-                                onClick={() => handleReaction(r.emojiType)} // ✨ Add click handler
-                            >
-                                {r.emojiType} {r.count}
-                            </button>
-                        ))}
-                    </div>
-                )}
+                    {message.reactions && message.reactions.length > 0 && (
+                        <div className={styles.reactions}>
+                            {message.reactions.map((r, i) => (
+                                <button 
+                                    key={i} 
+                                    className={`${styles.reaction} ${r.selectedByMe ? styles.myReaction : ''}`}
+                                    onClick={() => handleReaction(r.emojiType)}
+                                >
+                                    {r.emojiType} {r.count}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
 
             {showMenu && (
@@ -187,6 +217,15 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh }) =>
                     options={menuOptions} 
                     onClose={() => setShowMenu(false)} 
                     onReaction={handleReaction} // ✨ Pass handler
+                />
+            )}
+
+            {showProfileModal && (
+                <UserDatailModal
+                    isOpen={showProfileModal}
+                    onClose={() => setShowProfileModal(false)}
+                    memberId={message.senderId}
+                    zIndex={15000}
                 />
             )}
         </div>
