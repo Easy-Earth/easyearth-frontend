@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import authApi from "../../apis/authApi";
 import * as itemApi from "../../apis/itemApi";
-import authApi from "../../apis/authApi"; 
 import Button from "../../components/common/Button";
 import CustomModal from "../../components/common/CustomModal";
 import ItemCssPreview from "../../components/item/ItemCssPreview";
@@ -226,7 +226,7 @@ const ShopPage = () => {
             <p>1,000P로 전설 등급 아이템에 도전하세요!</p>
           </div>
           <div className={styles.gachaBtnWrapper}>
-            <Button color="#ff9f43" onClick={handleRandomPull} width="160px" height="50px">
+            <Button color="#fbbf24" onClick={handleRandomPull} width="160px" height="50px">
               <span className={styles.btnText}>뽑기 시작</span>
             </Button>
           </div>
