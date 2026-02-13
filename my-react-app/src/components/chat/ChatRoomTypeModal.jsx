@@ -113,8 +113,9 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                                     type="text" 
                                     value={roomTitle}
                                     onChange={(e) => setRoomTitle(e.target.value)}
-                                    placeholder="채팅방 제목을 입력하세요"
+                                    placeholder="채팅방 제목을 입력하세요(최대 15자)"
                                     className={styles.input}
+                                    maxLength={15} // ✨ 10글자 제한
                                 />
                                 <p className={styles.hint}>* 그룹 채팅 멤버 초대는 방 생성 후에도 가능합니다.</p>
                             </div>

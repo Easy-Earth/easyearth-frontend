@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember, getChatRoomUsers, setNotice, clearNotice, getChatRoomDetail, searchMessages } from '../../apis/chatApi'; // searchMessages 추가
 import { getFullUrl } from '../../utils/imageUtil';
+import { extractOriginalFileName } from './chatFileUtil';
 import MessageBubble from './MessageBubble';
 import FileUploadButton from './FileUploadButton';
 import MemberManagementModal from './MemberManagementModal';
@@ -37,6 +38,7 @@ const ChatRoomDetail = ({ roomId }) => {
     const [roomInfo, setRoomInfo] = useState({ title: '', type: 'SINGLE', members: [], creatorId: null, noticeContent: null, noticeMessageId: null, roomImage: null });
     
     const [replyTo, setReplyTo] = useState(null);
+    const [newlyArrivedMessage, setNewlyArrivedMessage] = useState(null); // ✨ New state for notification
     const [modalConfig, setModalConfig] = useState({
         isOpen: false, title: "", message: "", type: "alert", onConfirm: null, onCancel: null
     });
@@ -69,6 +71,7 @@ const ChatRoomDetail = ({ roomId }) => {
             setRoomInfo(data);
         } catch (error) {
             console.error("채팅방 정보 로드 실패", error);
+            showAlert("채팅방 정보를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
         }
     }, [roomId]);
 
@@ -87,6 +90,10 @@ const ChatRoomDetail = ({ roomId }) => {
             if (cursorId === 0) {
                 setMessages(data);
             } else {
+                // ✨ 목록 앞부분에 추가될 때 현재 스크롤 높이 저장
+                if (messagesContainerRef.current) {
+                    prevScrollHeight.current = messagesContainerRef.current.scrollHeight;
+                }
                 setMessages(prev => [...data, ...prev]);
             }
             
@@ -94,6 +101,7 @@ const ChatRoomDetail = ({ roomId }) => {
 
         } catch (error) {
             console.error("메시지 로드 실패", error);
+            showAlert("메시지를 불러올 수 없습니다. 페이지를 새로고침해주세요.");
         }
     }, [roomId, user.memberId]); // ✨ [Fix] hasMore 제거 -> Stable Function
 
@@ -141,9 +149,33 @@ const ChatRoomDetail = ({ roomId }) => {
                 return; 
             }
 
+            // ✨ [Fix] 공지 이벤트 처리 (메시지 목록에 추가하지 않음)
+            if (receivedMsg.type === 'NOTICE_UPDATED') {
+                console.log("📢 공지 업데이트 수신:", receivedMsg);
+                setRoomInfo(prev => ({ 
+                    ...prev, 
+                    noticeContent: receivedMsg.noticeContent, 
+                    noticeMessageId: receivedMsg.noticeMessageId, 
+                    noticeSenderName: receivedMsg.senderName 
+                }));
+                return; // ✨ 중요: 여기서 종료하여 메시지로 추가되지 않도록 함
+            }
+            
+            if (receivedMsg.type === 'NOTICE_CLEARED') {
+                console.log("📢 공지 해제 수신:", receivedMsg);
+                setRoomInfo(prev => ({ 
+                    ...prev, 
+                    noticeContent: null, 
+                    noticeMessageId: null, 
+                    noticeSenderName: null 
+                }));
+                return; // ✨ 중요: 여기서 종료
+            }
+
             // Message handling
             setMessages(prev => {
                 const receivedId = String(receivedMsg.messageId || receivedMsg.id);
+                // 중복 체크 및 업데이트 로직
                 const existingIndex = prev.findIndex(msg => String(msg.messageId || msg.id) === receivedId);
                 let updatedMessages = [...prev];
 
@@ -166,17 +198,15 @@ const ChatRoomDetail = ({ roomId }) => {
             
             if (receivedMsg.senderId !== user.memberId) {
                 markAsRead(roomId, user.memberId, receivedMsg.messageId).then(() => { loadChatRooms(); });
+                
+                // ✨ [New] Check if user is NOT at bottom
+                if (!isUserAtBottomRef.current) {
+                    console.log("🔔 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
+                    setNewlyArrivedMessage(receivedMsg);
+                }
             }
-
+            // Notice type handling logic removed/moved up
             if (receivedMsg.messageType === 'NOTICE' || receivedMsg.type === 'NOTICE') { fetchRoomInfo(); }
-            
-            if (receivedMsg.type === 'NOTICE_UPDATED') {
-                setRoomInfo(prev => ({ ...prev, noticeContent: receivedMsg.noticeContent, noticeMessageId: receivedMsg.noticeMessageId, noticeSenderName: receivedMsg.senderName }));
-            }
-            
-            if (receivedMsg.type === 'NOTICE_CLEARED') {
-                setRoomInfo(prev => ({ ...prev, noticeContent: null, noticeMessageId: null, noticeSenderName: null }));
-            }
         });
 
         // Reaction subscription
@@ -268,7 +298,13 @@ const ChatRoomDetail = ({ roomId }) => {
         const handleScroll = () => {
             const { scrollTop, scrollHeight, clientHeight } = container;
             // 하단에서 100px 이내면 하단으로 간주
-            isUserAtBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
+            const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
+            isUserAtBottomRef.current = isAtBottom;
+
+            // ✨ [New] 하단 도달 시 알림 해제
+            if (isAtBottom) {
+                setNewlyArrivedMessage(null);
+            }
         };
         
         container.addEventListener('scroll', handleScroll);
@@ -284,6 +320,7 @@ const ChatRoomDetail = ({ roomId }) => {
             isFirstLoad.current = false;
             previousMessageCountRef.current = messages.length;
             isUserAtBottomRef.current = true;
+            setNewlyArrivedMessage(null); // Clear on first load
         } 
         // ✨ 새 메시지가 추가되고 사용자가 하단에 있을 때만 스크롤
         else if (messages.length > previousMessageCountRef.current && isUserAtBottomRef.current) {
@@ -296,8 +333,27 @@ const ChatRoomDetail = ({ roomId }) => {
         // 무한 스크롤로 과거 메시지 로드 시에는 스크롤 하지 않음
     }, [messages]);
 
+    // ✨ [Fix] 과거 메시지 로드 시 스크롤 위치 유지 (깜빡임 방지용 useLayoutEffect)
+    useLayoutEffect(() => {
+        if (prevScrollHeight.current > 0 && messagesContainerRef.current) {
+            const container = messagesContainerRef.current;
+            const currentScrollHeight = container.scrollHeight;
+            const diff = currentScrollHeight - prevScrollHeight.current;
+
+            if (diff > 0) {
+                console.log(`📜 스크롤 보정: +${diff}px (과거 메시지 로드)`);
+                container.scrollTop = diff; // 기존 스크롤 위치(0 근처) + 늘어난 높이
+            }
+            prevScrollHeight.current = 0; // Reset
+        }
+    }, [messages]);
+
     const handleSend = () => {
-        if (!input.trim() || !connected) return;
+        if (!input.trim()) return;
+        if (!connected) {
+            showAlert("서버 연결이 끊어졌습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
 
         const msgDto = {
             chatRoomId: roomId,
@@ -313,7 +369,10 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     const handleFileUpload = (fileUrl, type) => {
-        if (!connected) return;
+        if (!connected) {
+            showAlert("서버 연결이 끊어졌습니다. 잠시 후 다시 시도해주세요.");
+            return;
+        }
 
         const msgDto = {
             chatRoomId: roomId,
@@ -373,7 +432,12 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     const handleRefresh = () => { fetchRoomInfo(); fetchMessages(0); };
-    const handleImageLoad = () => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); };
+    // ✨ [Fix] 이미지가 로드될 때, 사용자가 이미 하단에 있는 경우에만 스크롤
+    const handleImageLoad = () => { 
+        if (isUserAtBottomRef.current) {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
+        }
+    };
 
     // ✨ 검색 핸들러 함수들
     const handleSearch = async () => {
@@ -396,7 +460,7 @@ const ChatRoomDetail = ({ roomId }) => {
             }
             
             setSearchResults(results);
-            setSearchOffset(10);
+            setSearchOffset(results.length);
             setHasMoreSearchResults(results.length === 10); // 10개면 더 있을 수 있음
             
             // 가장 최근 결과 (인덱스 0)로 이동
@@ -410,25 +474,7 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     const scrollToSearchResult = (messageId) => {
-        console.log('📍 Scrolling to messageId:', messageId);
-        setHighlightedMessageId(messageId);
-        
-        // 메시지 요소 찾기 및 스크롤
-        setTimeout(() => {
-            const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-            console.log('📍 Found element:', messageElement);
-            if (messageElement) {
-                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            } else {
-                console.warn('⚠️ Message element not found for ID:', messageId);
-            }
-        }, 100);
-
-        // 3초 후 하이라이트 제거
-        setTimeout(() => {
-            console.log('📍 Removing highlight');
-            setHighlightedMessageId(null);
-        }, 3000);
+        scrollToMessage(messageId);
     };
 
     const handlePrevSearchResult = async () => {
@@ -456,7 +502,7 @@ const ChatRoomDetail = ({ roomId }) => {
                     // updatedResults 배열에서 newIndex 위치의 messageId 사용
                     setTimeout(() => {
                         console.log('◀ Scrolling to newly loaded message at index:', newIndex);
-                        scrollToSearchResult(updatedResults[newIndex].messageId);
+                        scrollToMessage(updatedResults[newIndex].messageId); 
                     }, 100);
                 }
             } catch (error) {
@@ -466,8 +512,42 @@ const ChatRoomDetail = ({ roomId }) => {
             // 인덱스가 범위 내에 있으면 이동
             console.log('◀ Navigating to existing result at index:', newIndex);
             setCurrentSearchIndex(newIndex);
-            scrollToSearchResult(searchResults[newIndex].messageId);
+            scrollToMessage(searchResults[newIndex].messageId); 
         }
+    };
+
+    // ✨ [Refactor] 메시지 스크롤 공통 함수 (하이라이트 포함)
+    // ✨ [Refactor] 메시지 스크롤 공통 함수 (하이라이트 포함)
+    const highlightTimeoutRef = useRef(null); // ✨ Timer Ref
+
+    const scrollToMessage = (messageId) => {
+        console.log("📜 스크롤 시도: messageId =", messageId);
+        
+        // ✨ 기존 타이머 제거 (하이라이트 끊김 방지)
+        if (highlightTimeoutRef.current) {
+            clearTimeout(highlightTimeoutRef.current);
+        }
+
+        setHighlightedMessageId(messageId); // ✨ State 하이라이트 활성화
+
+        // DOM 요소 찾기 (약간의 지연을 두어 렌더링 확보)
+        setTimeout(() => {
+            const element = document.querySelector(`[data-message-id="${messageId}"]`);
+            
+            if (element) {
+                console.log("✅ 요소 찾음, 스크롤 실행");
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                console.warn("❌ 메시지를 찾을 수 없습니다 (DOM 미존재):", messageId);
+                showAlert("해당 메시지를 찾을 수 없습니다. (스크롤 위쪽에 있을 수 있습니다)");
+            }
+        }, 100);
+
+        // ✨ 3초 후 State 하이라이트 해제 (Timer ID 저장)
+        highlightTimeoutRef.current = setTimeout(() => {
+            setHighlightedMessageId(null);
+            highlightTimeoutRef.current = null;
+        }, 3000);
     };
 
     const handleNextSearchResult = () => {
@@ -479,22 +559,22 @@ const ChatRoomDetail = ({ roomId }) => {
             const newIndex = currentSearchIndex - 1;
             console.log('▶ Navigating to index:', newIndex);
             setCurrentSearchIndex(newIndex);
-            scrollToSearchResult(searchResults[newIndex].messageId);
+            scrollToMessage(searchResults[newIndex].messageId); // ✨ 공통 함수 사용
         } else {
             console.log('▶ Already at most recent result (index 0)');
         }
-        // 이미 가장 최근 결과(인덱스 0)에 있으면 아무것도하지 않음
     };
-
 
     const handleCloseSearch = () => {
         setShowSearch(false);
-        setSearchKeyword('');
         setSearchResults([]);
-        setCurrentSearchIndex(-1);
-        setHighlightedMessageId(null);
-        setSearchOffset(0);
-        setHasMoreSearchResults(false);
+        setSearchKeyword('');
+    };
+
+    // ✨ [New] 답장 클릭 핸들러
+    const handleReplyClick = (targetMessageId) => {
+        if (!targetMessageId) return;
+        scrollToMessage(targetMessageId);
     };
 
 
@@ -520,7 +600,9 @@ const ChatRoomDetail = ({ roomId }) => {
                 </h3>
                 <div className={styles.actions}>
                     <button onClick={() => setShowSearch(!showSearch)} className={styles.actionBtn} title="검색">🔍</button>
-                    <button onClick={() => setShowMemberModal(true)} className={styles.actionBtn}>설정</button>
+                    {roomInfo.roomType !== 'SINGLE' && (
+                        <button onClick={() => setShowMemberModal(true)} className={styles.actionBtn}>설정</button>
+                    )}
                     <button onClick={handleLeave} className={styles.leaveBtn}>나가기</button>
                 </div>
             </div>
@@ -528,10 +610,14 @@ const ChatRoomDetail = ({ roomId }) => {
             {/* ✨ Notice Banner */}
             {roomInfo.noticeContent && (
                 <div className={styles.noticeBanner}>
-                    <div className={styles.noticeContentWrapper}>
+                    <div 
+                        className={styles.noticeContentWrapper} 
+                        onClick={() => scrollToMessage(roomInfo.noticeMessageId)} // ✨ Click handler added
+                        title="공지 메시지로 이동"
+                    >
                         <span className={styles.noticeIcon}>📢</span>
                         <div className={styles.noticeTextContainer}>
-                             <span className={styles.noticeText}>{roomInfo.noticeContent}</span>
+                             <span className={styles.noticeText}>{extractOriginalFileName(roomInfo.noticeContent)}</span>
                              {roomInfo.noticeSenderName && (
                                 <span className={styles.noticeSender}> - {roomInfo.noticeSenderName}</span>
                              )}
@@ -580,9 +666,16 @@ const ChatRoomDetail = ({ roomId }) => {
                             {isNewDate && (
                                 <div className={styles.dateSeparator}>
                                     <span>
-                                        {new Date(msg.createdAt).toLocaleDateString('ko-KR', { 
-                                            year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
-                                        })}
+                                        {(() => {
+                                            try {
+                                                const date = new Date(msg.createdAt);
+                                                return isNaN(date.getTime()) 
+                                                    ? "" 
+                                                    : date.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+                                            } catch (e) {
+                                                return "";
+                                            }
+                                        })()}
                                     </span>
                                 </div>
                             )}
@@ -591,10 +684,13 @@ const ChatRoomDetail = ({ roomId }) => {
                                     message={msg} 
                                     onReply={setReplyTo} 
                                     onSetNotice={handleSetNotice}
-                                    isOwner={String(roomInfo.creatorId) === String(user.memberId)}
+                                    isOwner={roomInfo.roomType === 'SINGLE' || String(roomInfo.creatorId) === String(user.memberId)}
                                     onRefresh={handleRefresh}
                                     onImageLoad={handleImageLoad}
                                     isHighlighted={highlightedMessageId === (msg.messageId || msg.id)}
+                                    // ✨ 하이라이트 여부 전달
+                                    showAlert={showAlert} // Pass showAlert
+                                    onReplyClick={scrollToMessage} // ✨ 답장 클릭 핸들러 전달
                                 />
                             </div>
                         </React.Fragment>
@@ -605,18 +701,38 @@ const ChatRoomDetail = ({ roomId }) => {
 
             {/* Input Area */}
             <div className={styles.inputAreaWrapper}>
+                {/* ✨ New Message Notification */}
+                {newlyArrivedMessage && (
+                    <div 
+                        className={styles.newMessageNotification} 
+                        onClick={() => {
+                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                            setNewlyArrivedMessage(null);
+                        }}
+                    >
+                        <span className={styles.notificationIcon}>⬇️</span>
+                        <div className={styles.notificationContent}>
+                            <span className={styles.notificationSender}>{newlyArrivedMessage.senderName}</span>
+                            <span className={styles.notificationText}>
+                                {newlyArrivedMessage.contentType === 'IMAGE' ? '사진' : 
+                                 newlyArrivedMessage.contentType === 'FILE' ? '파일' : 
+                                 newlyArrivedMessage.content}
+                            </span>
+                        </div>
+                    </div>
+                )}
                 {replyTo && (
                     <div className={styles.replyBanner}>
                         <div className={styles.replyInfo}>
                             <span className={styles.replyToName}>To. {replyTo.senderName}</span>
-                            <span className={styles.replyToContent}>{replyTo.content}</span>
+                            <span className={styles.replyToContent}>{extractOriginalFileName(replyTo.content)}</span>
                         </div>
                         <button onClick={() => setReplyTo(null)} className={styles.replyCloseBtn}>✖</button>
                     </div>
                 )}
                 
                 <div className={styles.inputArea}>
-                    <FileUploadButton onFileUploaded={handleFileUpload} />
+                    <FileUploadButton onFileUploaded={handleFileUpload} showAlert={showAlert} />
                     <textarea 
                         className={styles.input}
                         value={input}
@@ -654,6 +770,10 @@ const ChatRoomDetail = ({ roomId }) => {
                     isOwner={String(roomInfo.creatorId) === String(user.memberId)}
                     showAlert={showAlert}
                     showConfirm={showConfirm}
+                    onMemberUpdate={() => {
+                        console.log("🔄 멤버 목록 갱신 요청");
+                        getChatRoomUsers(roomId).then(data => setRoomMembers(data));
+                    }}
                 />
             )}
             
