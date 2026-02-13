@@ -7,7 +7,7 @@ import QuizModal from "../../components/main/QuizModal";
 import styles from "./MainPage.module.css";
 
 function MainPage() {
-    const [modalType, setModalType] = useState(null); // 'quiz', 'quest', 'attendance', 'ecotree', null
+    const [modalType, setModalType] = useState(null); // 'quiz', 'quest', 'attendance', null
     const [weather, setWeather] = useState(null);
     const [weatherList, setWeatherList] = useState([]);
     const [secretaryMsg, setSecretaryMsg] = useState("");
@@ -112,16 +112,13 @@ function MainPage() {
                 <div className={styles.tab} onClick={() => openModal("attendance")}>
                     <span className={styles.icon}>📅</span> 출석
                 </div>
-                <div className={styles.tab} onClick={() => openModal("ecotree")}>
-                    <span className={styles.icon}>🌲</span> 에코트리
-                </div>
+
             </aside>
 
             {/* ── Modals ── */}
             <QuizModal isOpen={modalType === "quiz"} onClose={closeModal} />
             <QuestModal isOpen={modalType === "quest"} onClose={closeModal} />
             <AttendanceModal isOpen={modalType === "attendance"} onClose={closeModal} />
-            <EcoTreeModal isOpen={modalType === "ecotree"} onClose={closeModal} />
         </div>
     );
 }
