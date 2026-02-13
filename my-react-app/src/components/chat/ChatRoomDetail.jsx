@@ -179,10 +179,25 @@ const ChatRoomDetail = ({ roomId }) => {
                 const receivedId = String(receivedMsg.messageId || receivedMsg.id);
                 // 중복 체크 및 업데이트 로직
                 const existingIndex = prev.findIndex(msg => String(msg.messageId || msg.id) === receivedId);
+                
+                // ✨ 낙관적 메시지 찾기 (내 메시지인 경우)
+                let optimisticIndex = -1;
+                if (receivedMsg.senderId === user.memberId) {
+                     optimisticIndex = prev.findIndex(msg => 
+                        msg.isOptimistic && 
+                        msg.content === receivedMsg.content &&
+                        msg.messageType === receivedMsg.messageType
+                    );
+                }
+
                 let updatedMessages = [...prev];
 
                 if (existingIndex !== -1) {
                     updatedMessages[existingIndex] = { ...updatedMessages[existingIndex], ...receivedMsg };
+                } else if (optimisticIndex !== -1) {
+                    // ✨ 낙관적 메시지 교체
+                    console.log("🔄 낙관적 메시지 교체:", receivedMsg.messageId);
+                    updatedMessages[optimisticIndex] = receivedMsg;
                 } else {
                     updatedMessages.push(receivedMsg);
                 }
@@ -203,7 +218,7 @@ const ChatRoomDetail = ({ roomId }) => {
                 
                 // ✨ [Old Logic] Check if user is NOT at bottom
                 if (!isUserAtBottomRef.current) {
-                    console.log("� 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
+                    console.log(" 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
                     setNewlyArrivedMessage(receivedMsg);
                 }
             } else {
@@ -260,12 +275,45 @@ const ChatRoomDetail = ({ roomId }) => {
                     }
                     return msg;
                 }));
-                loadChatRooms(); 
             }
         });
 
-        return () => { roomSubscription.unsubscribe(); reactionSubscription.unsubscribe(); readSubscription.unsubscribe(); };
-    }, [roomId, client, connected, user.memberId]); // ✨ 의존성 대폭 축소 (fetchMessages, loadChatRooms 등 제외 -> Stable)
+        // ✨ [New] User specific subscription for errors
+        const userSubscription = client.subscribe(`/topic/user/${user.memberId}`, (message) => {
+            try {
+                const receivedMsg = JSON.parse(message.body);
+                // 현재 채팅방 관련 에러인지 확인
+                if (receivedMsg.messageType === 'ERROR' && String(receivedMsg.chatRoomId) === String(roomId)) { // ✨ [Fix] type -> messageType
+                    console.error("❌ 채팅 오류 수신:", receivedMsg.content);
+                    showAlert(receivedMsg.content, "전송 실패");
+                    
+                    // ✨ [Fix] 낙관적 메시지 롤백 (임시 ID로 찾기는 어려우므로, 가장 최근에 보낸 낙관적 메시지 제거)
+                    // (또는 content가 일치하는 가장 최근 낙관적 메시지 제거)
+                    setMessages(prev => {
+                        const newMessages = [...prev];
+                        // 뒤에서부터 검색하여 가장 최근의 낙관적 메시지를 찾음
+                        for (let i = newMessages.length - 1; i >= 0; i--) {
+                            if (newMessages[i].isOptimistic) {
+                                console.log("🗑️ 전송 실패로 인한 낙관적 메시지 제거:", newMessages[i]);
+                                newMessages.splice(i, 1);
+                                break; // 하나만 제거
+                            }
+                        }
+                        return newMessages;
+                    });
+                }
+            } catch (e) {
+                console.error("Error parsing user message", e);
+            }
+        });
+
+        return () => { 
+            roomSubscription.unsubscribe(); 
+            reactionSubscription.unsubscribe(); 
+            readSubscription.unsubscribe(); 
+            userSubscription.unsubscribe(); // ✨ [New] Unsubscribe
+        };
+    }, [roomId, client, connected, user.memberId, showAlert]); // ✨ showAlert added
 
 
     // Infinite Scroll
@@ -371,9 +419,32 @@ const ChatRoomDetail = ({ roomId }) => {
             parentMessageId: replyTo ? replyTo.messageId : null
         };
 
-        client.publish({ destination: '/app/chat/message', body: JSON.stringify(msgDto) });
-        setInput('');
-        setReplyTo(null);
+        // ✨ 1. 낙관적 업데이트: 임시 메시지 추가
+        const tempId = Date.now(); // 임시 ID
+        const optimisticMsg = {
+            ...msgDto,
+            messageId: tempId, 
+            senderName: user.name || "나", // 현재 유저 이름
+            senderProfileImage: user.profileImage, // 현재 유저 프로필
+            createdAt: new Date().toISOString(),
+            isOptimistic: true, // ✨ 낙관적 메시지 표시 플래그
+            reactions: [],
+            unreadCount: 0
+        };
+
+        setMessages(prev => [...prev, optimisticMsg]);
+
+        // 2. 실제 전송
+        try {
+            client.publish({ destination: '/app/chat/message', body: JSON.stringify(msgDto) });
+            setInput('');
+            setReplyTo(null);
+        } catch (error) {
+            console.error("메시지 전송 실패", error);
+            showAlert("메시지 전송에 실패했습니다.");
+            // 실패 시 낙관적 메시지 제거 로직 추가 가능
+            setMessages(prev => prev.filter(msg => msg.messageId !== tempId));
+        }
     };
 
     const handleFileUpload = (fileUrl, type) => {

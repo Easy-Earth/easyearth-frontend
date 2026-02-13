@@ -142,7 +142,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                      </div>
                 )}
 
-                <div className={styles.bubbleRow}>
+                <div className={styles.bubbleRow} style={{ opacity: message.isOptimistic ? 0.7 : 1 }}>
                     <div className={`${styles.bubble} ${message.messageType === 'DELETED' ? styles.deletedBubble : ''}`}>
                         {/* 삭제된 메시지 */}
                         {message.messageType === 'DELETED' ? (
