@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import Modal from "../common/Modal";
-import { getQuizByDifficulty } from "../../apis/quizApi";
+import { getQuizByDifficulty, saveQuizResult } from "../../apis/quizApi";
 import styles from "./QuizModal.module.css";
 
 const QuizModal = ({ isOpen, onClose }) => {
     const [step, setStep] = useState("difficulty"); // difficulty, loading, quiz, result
     const [quizzes, setQuizzes] = useState([]);
+    const [difficulty, setDifficulty] = useState(""); // Easy, Normal, Hard
     const [currentIndex, setCurrentIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [picks, setPicks] = useState([]); // Verified answers
@@ -21,6 +22,7 @@ const QuizModal = ({ isOpen, onClose }) => {
     const resetQuiz = () => {
         setStep("difficulty");
         setQuizzes([]);
+        setDifficulty("");
         setCurrentIndex(0);
         setScore(0);
         setPicks([]);
@@ -28,11 +30,12 @@ const QuizModal = ({ isOpen, onClose }) => {
         setVerifiedStatus([]);
     };
 
-    const handleStartQuiz = async (difficulty) => {
+    const handleStartQuiz = async (diff) => {
         setStep("loading");
         try {
-            const data = await getQuizByDifficulty(difficulty);
+            const data = await getQuizByDifficulty(diff);
             setQuizzes(data);
+            setDifficulty(diff);
             setPicks(new Array(data.length).fill(null));
             setSelectedPicks(new Array(data.length).fill(null));
             setVerifiedStatus(new Array(data.length).fill(false));
@@ -72,10 +75,20 @@ const QuizModal = ({ isOpen, onClose }) => {
     };
 
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (currentIndex < quizzes.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
+            // 퀴즈 종료 시 결과 저장
+            try {
+                const userStr = localStorage.getItem("user");
+                const user = userStr ? JSON.parse(userStr) : null;
+                const userId = user?.memberId || 1;
+
+                await saveQuizResult(userId, difficulty, score);
+            } catch (error) {
+                console.error("Failed to save quiz result", error);
+            }
             setStep("result");
         }
     };
