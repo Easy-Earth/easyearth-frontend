@@ -47,15 +47,11 @@ const ShopPage = () => {
     { label: "LEGENDARY", value: "LEGENDARY" },
   ];
 
-
-
   // 💰 포인트 조회 함수 (authApi 사용 및 MemberWalletVO 필드명 반영)
   const fetchUserPoint = useCallback(async () => {
     if (!memberId) return;
     try {
-      // MemberController의 @GetMapping("/point/{memberId}") 호출
       const walletData = await authApi.getMemberPoint(memberId);
-      // MemberWalletVO의 실제 필드명인 nowPoint를 사용하여 상태 업데이트
       setUserPoint(walletData.nowPoint ?? 0);
     } catch (error) {
       console.error("포인트 조회 실패:", error);
@@ -131,7 +127,6 @@ const ShopPage = () => {
           await itemApi.buyItem(purchaseData);
           setMyItems(prev => [...prev, String(id)]);
           setSelectedItem(null);
-          // 💰 구매 성공 후 포인트 갱신
           fetchUserPoint();
           setModalConfig({
             isOpen: true,
@@ -185,7 +180,6 @@ const ShopPage = () => {
                 setMyItems(prev => [...prev, newItemId]);
               }
             }
-            // 💰 뽑기 연출 종료 시 포인트 갱신
             fetchUserPoint();
           }, 1500);
         } catch (error) {
