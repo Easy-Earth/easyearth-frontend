@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../../assets/images/easyearthLOGO.png";
 import kakaoBtnImg from "../../assets/images/kakaoBtn.png";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
@@ -10,7 +11,6 @@ const Header = ({ openLoginModal }) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
   
-  // ✨ 모달 상태 관리
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, 
     title: '', 
@@ -53,7 +53,9 @@ const Header = ({ openLoginModal }) => {
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
-        <Link to="/">EasyEarth</Link>
+        <Link to="/">
+          <img src={logo} alt="EasyEarth Logo" className={styles.logoImg} />
+        </Link>
       </div>
 
       <nav className={styles.nav}>
@@ -90,7 +92,6 @@ const Header = ({ openLoginModal }) => {
         {isAuthenticated && <NotificationCenter setModalConfig={setModalConfig} />}
       </div>
 
-      {/* ✨ 헤더 공용 커스텀 모달 */}
       <CustomModal 
         {...modalConfig} 
         onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
@@ -99,7 +100,6 @@ const Header = ({ openLoginModal }) => {
   );
 };
 
-// ... NotificationCenter 코드는 기존과 동일하되 alert 부분만 setModalConfig로 교체 ...
 const NotificationCenter = ({ setModalConfig }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
     const [isOpen, setIsOpen] = React.useState(false);

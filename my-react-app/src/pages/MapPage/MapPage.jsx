@@ -338,7 +338,7 @@ function MapPage() {
     if (!pos) {
       setError("먼저 '내 위치로' 버튼을 눌러 현재 위치를 파악해주세요.");
       return;
-    }
+    }//transparent
     if (selectedThemeIds.length === 0) {
       setError("테마를 최소 하나 선택해야 합니다.");
       return;

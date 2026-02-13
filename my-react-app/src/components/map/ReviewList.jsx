@@ -197,15 +197,28 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
       <div className={styles.titleGroup}>
         방문자 리뷰 <span className={styles.count}>{reviews?.length || 0}</span>
       </div>
-      {currentMemberId &&
-      <Button 
-        width="100px" 
-        height="34px" 
-        color="var(--eco-teal)" 
-        onClick={handleOpenWriteModal} 
-      >{}
-        <span style={{ color: "white", fontSize: "13px", fontWeight: "600" }}>리뷰 작성</span>
-      </Button>}
+      {currentMemberId && (
+        <Button 
+          width="100px" 
+          height="34px" 
+          color="var(--eco-teal)" 
+          onClick={handleOpenWriteModal} 
+        >
+          {/* ✅ 수직/수평 중앙 정렬을 위한 스타일 추가 */}
+          <span style={{ 
+            color: "white", 
+            fontSize: "13px", 
+            fontWeight: "600",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%", // 버튼 높이를 꽉 채워 수직 중앙 정렬 보장
+            lineHeight: "1" // 텍스트 줄높이로 인한 미세한 쏠림 방지
+          }}>
+            리뷰 작성
+          </span>
+        </Button>
+      )}
     </h3>
   );
 

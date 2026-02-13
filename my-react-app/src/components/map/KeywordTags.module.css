@@ -7,9 +7,9 @@
 
 .tag {
   padding: 4px 10px;
-  background-color: var(--blue-200);
+  background-color: var(--blue-400);
   color: var(--earth-50);
-  border-radius: 100px; /* 둥근 캡슐 형태 */
+  border-radius: 100px; 
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s;
