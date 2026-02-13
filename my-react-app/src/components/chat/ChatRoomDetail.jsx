@@ -38,7 +38,9 @@ const ChatRoomDetail = ({ roomId }) => {
     const [roomInfo, setRoomInfo] = useState({ title: '', type: 'SINGLE', members: [], creatorId: null, noticeContent: null, noticeMessageId: null, roomImage: null });
     
     const [replyTo, setReplyTo] = useState(null);
-    const [newlyArrivedMessage, setNewlyArrivedMessage] = useState(null); // ✨ New state for notification
+    const [newlyArrivedMessage, setNewlyArrivedMessage] = useState(null); // ✨ [Restored] 상대방 메시지 알림
+    const [myNewMessageNotification, setMyNewMessageNotification] = useState(null); // ✨ [New] 내가 보낸 메시지 알림
+
     const [modalConfig, setModalConfig] = useState({
         isOpen: false, title: "", message: "", type: "alert", onConfirm: null, onCancel: null
     });
@@ -54,15 +56,15 @@ const ChatRoomDetail = ({ roomId }) => {
 
     const [showProfileModal, setShowProfileModal] = useState(false);
 
-    const closeModal = () => setModalConfig(prev => ({ ...prev, isOpen: false }));
+    const closeModal = useCallback(() => setModalConfig(prev => ({ ...prev, isOpen: false })), []);
     
-    const showAlert = (message, title = "알림") => { 
+    const showAlert = useCallback((message, title = "알림") => { 
         setModalConfig({ isOpen: true, title, message, type: "alert", onConfirm: closeModal, onCancel: closeModal }); 
-    };
+    }, [closeModal]);
     
-    const showConfirm = (message, onConfirm, title = "확인") => {
+    const showConfirm = useCallback((message, onConfirm, title = "확인") => {
         setModalConfig({ isOpen: true, title, message, type: "confirm", onConfirm: () => { onConfirm(); closeModal(); }, onCancel: closeModal });
-    };
+    }, [closeModal]);
 
     const fetchRoomInfo = useCallback(async () => {
         try {
@@ -199,10 +201,16 @@ const ChatRoomDetail = ({ roomId }) => {
             if (receivedMsg.senderId !== user.memberId) {
                 markAsRead(roomId, user.memberId, receivedMsg.messageId).then(() => { loadChatRooms(); });
                 
-                // ✨ [New] Check if user is NOT at bottom
+                // ✨ [Old Logic] Check if user is NOT at bottom
                 if (!isUserAtBottomRef.current) {
-                    console.log("🔔 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
+                    console.log("� 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
                     setNewlyArrivedMessage(receivedMsg);
+                }
+            } else {
+                // ✨ [New] 내가 보낸 메시지도 스크롤 상단에 있으면 알림 표시
+                if (!isUserAtBottomRef.current) {
+                    console.log("🔔 내 메시지 전송됨 (스크롤 상단):", receivedMsg.content);
+                    setMyNewMessageNotification(receivedMsg);
                 }
             }
             // Notice type handling logic removed/moved up
@@ -413,31 +421,31 @@ const ChatRoomDetail = ({ roomId }) => {
         }
     }, [showMemberModal, roomId]);
 
-    const handleSetNotice = async (message) => {
+    const handleSetNotice = useCallback(async (message) => {
         try {
             await setNotice(roomId, user.memberId, message.messageId);
         } catch (error) {
              console.error("공지 설정 실패", error);
              showAlert("공지 설정에 실패했습니다.");
         }
-    };
+    }, [roomId, user.memberId, showAlert]);
 
-    const handleClearNotice = async () => {
+    const handleClearNotice = useCallback(async () => {
         try {
             await clearNotice(roomId, user.memberId);
         } catch (error) {
             console.error("공지 해제 실패", error);
              showAlert("공지 해제에 실패했습니다.");
         }
-    };
+    }, [roomId, user.memberId, showAlert]);
 
-    const handleRefresh = () => { fetchRoomInfo(); fetchMessages(0); };
+    const handleRefresh = useCallback(() => { fetchRoomInfo(); fetchMessages(0); }, [fetchRoomInfo, fetchMessages]);
     // ✨ [Fix] 이미지가 로드될 때, 사용자가 이미 하단에 있는 경우에만 스크롤
-    const handleImageLoad = () => { 
+    const handleImageLoad = useCallback(() => { 
         if (isUserAtBottomRef.current) {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); 
         }
-    };
+    }, []);
 
     // ✨ 검색 핸들러 함수들
     const handleSearch = async () => {
@@ -517,10 +525,9 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     // ✨ [Refactor] 메시지 스크롤 공통 함수 (하이라이트 포함)
-    // ✨ [Refactor] 메시지 스크롤 공통 함수 (하이라이트 포함)
     const highlightTimeoutRef = useRef(null); // ✨ Timer Ref
 
-    const scrollToMessage = (messageId) => {
+    const scrollToMessage = useCallback((messageId) => {
         console.log("📜 스크롤 시도: messageId =", messageId);
         
         // ✨ 기존 타이머 제거 (하이라이트 끊김 방지)
@@ -548,7 +555,7 @@ const ChatRoomDetail = ({ roomId }) => {
             setHighlightedMessageId(null);
             highlightTimeoutRef.current = null;
         }, 3000);
-    };
+    }, [showAlert]);
 
     const handleNextSearchResult = () => {
         console.log('▶ Next button clicked, currentIndex:', currentSearchIndex);
@@ -701,7 +708,7 @@ const ChatRoomDetail = ({ roomId }) => {
 
             {/* Input Area */}
             <div className={styles.inputAreaWrapper}>
-                {/* ✨ New Message Notification */}
+                {/* ✨ New Message Notification (Other) */}
                 {newlyArrivedMessage && (
                     <div 
                         className={styles.newMessageNotification} 
@@ -714,9 +721,30 @@ const ChatRoomDetail = ({ roomId }) => {
                         <div className={styles.notificationContent}>
                             <span className={styles.notificationSender}>{newlyArrivedMessage.senderName}</span>
                             <span className={styles.notificationText}>
-                                {newlyArrivedMessage.contentType === 'IMAGE' ? '사진' : 
-                                 newlyArrivedMessage.contentType === 'FILE' ? '파일' : 
+                                {(newlyArrivedMessage.contentType === 'IMAGE' || newlyArrivedMessage.messageType === 'IMAGE') ? '사진' : 
+                                 (newlyArrivedMessage.contentType === 'FILE' || newlyArrivedMessage.messageType === 'FILE') ? extractOriginalFileName(newlyArrivedMessage.content) : 
                                  newlyArrivedMessage.content}
+                            </span>
+                        </div>
+                    </div>
+                )}
+
+                {/* ✨ New Message Notification (My Own) */}
+                {myNewMessageNotification && (
+                    <div 
+                        className={`${styles.newMessageNotification} ${styles.myNotification}`} 
+                        onClick={() => {
+                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                            setMyNewMessageNotification(null);
+                        }}
+                    >
+                        <span className={styles.notificationIcon}>⬇️</span>
+                        <div className={styles.notificationContent}>
+                            <span className={styles.notificationSender}>내 메시지</span>
+                            <span className={styles.notificationText}>
+                                {(myNewMessageNotification.contentType === 'IMAGE' || myNewMessageNotification.messageType === 'IMAGE') ? '사진 보냄' : 
+                                 (myNewMessageNotification.contentType === 'FILE' || myNewMessageNotification.messageType === 'FILE') ? extractOriginalFileName(myNewMessageNotification.content) : 
+                                 myNewMessageNotification.content}
                             </span>
                         </div>
                     </div>

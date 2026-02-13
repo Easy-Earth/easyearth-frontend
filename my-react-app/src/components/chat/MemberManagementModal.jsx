@@ -85,8 +85,9 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
 
     const handleDelegate = (targetId, targetName, invitationStatus) => {
         // 초대 수락한 사용자만 위임 가능
-        if (invitationStatus !== 'ACCEPTED') {
-            showAlert("초대를 수락한 사용자에게만 방장 권한을 위임할 수 있습니다.");
+        // 초대 대기중인 사용자에게는 위임 불가
+        if (invitationStatus === 'PENDING') {
+            showAlert("초대 수락 대기중인 사용자에게는 위임할 수 없습니다.");
             return;
         }
         
