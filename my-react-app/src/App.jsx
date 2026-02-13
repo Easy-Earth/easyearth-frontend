@@ -1,28 +1,28 @@
-import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Route, BrowserRouter as Router, Routes, useLocation, useNavigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
 import "./App.css";
 import Header from "./components/layout/Header";
 import LoginModal from "./components/member/LoginModal";
 
-import MainPage from "./pages/MainPage/MainPage";
 import CommunityPage from "./pages/CommunityPage/CommunityPage";
+import MainPage from "./pages/MainPage/MainPage";
 import MapPage from "./pages/MapPage/MapPage";
-import ShopPage from "./pages/ShopPage/ShopPage";
 import MyPage from "./pages/MyPage/MyPage";
+import ShopPage from "./pages/ShopPage/ShopPage";
 import SignupPage from "./pages/SignupPage/SignupPage";
 import SuggestionPage from "./pages/SuggestionPage/SuggestionPage";
 
-import { PrivateRoute, PublicRoute } from "./router/PrivateRouter";
 import PasswordFindPage from "./components/member/PasswordFindPage";
+import KakaoCallback from "./pages/Auth/KakaoCallback";
 import InventoryPage from "./pages/InventoryPage/InventoryPage";
-
+import { PrivateRoute, PublicRoute } from "./router/PrivateRouter";
 // 채팅 관련 Import
 import { ChatProvider } from "./context/ChatContext";
 import { NotificationProvider } from "./context/NotificationContext";
-import ChatPage from "./pages/ChatPage/ChatPage";
 import ChatJoinPage from "./pages/ChatPage/ChatJoinPage";
+import ChatPage from "./pages/ChatPage/ChatPage";
 
 // 🚀 수정된 모달 관리자: 네비게이션 state를 감시하고 즉시 비웁니다.
 const ModalManager = ({ openLoginModal }) => {
@@ -103,6 +103,8 @@ function App() {
                       <ChatJoinPage />
                     </PrivateRoute>
                   } />
+                  <Route path="/kakao/callback" element={<KakaoCallback />} />
+
 
                 </Routes>
               </main>

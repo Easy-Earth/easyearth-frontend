@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import DaumPostcode from "react-daum-postcode";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; // ✨ useLocation 추가
 import authApi from "../../apis/authApi";
 import CustomModal from "../../components/common/CustomModal";
 import { useAuth } from "../../context/AuthContext";
-import styles from "./SignupPage.module.css"; // CSS 모듈 임포트
+import styles from "./SignupPage.module.css";
 
 function SignupPage() {
   const { register, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation(); // ✨ 카카오로부터 넘어온 state를 받기 위함
+  const kakaoData = location.state; // { kakaoId, nickname }
 
   // 오늘 날짜를 YYYY-MM-DD 형식으로 가져오기 (날짜 제한용)
   const today = new Date().toISOString().split("T")[0];
@@ -24,6 +26,21 @@ function SignupPage() {
     detailAddress: "",
     statusMessage: "",
   });
+
+  // ✨ 페이지 진입 시 카카오 데이터가 있다면 폼에 셋팅
+  useEffect(() => {
+    if (kakaoData) {
+      setFormData(prev => ({
+        ...prev,
+        userId: kakaoData.kakaoId,
+        name: kakaoData.nickname || "",
+        password: "KAKAO_AUTH_USER", // 카카오 유저용 임시 비번 (백엔드 암호화됨)
+        checkPwd: "KAKAO_AUTH_USER"
+      }));
+      // 카카오 ID는 이미 검증된 것이므로 사용 가능 처리
+      setIdStatus({ message: "카카오 인증 아이디입니다.", color: "#14b8a6", isAvailable: true });
+    }
+  }, [kakaoData]);
 
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -41,6 +58,9 @@ function SignupPage() {
 
   // 실시간 아이디 중복 체크
   useEffect(() => {
+    // ✨ 카카오 가입 시에는 중복 체크 로직 건너뜀
+    if (kakaoData) return;
+
     const checkId = async () => {
       if (!formData.userId) {
         setIdStatus({ message: "", color: "#64748b", isAvailable: false });
@@ -63,7 +83,7 @@ function SignupPage() {
     };
     const timeoutId = setTimeout(checkId, 500);
     return () => clearTimeout(timeoutId);
-  }, [formData.userId]);
+  }, [formData.userId, kakaoData]);
 
   // 실시간 비밀번호 일치 체크
   useEffect(() => {
@@ -158,17 +178,26 @@ function SignupPage() {
         
         <div className={styles.fieldContainer}>
           <label className={styles.label}>아이디</label>
-          <input name="userId" value={formData.userId} onChange={handleChange} placeholder="4자 이상 입력" className={styles.input} />
+          {/* ✨ 카카오 가입 시 아이디는 readOnly 처리 */}
+          <input 
+            name="userId" 
+            value={formData.userId} 
+            onChange={handleChange} 
+            placeholder="4자 이상 입력" 
+            className={styles.input} 
+            readOnly={!!kakaoData}
+          />
           {idStatus.message && <div className={styles.statusText} style={{ color: idStatus.color }}>{idStatus.message}</div>}
           {errors.userId && <span className={styles.error}>{errors.userId}</span>}
         </div>
         
-        <div className={styles.fieldContainer}>
+        {/* ✨ 카카오 가입 시 비밀번호 필드는 숨김(가독성을 위해) 혹은 readOnly 처리 */}
+        <div className={styles.fieldContainer} style={{ display: kakaoData ? 'none' : 'block' }}>
           <label className={styles.label}>비밀번호</label>
           <input name="password" type="password" value={formData.password} onChange={handleChange} placeholder="비밀번호" className={styles.input} />
         </div>
         
-        <div className={styles.fieldContainer}>
+        <div className={styles.fieldContainer} style={{ display: kakaoData ? 'none' : 'block' }}>
           <label className={styles.label}>비밀번호 확인</label>
           <input name="checkPwd" type="password" value={formData.checkPwd} onChange={handleChange} placeholder="비밀번호 다시 입력" className={styles.input} />
           {pwdStatus.message && <div className={styles.statusText} style={{ color: pwdStatus.color }}>{pwdStatus.message}</div>}
