@@ -22,9 +22,6 @@ const ShopPage = () => {
   const [pullResult, setPullResult] = useState(null);
   const [isDuplicate, setIsDuplicate] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-
-  // 💰 사용자 포인트 상태
-  // 💰 사용자 포인트 상태
   const [userPoint, setUserPoint] = useState(0);
 
   const [modalConfig, setModalConfig] = useState({
@@ -109,7 +106,7 @@ const ShopPage = () => {
   }, [allItems, categoryFilter, rarityFilter]);
 
   const handleBuy = (item) => {
-    const id = item.itemId || item.ITEM_ID;
+    const id = item.itemId || item.ITEM_ID; 
     if (!memberId) {
       setModalConfig({
         isOpen: true, type: 'alert', message: '로그인이 필요한 서비스입니다.',
@@ -132,7 +129,6 @@ const ShopPage = () => {
           await itemApi.buyItem(purchaseData);
           setMyItems(prev => [...prev, String(id)]);
           setSelectedItem(null);
-          // 💰 구매 성공 후 포인트 갱신
           fetchUserPoint();
           setModalConfig({
             isOpen: true,
@@ -158,7 +154,7 @@ const ShopPage = () => {
         isOpen: true,
         type: 'alert',
         message: '로그인이 필요합니다.',
-        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false })) 
       });
       return;
     }
@@ -186,7 +182,6 @@ const ShopPage = () => {
                 setMyItems(prev => [...prev, newItemId]);
               }
             }
-            // 💰 뽑기 연출 종료 시 포인트 갱신
             fetchUserPoint();
           }, 1500);
         } catch (error) {
@@ -202,7 +197,6 @@ const ShopPage = () => {
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <h1 className={styles.pageTitle}>🌱 에코 포인트 상점</h1>
-          {/* 💰 실시간 포인트 표시 영역 */}
           {memberId && (
             <div className={styles.userPointDisplay}>
               <span className={styles.pointLabel}>내 보유 포인트</span>
@@ -297,7 +291,7 @@ const ShopPage = () => {
                 </div>
               </div>
             );
-          })}
+          })} 
         </div>
       )}
 
