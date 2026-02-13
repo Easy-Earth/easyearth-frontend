@@ -15,17 +15,20 @@ const ShopPage = () => {
   const { user } = useAuth();
   const memberId = user?.memberNo || user?.memberId || user?.id;
 
-  const [allItems, setAllItems] = useState([]);      
-  const [myItems, setMyItems] = useState([]);        
+  const [allItems, setAllItems] = useState([]);
+  const [myItems, setMyItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullResult, setPullResult] = useState(null);
-  const [isDuplicate, setIsDuplicate] = useState(false); 
+  const [isDuplicate, setIsDuplicate] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+
+  // 💰 사용자 포인트 상태
+  // 💰 사용자 포인트 상태
   const [userPoint, setUserPoint] = useState(0);
 
   const [modalConfig, setModalConfig] = useState({
-    isOpen: false, type: 'alert', message: '', onConfirm: () => {}
+    isOpen: false, type: 'alert', message: '', onConfirm: () => { }
   });
 
   const [categoryFilter, setCategoryFilter] = useState("ALL");
@@ -46,10 +49,14 @@ const ShopPage = () => {
     { label: "LEGENDARY", value: "LEGENDARY" },
   ];
 
+  // 💰 포인트 조회 함수 (authApi 사용 및 MemberWalletVO 필드명 반영)
+  // 💰 포인트 조회 함수 (authApi 사용 및 MemberWalletVO 필드명 반영)
   const fetchUserPoint = useCallback(async () => {
     if (!memberId) return;
     try {
-      const walletData = await authApi.getMemberPoint(memberId); 
+      // MemberController의 @GetMapping("/point/{memberId}") 호출
+      const walletData = await authApi.getMemberPoint(memberId);
+      // MemberWalletVO의 실제 필드명인 nowPoint를 사용하여 상태 업데이트
       setUserPoint(walletData.nowPoint ?? 0);
     } catch (error) {
       console.error("포인트 조회 실패:", error);
@@ -102,7 +109,7 @@ const ShopPage = () => {
   }, [allItems, categoryFilter, rarityFilter]);
 
   const handleBuy = (item) => {
-    const id = item.itemId || item.ITEM_ID; 
+    const id = item.itemId || item.ITEM_ID;
     if (!memberId) {
       setModalConfig({
         isOpen: true, type: 'alert', message: '로그인이 필요한 서비스입니다.',
@@ -125,17 +132,18 @@ const ShopPage = () => {
           await itemApi.buyItem(purchaseData);
           setMyItems(prev => [...prev, String(id)]);
           setSelectedItem(null);
+          // 💰 구매 성공 후 포인트 갱신
           fetchUserPoint();
           setModalConfig({
-            isOpen: true, 
-            type: 'alert', 
+            isOpen: true,
+            type: 'alert',
             message: '🎉 구매 완료되었습니다!',
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
         } catch (error) {
           setModalConfig({
-            isOpen: true, 
-            type: 'alert', 
+            isOpen: true,
+            type: 'alert',
             message: error.response?.data || "구매 중 오류가 발생했습니다.",
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
@@ -146,11 +154,11 @@ const ShopPage = () => {
 
   const handleRandomPull = () => {
     if (!memberId) {
-      setModalConfig({ 
-        isOpen: true, 
-        type: 'alert', 
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
         message: '로그인이 필요합니다.',
-        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false })) 
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
       });
       return;
     }
@@ -178,6 +186,7 @@ const ShopPage = () => {
                 setMyItems(prev => [...prev, newItemId]);
               }
             }
+            // 💰 뽑기 연출 종료 시 포인트 갱신
             fetchUserPoint();
           }, 1500);
         } catch (error) {
@@ -193,6 +202,7 @@ const ShopPage = () => {
       <header className={styles.header}>
         <div className={styles.headerTop}>
           <h1 className={styles.pageTitle}>🌱 에코 포인트 상점</h1>
+          {/* 💰 실시간 포인트 표시 영역 */}
           {memberId && (
             <div className={styles.userPointDisplay}>
               <span className={styles.pointLabel}>내 보유 포인트</span>
@@ -253,8 +263,8 @@ const ShopPage = () => {
             const rarityLower = (item.rarity || item.RARITY || 'common').toLowerCase();
 
             return (
-              <div 
-                key={itemId} 
+              <div
+                key={itemId}
                 className={`${styles.itemCard} ${styles[`card_${rarityLower}`]}`}
                 onClick={() => setSelectedItem(item)}
                 style={{ position: 'relative', overflow: 'hidden' }}
@@ -271,7 +281,7 @@ const ShopPage = () => {
                     <ItemCssPreview item={item} />
                   )}
                 </div>
-                
+
                 <div className={styles.infoArea} style={{ position: 'relative', zIndex: 1 }}>
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
                   <div className={styles.cardFooter}>
@@ -287,7 +297,7 @@ const ShopPage = () => {
                 </div>
               </div>
             );
-          })} 
+          })}
         </div>
       )}
 
@@ -298,13 +308,13 @@ const ShopPage = () => {
             <div className={`${styles.cardBack} ${pullResult ? styles[`res_${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`] : ''}`}>
               {pullResult && (
                 <>
-                  <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{ (pullResult.rarity || pullResult.RARITY || 'common').toUpperCase() }</span>
+                  <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{(pullResult.rarity || pullResult.RARITY || 'common').toUpperCase()}</span>
                   {!isDuplicate ? (
                     <div className={styles.resultVisual}>
                       {(pullResult.itemCategory || pullResult.category) === "BADGE" ? (
-                         <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
+                        <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
                       ) : (
-                         <ItemCssPreview item={pullResult} />
+                        <ItemCssPreview item={pullResult} />
                       )}
                     </div>
                   ) : (
