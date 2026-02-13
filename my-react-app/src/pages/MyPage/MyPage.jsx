@@ -151,7 +151,6 @@ const MyPage = () => {
                 <EcoTreeSection memberId={userId} />
               </div>
             )}
-
             {activeTab === "inventory" && (
               <div className={styles.inventoryWrapper}>
                 <div className={styles.contentHeader}>
