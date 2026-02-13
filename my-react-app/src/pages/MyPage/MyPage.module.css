@@ -165,7 +165,12 @@
   width: 100%; padding: 10px; border: none; background: #f1f5f9;
   color: #475569; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s;
 }
-.itemCard:hover .equipActionBtn { background: #14b8a6; color: white; }
+.itemCard:hover .equipActionBtn { 
+  background: #d2cfd8; 
+  color: rgb(0, 0, 0); 
+  border: 2px solid #c7cbc9;
+  border-radius: 15px;
+}
 
 .loading { text-align: center; padding: 50px; color: #94a3b8; }
 
