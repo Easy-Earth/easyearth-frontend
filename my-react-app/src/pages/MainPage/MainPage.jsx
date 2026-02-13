@@ -57,7 +57,7 @@ function MainPage() {
                     </div>
                     <div className={styles.weatherDivider}></div>
                     <div className={styles.weatherSub}>
-                        <span className={styles.subItem}>미세: {weather.Pm10 <= 30 ? "좋음" : "보통"}</span>
+                        <span className={styles.subItem}>미세: {weather.pm10 <= 30 ? "좋음" : "보통"}</span>
                         <span className={styles.subItem}>자외선: {weather.uvIndex ?? "-"}</span>
                     </div>
                 </div>
