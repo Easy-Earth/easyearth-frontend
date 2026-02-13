@@ -9,77 +9,47 @@
 }
 
 .header {
-    padding: 16px 20px;
+    padding: 16px;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 70px; /* 높이 고정으로 안정감 부여 */
-    box-sizing: border-box;
-}
-
-.headerTitle {
-    display: flex;
-    align-items: center;
-    gap: 8px;
 }
 
 .title {
-    font-size: 22px;
-    font-weight: 800;
+    font-size: 20px;
+    font-weight: 700;
     color: #111827;
     margin: 0;
-    letter-spacing: -0.5px;
 }
 
 .count {
-    background: #eff6ff;
     color: #3b82f6;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 12px;
-    min-width: 20px;
-    text-align: center;
+    margin-left: 4px;
 }
 
-/* .headerActions 제거됨 */
-
-.headerRight {
+.actions {
     display: flex;
-    align-items: center;
-    gap: 8px; /* 타이틀과 버튼 사이 간격 */
+    gap: 8px;
 }
-
-/* .divider 제거됨 */
 
 .iconBtn {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     border: none;
-    background: transparent; /* ✨ 배경 제거 */
-    color: #3b82f6; /* 아이콘 색상: Primary Blue */
+    background: #f3f4f6;
+    color: #4b5563;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: all 0.2s;
-    padding: 0;
 }
 
 .iconBtn:hover {
-    background: #eff6ff; /* 호버 시 아주 연한 파란 배경 */
-    color: #2563eb;
-    transform: scale(1.1); /* 약간 확대 */
-}
-
-/* SVG 아이콘 크기 및 스타일 조정 */
-.iconBtn svg {
-    width: 30px; /* 아이콘 크기 확대 */
-    height: 30px;
-    fill: currentColor !important; /* CSS color 상속 */
-    stroke: none !important;
+    background: #e5e7eb;
+    color: #111827;
 }
 
 .connectionBanner {
@@ -118,36 +88,17 @@
 .avatar {
     width: 48px;
     height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
     margin-right: 12px;
+    background: #e5e7eb;
     flex-shrink: 0;
-    position: relative; /* ✨ 뱃지 위치 잡기 위해 추가 */
 }
 
 .avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%; /* ✨ 이미지 원형 처리 */
-    background: #e5e7eb;
-    display: block;
-}
-
-.groupCount {
-    position: absolute;
-    bottom: 0; /* 우측 하단 배치 */
-    right: 0;
-    background-color: rgba(107, 114, 128, 0.9); /* #6b7280 + opacity */
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 1px 5px;
-    border-radius: 10px;
-    border: 2px solid #ffffff; /* 흰색 테두리로 구분감 */
-    min-width: 14px;
-    text-align: center;
-    line-height: 1.2;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    z-index: 1; /* 이미지 위에 표시 */
 }
 
 .content {
@@ -253,7 +204,7 @@
 .myProfile {
     position: relative;
     cursor: pointer;
-    /* margin-right: 8px; 제거 */
+    margin-right: 8px;
 }
 
 .myProfileImg {
@@ -263,13 +214,6 @@
     object-fit: cover;
     border: 2px solid transparent;
     transition: border-color 0.2s;
-}
-
-.myNickname {
-    font-size: 14px;
-    font-weight: 600;
-    color: #374151;
-    margin-right: 8px; /* 프로필 이미지와의 간격 */
 }
 
 .myProfile:hover .myProfileImg {

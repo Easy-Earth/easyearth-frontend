@@ -101,8 +101,8 @@ export const ChatProvider = ({ children }) => {
               
               // 알림 센터에도 추가
               addNotification({
-                  ...notification,
                   id: Date.now() + Math.random(),
+                  ...notification,
                   read: false
               });
               return;
@@ -117,8 +117,8 @@ export const ChatProvider = ({ children }) => {
           if (!isViewingChat) {
               // NotificationContext에 알림 추가
               addNotification({
-                ...notification,
                 id: Date.now() + Math.random(), // 고유 ID 생성
+                ...notification,
                 read: false
               });
           }

@@ -3,41 +3,10 @@ import { memo, useEffect, useState } from "react";
 import Modal from "../common/Modal";
 import Profile from "./Profile";
 import styles from "./UserDetailModal.module.css";
-import { createChatRoom } from '../../apis/chatApi';
-import { useNavigate } from 'react-router-dom';
 
-function UserDetailModal({ isOpen, onClose, memberId, zIndex }) {
-  const navigate = useNavigate();
+function UserDetailModal({ isOpen, onClose, memberId }) {
   const [userInfo, setUserInfo] = useState(null);
   const [loading, setLoading] = useState(false);
-  
-  const handleChatRequest = async () => {
-    if (!userInfo) return;
-    
-    try {
-      // 현재 로그인한 사용자 ID 가져오기
-      const currentUser = JSON.parse(localStorage.getItem('user'));
-      if (!currentUser) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
-      
-      // 1:1 채팅방 생성
-      const newRoom = await createChatRoom({
-        title: "",
-        roomType: "SINGLE",
-        creatorId: currentUser.memberId,
-        targetMemberId: memberId
-      });
-      
-      // 채팅방으로 이동
-      onClose();
-      navigate(`/chat/${newRoom.chatRoomId}`);
-    } catch (error) {
-      console.error('1:1 채팅 생성 실패', error);
-      alert('채팅방 생성에 실패했습니다.');
-    }
-  };
 
   useEffect(() => {
     if (isOpen && memberId) {
@@ -60,7 +29,7 @@ function UserDetailModal({ isOpen, onClose, memberId, zIndex }) {
   const userLevel = Math.floor((userInfo?.quizCorrectCount || 0) / 5) + 1;
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={`${userInfo?.name || "사용자"}님의 프로필`} size="sm" zIndex={zIndex}>
+    <Modal isOpen={isOpen} onClose={onClose} title={`${userInfo?.name || "사용자"}님의 프로필`} size="sm">
       <div className={styles.modalBody}>
         {loading ? (
           <div className={styles.loadingWrapper}>
@@ -74,13 +43,8 @@ function UserDetailModal({ isOpen, onClose, memberId, zIndex }) {
               <div className={styles.profileWrapper}>
                 <Profile size="big" memberId={memberId} userName={userInfo.name} />
               </div>
-              <div className={styles.statusContainer}>
-                <div className={styles.userBadge}>
-                  {userInfo.isOnline ? "● 온라인" : "○ 오프라인"}
-                </div>
-                <button onClick={handleChatRequest} className={styles.chatButton}>
-                  💬 1:1 채팅 신청
-                </button>
+              <div className={styles.userBadge}>
+                {userInfo.isOnline ? "● 온라인" : "○ 오프라인"}
               </div>
             </div>
 

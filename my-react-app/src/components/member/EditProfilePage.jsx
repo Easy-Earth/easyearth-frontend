@@ -143,10 +143,10 @@ const EditProfile = ({ user }) => {
             <label htmlFor="profile-upload" style={{ cursor: 'pointer', display: 'inline-block' }}>
                 <div style={{ width: '100px', height: '100px', borderRadius: '50%', background: '#eee', margin: '0 auto 10px', overflow: 'hidden', position: 'relative', border: '2px solid #ddd' }}>
                     <img 
-                        src={getFullUrl(user?.profileImage) || "/default-profile.svg"} 
+                        src={getFullUrl(user?.profileImage) || "/default-profile.png"} 
                         alt="Profile" 
                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        onError={(e) => e.target.src = "/default-profile.svg"} 
+                        onError={(e) => e.target.src = "/default-profile.png"} 
                     />
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.5)', color: '#fff', fontSize: '10px', padding: '2px' }}>
                         변경

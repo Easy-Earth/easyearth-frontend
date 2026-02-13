@@ -43,7 +43,6 @@ api.interceptors.response.use(
                     localStorage.removeItem('token');
                     localStorage.removeItem('user');
                     //window.location.href = '/login';
-                    console.error("인증 오류 발생했습니다.");
                 break;
                 case 403 : //권한 불충분
                     console.error('접근권한이 없습니다.');

@@ -1,7 +1,6 @@
 // src/context/AuthContext.js
 import { createContext, useState, useEffect, useContext } from "react";
 import authApi from "../apis/authApi";
-import { updateOnlineStatus } from "../apis/chatApi";
 
 export const AuthContext = createContext();
 
@@ -29,31 +28,15 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem("user", JSON.stringify(user));
       setUser(user);
 
-      // 온라인 상태 업데이트 (로그인 시 온라인으로 설정)
-      try {
-        await updateOnlineStatus(user.memberId, 1);
-      } catch (err) {
-        console.error("온라인 상태 업데이트 실패", err);
-      }
-
       return { success: true };
     } catch (err) {
-      console.error(err.response?.data);
+      console.error(err);
       return { success: false, message: err.response?.data || "로그인 실패" };
     }
   };
 
   //로그아웃 함수
-  const logout = async () => {
-    // 온라인 상태 업데이트 (로그아웃 시 오프라인으로 설정)
-    if (user?.memberId) {
-      try {
-        await updateOnlineStatus(user.memberId, 0);
-      } catch (err) {
-        console.error("온라인 상태 업데이트 실패", err);
-      }
-    }
-    
+  const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);

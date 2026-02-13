@@ -6,7 +6,7 @@ import QuizModal from "../../components/main/QuizModal";
 import styles from "./MainPage.module.css";
 
 function MainPage() {
-    const [modalType, setModalType] = useState(null);
+    const [modalType, setModalType] = useState(null); // 'quiz', 'quest', 'attendance', 'ecotree', null
     const [weather, setWeather] = useState(null);
     const [weatherList, setWeatherList] = useState([]);
     const [secretaryMsg, setSecretaryMsg] = useState("");
@@ -24,7 +24,7 @@ function MainPage() {
                     weatherApi.getForecastList(),
                     weatherApi.getSecretaryMessage()
                 ]);
-                
+
                 setWeather(summary);
                 setWeatherList(list);
                 setSecretaryMsg(msg);
@@ -56,7 +56,7 @@ function MainPage() {
                     </div>
                     <div className={styles.weatherDivider}></div>
                     <div className={styles.weatherSub}>
-                        <span className={styles.subItem}>미세: {weather.pm10 <= 30 ? "좋음" : "보통"}</span>
+                        <span className={styles.subItem}>미세: {weather.Pm10 <= 30 ? "좋음" : "보통"}</span>
                         <span className={styles.subItem}>자외선: {weather.uvIndex ?? "-"}</span>
                     </div>
                 </div>
@@ -64,7 +64,7 @@ function MainPage() {
 
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
-                
+
                 <div className={styles.secretaryContainer}>
                     <div className={styles.speechBubble}>
                         {loading ? (
@@ -113,6 +113,7 @@ function MainPage() {
                 </div>
             </aside>
 
+            {/* ── Modals ── */}
             <QuizModal isOpen={modalType === "quiz"} onClose={closeModal} />
             <QuestModal isOpen={modalType === "quest"} onClose={closeModal} />
             <AttendanceModal isOpen={modalType === "attendance"} onClose={closeModal} />
