@@ -53,17 +53,20 @@ const EcoCalendar = () => {
         prev2Label={null}
       />
 
-      {/* --- 달력 바로 아래 정보창 추가 --- */}
       <div className={styles.infoSection}>
-        {/* 1. D-Day 정보 (항상 표시) */}
         <div className={styles.ddayBox}>
             <span className={styles.leafIcon}>🌱</span>
-            <strong>[{upcomingEvent.name}]</strong>까지 {upcomingEvent.diffDays}일 남았습니다.
+            {upcomingEvent.diffDays === 0 ? (
+                <span>오늘은 <strong>[{upcomingEvent.name}]</strong>입니다.</span>
+            ) : (
+                <span><strong>[{upcomingEvent.name}]</strong>까지 {upcomingEvent.diffDays}일 남았습니다.</span>
+            )}
         </div>
 
-        {/* 2. 선택한 날짜 상세 정보 (기념일일 때만 표시) */}
+        
         {selectedEvent && (
           <div className={styles.detailBox}>
+            <div className={styles.eventDate}> {selectedEvent.month}월 {selectedEvent.day}일</div>
             <h4 className={styles.eventName}>{selectedEvent.name}</h4>
             <p className={styles.eventDesc}>{selectedEvent.desc}</p>
           </div>

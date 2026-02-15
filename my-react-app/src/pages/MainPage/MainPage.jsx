@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { weatherApi } from "../../apis/weather";
 import AttendanceModal from "../../components/main/AttendanceModal";
 import EcoCalendar from "../../components/main/EcoCalendar";
 import QuestModal from "../../components/main/QuestModal";
 import QuizModal from "../../components/main/QuizModal";
-import { ECO_DAYS } from "../../utils/ecoDays";
 import styles from "./MainPage.module.css";
 
 function MainPage() {
-    const [modalType, setModalType] = useState(null); // 'quiz', 'quest', 'attendance', null
+    const [modalType, setModalType] = useState(null);
     const [weather, setWeather] = useState(null);
     const [weatherList, setWeatherList] = useState([]);
     const [secretaryMsg, setSecretaryMsg] = useState("");
@@ -16,26 +15,6 @@ function MainPage() {
 
     const openModal = (type) => setModalType(type);
     const closeModal = () => setModalType(null);
-
-    const ecoInfo = useMemo(() => {
-        const now = new Date();
-        const currentYear = now.getFullYear();
-        const todayMonth = now.getMonth() + 1;
-        const todayDate = now.getDate();
-
-        const todayEvent = ECO_DAYS.find(e => e.month === todayMonth && e.day === todayDate);
-
-        const upcoming = ECO_DAYS.map(day => {
-            let targetDate = new Date(currentYear, day.month - 1, day.day);
-            if (targetDate < new Date(currentYear, todayMonth - 1, todayDate)) {
-                targetDate.setFullYear(currentYear + 1);
-            }
-            const diffDays = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
-            return { ...day, diffDays };
-        }).sort((a, b) => a.diffDays - b.diffDays)[0];
-
-        return { todayEvent, upcoming };
-    }, []);
 
     useEffect(() => {
         const fetchAllData = async () => {
@@ -69,45 +48,35 @@ function MainPage() {
 
     return (
         <div className={styles.container}>
-            {/* 상단 레이아웃 분리: 날씨(왼쪽) / 달력(오른쪽) */}
-            <div className={styles.topLayout}>
-                <div className={styles.leftSection}>
-                    {weather && (
-                        <div className={styles.weatherWidget}>
-                            <div className={styles.weatherMain}>
-                                <span className={styles.weatherIcon}>{getSkyStatus(weather.sky, weather.pty)}</span>
-                                <span className={styles.temp}>{weather.tmp}°C</span>
-                            </div>
-                            <div className={styles.weatherDivider}></div>
-                            <div className={styles.weatherSub}>
-                                <span className={styles.subItem}>미세: {weather.pm10 <= 30 ? "좋음" : "보통"}</span>
-                                <span className={styles.subItem}>자외선: {weather.uvIndex ?? "-"}</span>
-                            </div>
+            {/* 좌측 상단 날씨 섹션 */}
+            <div className={styles.absoluteLeft}>
+                {weather && (
+                    <div className={styles.weatherWidget}>
+                        <div className={styles.weatherMain}>
+                            <span className={styles.weatherIcon}>{getSkyStatus(weather.sky, weather.pty)}</span>
+                            <span className={styles.temp}>{weather.tmp}°C</span>
                         </div>
-                    )}
-                </div>
-                
-                <div className={styles.rightSection}>
-                    <EcoCalendar />
-                </div>
+                        <div className={styles.weatherDivider}></div>
+                        <div className={styles.weatherSub}>
+                            <span className={styles.subItem}>미세: {weather.pm10 <= 30 ? "좋음" : "보통"}</span>
+                            <span className={styles.subItem}>자외선: {weather.uvIndex ?? "-"}</span>
+                        </div>
+                    </div>
+                )}
             </div>
 
+            {/* 우측 상단 달력 섹션 - 위치 고정됨 */}
+            <div className={styles.absoluteRight}>
+                <EcoCalendar />
+            </div>
+
+            {/* 메인 콘텐츠 영역 */}
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
 
                 <div className={styles.secretaryContainer}>
                     <div className={styles.speechBubble}>
-                        {ecoInfo.todayEvent ? (
-                            <p className={styles.todayEventText}>
-                                🎉 오늘은 <strong>[{ecoInfo.todayEvent.name}]</strong>입니다.<br/>
-                                {ecoInfo.todayEvent.desc}
-                            </p>
-                        ) : (
-                            <p className={styles.dDayText}>
-                                🌱 <strong>[{ecoInfo.upcoming.name}]</strong>까지 {ecoInfo.upcoming.diffDays}일 남았습니다.
-                            </p>
-                        )}
-                        <hr className={styles.msgDivider} />
+                        {/* 🚩 기념일 문구는 삭제하고 순수 비서 메시지만 출력 */}
                         {loading ? (
                             <p>에코봇이 메시지를 준비 중입니다... 🤖</p>
                         ) : (
@@ -152,10 +121,8 @@ function MainPage() {
                 <div className={styles.tab} onClick={() => openModal("attendance")}>
                     <span className={styles.icon}>📅</span> 출석
                 </div>
-
             </aside>
 
-            {/* ── Modals ── */}
             <QuizModal isOpen={modalType === "quiz"} onClose={closeModal} />
             <QuestModal isOpen={modalType === "quest"} onClose={closeModal} />
             <AttendanceModal isOpen={modalType === "attendance"} onClose={closeModal} />

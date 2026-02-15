@@ -5,9 +5,62 @@
     background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
     display: flex;
     flex-direction: column;
+    overflow-x: hidden;
+}
+
+.absoluteLeft {
+    position: absolute;
+    top: 30px;
+    left: 40px;
+    z-index: 20;
+}
+
+/* 우측 상단 달력 고정 레이어 */
+.absoluteRight {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    z-index: 20;
+}
+
+.weatherWidget {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 25px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    border: 1px solid #f0fdf4;
+}
+
+.weatherMain { display: flex; align-items: center; gap: 10px; }
+.weatherIcon { font-size: 1.5rem; }
+.temp { font-size: 1.2rem; font-weight: 800; color: #15803d; }
+.weatherDivider { width: 1px; height: 30px; background: #e5e7eb; }
+.weatherSub { display: flex; flex-direction: column; }
+.subItem { font-size: 0.75rem; color: #6b7280; font-weight: 600; }
+
+/* 중앙 메인 콘텐츠 - 절대 위치 위젯들과 독립적임 */
+.hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    padding-top: 120px;
+}
+
+.hero h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #15803d;
+    margin-bottom: 40px;
 }
 
 .secretaryContainer {
+    width: 100%;
     max-width: 800px;
     margin-bottom: 40px;
     position: relative;
@@ -18,16 +71,16 @@
     position: relative;
     background: white;
     border-radius: 24px;
-    padding: 25px 30px;
+    padding: 30px;
     border: 2px solid #bbf7d0;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
     text-align: left;
 }
 
 .speechBubble p {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
     font-size: 1.1rem;
-    line-height: 1.6;
+    line-height: 1.7;
     color: #374151;
     font-weight: 500;
 }
@@ -56,15 +109,29 @@
     z-index: 1;
 }
 
-.sidebar { position: fixed; left: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 100; }
-.tab { display: flex; align-items: center; gap: 12px; padding: 16px 24px 16px 16px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid #bbf7d0; border-left: none; border-radius: 0 16px 16px 0; color: #166534; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
-.tab:hover { background: #16a34a; color: white; transform: translateX(10px); }
+.weatherScroll {
+    display: flex;
+    overflow-x: auto;
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    gap: 20px;
+    justify-content: center;
+}
 
-.hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; }
-.hero h1 { font-size: 3.5rem; font-weight: 800; color: #15803d; margin-bottom: 40px; }
+.largeCard {
+    flex: 0 0 auto;
+    width: 160px;
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 2px solid #f0fdf4;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.04);
+}
 
-.weatherScroll { display: flex; overflow-x: auto; width: 100%; max-width: 1200px; padding: 20px; gap: 20px; justify-content: center; }
-.largeCard { flex: 0 0 auto; width: 160px; background: white; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; align-items: center; border: 2px solid #f0fdf4; box-shadow: 0 10px 20px rgba(0,0,0,0.04); }
 .cardTime { font-size: 0.9rem; color: #9ca3af; font-weight: 600; }
 .cardIcon { font-size: 2.5rem; margin: 10px 0; }
 .cardTmp { font-size: 1.8rem; font-weight: 800; color: #15803d; }
@@ -72,60 +139,11 @@
 
 .badDust { color: #ef4444; font-weight: bold; }
 
-.weatherWidget { position: absolute; top: 30px; right: 40px; display: flex; align-items: center; gap: 15px; padding: 15px 25px; background: white; border-radius: 50px; box-shadow: 0 10px 25px rgba(0,0,0,0.06); z-index: 10; border: 1px solid #f0fdf4; }
-.weatherSub { display: flex; flex-direction: column; }
-.subItem { font-size: 0.75rem; color: #6b7280; font-weight: 600; }
-.weatherDivider { width: 1px; height: 30px; background: #e5e7eb; }
+.sidebar { position: fixed; left: 0; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 100; }
+.tab { display: flex; align-items: center; gap: 12px; padding: 16px 24px 16px 16px; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid #bbf7d0; border-left: none; border-radius: 0 16px 16px 0; color: #166534; font-size: 1rem; font-weight: 600; cursor: pointer; transition: 0.3s; }
+.tab:hover { background: #16a34a; color: white; transform: translateX(10px); }
 
 @keyframes fadeInDown {
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-.container {
-    width: 100%;
-    position: relative;
-    min-height: calc(100vh - 70px);
-    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
-    display: flex;
-    flex-direction: column;
-}
-
-/* 상단 섹션: 좌우 배치 */
-.topLayout {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 30px 50px; /* 여백 충분히 확보 */
-    position: relative;
-    z-index: 20;
-}
-
-.leftSection {
-    flex: 1;
-}
-
-.rightSection {
-    flex: 0 0 auto;
-    margin-left: 20px;
-}
-
-/* 날씨 위젯: 왼쪽 상단 고정 스타일 */
-.weatherWidget {
-    display: inline-flex;
-    align-items: center;
-    gap: 15px;
-    padding: 15px 25px;
-    background: white;
-    border-radius: 50px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
-    border: 1px solid #f0fdf4;
-}
-
-/* 나머지 기존 애니메이션 및 히어로 스타일 유지 */
-.hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 20px; }
-.hero h1 { font-size: 3.5rem; font-weight: 800; color: #15803d; margin-bottom: 30px; }
-
-.secretaryContainer { max-width: 800px; margin-bottom: 40px; position: relative; }
-.speechBubble { background: white; border-radius: 24px; padding: 25px 30px; border: 2px solid #bbf7d0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-
-/* (중략) 기존 사이드바 및 웨더스크롤 스타일 그대로 유지... */
