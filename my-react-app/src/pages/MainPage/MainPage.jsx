@@ -8,7 +8,7 @@ import { ECO_DAYS } from "../../utils/ecoDays";
 import styles from "./MainPage.module.css";
 
 function MainPage() {
-    const [modalType, setModalType] = useState(null);
+    const [modalType, setModalType] = useState(null); // 'quiz', 'quest', 'attendance', null
     const [weather, setWeather] = useState(null);
     const [weatherList, setWeatherList] = useState([]);
     const [secretaryMsg, setSecretaryMsg] = useState("");
@@ -46,7 +46,7 @@ function MainPage() {
                     weatherApi.getForecastList(),
                     weatherApi.getSecretaryMessage()
                 ]);
-                
+
                 setWeather(summary);
                 setWeatherList(list);
                 setSecretaryMsg(msg);
@@ -94,7 +94,7 @@ function MainPage() {
 
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
-                
+
                 <div className={styles.secretaryContainer}>
                     <div className={styles.speechBubble}>
                         {ecoInfo.todayEvent ? (
@@ -152,8 +152,10 @@ function MainPage() {
                 <div className={styles.tab} onClick={() => openModal("attendance")}>
                     <span className={styles.icon}>📅</span> 출석
                 </div>
+
             </aside>
 
+            {/* ── Modals ── */}
             <QuizModal isOpen={modalType === "quiz"} onClose={closeModal} />
             <QuestModal isOpen={modalType === "quest"} onClose={closeModal} />
             <AttendanceModal isOpen={modalType === "attendance"} onClose={closeModal} />

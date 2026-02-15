@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // 페이지 이동을 위해 추가
+import { useNavigate } from "react-router-dom";
 import authApi from "../../apis/authApi";
 import styles from "./DeleteMember.module.css";
+import CustomModal from "../../components/common/CustomModal"; // 모달 컴포넌트 임포트
 
 /**
  * 회원 탈퇴 컴포넌트
@@ -12,44 +13,78 @@ const DeleteAccount = ({ user, onLogout }) => {
   const [password, setPassword] = useState("");
   const [confirmText, setConfirmText] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // navigate 훅 사용
+  const navigate = useNavigate();
+
+  // 모달 상태 관리
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "alert",
+    onConfirm: () => {},
+  });
+
+  // 모달 닫기 함수
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  // 모달 호출 유틸리티
+  const showAlert = (message, title = "알림") => {
+    setModalConfig({
+      isOpen: true,
+      title,
+      message,
+      type: "alert",
+      onConfirm: closeModal,
+    });
+  };
 
   // 회원 탈퇴 처리 함수
   const handleDelete = async (e) => {
     e.preventDefault();
-    
+
     // 유저 객체에서 식별 가능한 ID 추출
     const userId = user?.memberNo || user?.memberId || user?.id;
 
     // 1. 확인 문구 검증
     if (confirmText !== "탈퇴확인") {
-      alert("탈퇴 확인 문구가 일치하지 않습니다. '탈퇴확인'을 정확히 입력해주세요.");
+      showAlert("'탈퇴확인' 문구를 정확히 입력해주세요.", "입력 오류");
       return;
     }
 
-    // 2. 최종 의사 확인
-    const isFinalAnswer = window.confirm(
-      "정말로 탈퇴하시겠습니까?\n이 작업은 취소할 수 없으며 모든 데이터가 즉시 삭제됩니다."
-    );
-    
-    if (!isFinalAnswer) return;
+    // 2. 최종 의사 확인 (CustomModal 사용)
+    setModalConfig({
+      isOpen: true,
+      title: "계정 탈퇴 확인",
+      message: "정말로 탈퇴하시겠습니까?\n이 작업은 취소할 수 없으며 모든 데이터가 즉시 삭제됩니다.",
+      type: "confirm",
+      onConfirm: () => processDelete(userId), // 확인 클릭 시 실제 삭제 로직 실행
+    });
+  };
 
+  // 실제 API 호출 로직
+  const processDelete = async (userId) => {
+    closeModal();
     setLoading(true);
     try {
-      // authApi.deleteMember 호출
       const response = await authApi.deleteMember(userId, password);
-      
-      alert(response || "회원 탈퇴가 정상적으로 처리되었습니다. 이용해주셔서 감사합니다.");
-      
-      // 탈퇴 성공 시 토큰 삭제 및 클라이언트 로그아웃 처리
-      if (onLogout) onLogout(); 
 
-      // 메인 페이지로 이동
-      navigate("/");
+      // 성공 모달 표시
+      setModalConfig({
+        isOpen: true,
+        title: "탈퇴 완료",
+        message: response || "회원 탈퇴가 정상적으로 처리되었습니다. 이용해주셔서 감사합니다.",
+        type: "alert",
+        onConfirm: () => {
+          if (onLogout) onLogout();
+          navigate("/");
+        },
+      });
     } catch (error) {
       console.error("탈퇴 오류:", error);
       const errorMsg = error.response?.data || "탈퇴 처리 중 예상치 못한 오류가 발생했습니다.";
-      alert(errorMsg);
+      showAlert(errorMsg, "오류 발생");
     } finally {
       setLoading(false);
     }
@@ -102,6 +137,16 @@ const DeleteAccount = ({ user, onLogout }) => {
           {loading ? "탈퇴 처리 중..." : "모든 정보 삭제 및 탈퇴"}
         </button>
       </form>
+
+      {/* 커스텀 모달 컴포넌트 UI 추가 */}
+      <CustomModal
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        onConfirm={modalConfig.onConfirm}
+        onCancel={closeModal}
+      />
     </div>
   );
 };

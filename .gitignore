@@ -1,0 +1,6 @@
+# Agent Private Files
+.agent/
+.gemini/
+.vscode/
+*.md
+!README.md

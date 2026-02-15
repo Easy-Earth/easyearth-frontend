@@ -5,8 +5,8 @@ export const getDailyQuests = async () => {
     return response.data;
 };
 
-export const certifyQuest = async (questNo, formData) => {
-    const response = await api.post(`/api/quest/certify/${questNo}`, formData, {
+export const certifyQuest = async (questNo, userId, formData) => {
+    const response = await api.post(`/api/quest/certify/${questNo}?userId=${userId}`, formData, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },

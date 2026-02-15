@@ -13,22 +13,20 @@ const defaultImg = "https://via.placeholder.com/150?text=No+Image";
 
 const ShopPage = () => {
   const { user } = useAuth();
-  // user 객체 내의 고유 식별자 추출 (VO 구조에 따라 memberNo 또는 memberId)
   const memberId = user?.memberNo || user?.memberId || user?.id;
 
-  const [allItems, setAllItems] = useState([]);      
-  const [myItems, setMyItems] = useState([]);        
+  const [allItems, setAllItems] = useState([]);
+  const [myItems, setMyItems] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isPulling, setIsPulling] = useState(false);
   const [pullResult, setPullResult] = useState(null);
-  const [isDuplicate, setIsDuplicate] = useState(false); 
+  const [isDuplicate, setIsDuplicate] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
-  
   // 💰 사용자 포인트 상태
   const [userPoint, setUserPoint] = useState(0);
 
   const [modalConfig, setModalConfig] = useState({
-    isOpen: false, type: 'alert', message: '', onConfirm: () => {}
+    isOpen: false, type: 'alert', message: '', onConfirm: () => { }
   });
 
   const [categoryFilter, setCategoryFilter] = useState("ALL");
@@ -53,9 +51,7 @@ const ShopPage = () => {
   const fetchUserPoint = useCallback(async () => {
     if (!memberId) return;
     try {
-      // MemberController의 @GetMapping("/point/{memberId}") 호출
-      const walletData = await authApi.getMemberPoint(memberId); 
-      // MemberWalletVO의 실제 필드명인 nowPoint를 사용하여 상태 업데이트
+      const walletData = await authApi.getMemberPoint(memberId);
       setUserPoint(walletData.nowPoint ?? 0);
     } catch (error) {
       console.error("포인트 조회 실패:", error);
@@ -87,8 +83,6 @@ const ShopPage = () => {
       setAllItems(Array.isArray(storeData) ? storeData : []);
       const myData = Array.isArray(myDataResponse) ? myDataResponse : (myDataResponse?.data || []);
       setMyItems(myData.map(item => String(item.itemId || item.ITEM_ID || "")));
-      
-      // 데이터 로드 시 포인트도 함께 조회
       if (memberId) fetchUserPoint();
     } catch (error) {
       console.error("데이터 로드 실패:", error);
@@ -110,8 +104,7 @@ const ShopPage = () => {
   }, [allItems, categoryFilter, rarityFilter]);
 
   const handleBuy = (item) => {
-    console.log("item : " + item.category);
-    const id = item.itemId || item.ITEM_ID; 
+    const id = item.itemId || item.ITEM_ID;
     if (!memberId) {
       setModalConfig({
         isOpen: true, type: 'alert', message: '로그인이 필요한 서비스입니다.',
@@ -131,25 +124,20 @@ const ShopPage = () => {
             price: item.price || item.PRICE,
             category: item.category || item.CATEGORY
           };
-
           await itemApi.buyItem(purchaseData);
-
           setMyItems(prev => [...prev, String(id)]);
           setSelectedItem(null);
-          
-          // 💰 구매 성공 후 포인트 갱신
           fetchUserPoint();
-
           setModalConfig({
-            isOpen: true, 
-            type: 'alert', 
+            isOpen: true,
+            type: 'alert',
             message: '🎉 구매 완료되었습니다!',
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
         } catch (error) {
           setModalConfig({
-            isOpen: true, 
-            type: 'alert', 
+            isOpen: true,
+            type: 'alert',
             message: error.response?.data || "구매 중 오류가 발생했습니다.",
             onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
           });
@@ -160,12 +148,11 @@ const ShopPage = () => {
 
   const handleRandomPull = () => {
     if (!memberId) {
-      setModalConfig({ 
-        isOpen: true, 
-        type: 'alert', 
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
         message: '로그인이 필요합니다.',
-        // 확인 버튼을 눌렀을 때 모달을 닫도록 추가
-        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false })) 
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
       });
       return;
     }
@@ -180,7 +167,6 @@ const ShopPage = () => {
         setIsDuplicate(false);
         try {
           const result = await itemApi.randomPull(memberId);
-          
           setTimeout(() => {
             if (typeof result === 'string') {
               setIsDuplicate(true);
@@ -194,7 +180,6 @@ const ShopPage = () => {
                 setMyItems(prev => [...prev, newItemId]);
               }
             }
-            // 💰 뽑기 연출 종료 시 포인트 갱신
             fetchUserPoint();
           }, 1500);
         } catch (error) {
@@ -271,8 +256,8 @@ const ShopPage = () => {
             const rarityLower = (item.rarity || item.RARITY || 'common').toLowerCase();
 
             return (
-              <div 
-                key={itemId} 
+              <div
+                key={itemId}
                 className={`${styles.itemCard} ${styles[`card_${rarityLower}`]}`}
                 onClick={() => setSelectedItem(item)}
                 style={{ position: 'relative', overflow: 'hidden' }}
@@ -289,19 +274,23 @@ const ShopPage = () => {
                     <ItemCssPreview item={item} />
                   )}
                 </div>
-                
+
                 <div className={styles.infoArea} style={{ position: 'relative', zIndex: 1 }}>
                   <h3 className={styles.itemName}>{item.name || item.itemName}</h3>
                   <div className={styles.cardFooter}>
                     <span className={styles.priceTag}>{rarityLower === 'legendary' ? '비매품' : `${(item.price || item.PRICE).toLocaleString()} P`}</span>
-                    {rarityLower === 'legendary' ? isOwned ? <span className={styles.ownedLabel}>보유 중</span> : 
-                    <span className={styles.ownedLabel}>뽑기 전용</span> : 
-                     <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">구매</Button>}
+                    {rarityLower === 'legendary' ? (
+                      isOwned ? <span className={styles.ownedLabel}>보유 중</span> : <span className={styles.ownedLabel}>뽑기 전용</span>
+                    ) : (
+                      <Button color="#14b8a6" onClick={(e) => { e.stopPropagation(); handleBuy(item); }} width="70px" height="34px">
+                        <span className={styles.buyBtnText}>구매</span>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
             );
-          })} A ? B 
+          })}
         </div>
       )}
 
@@ -312,13 +301,13 @@ const ShopPage = () => {
             <div className={`${styles.cardBack} ${pullResult ? styles[`res_${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`] : ''}`}>
               {pullResult && (
                 <>
-                  <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{ (pullResult.rarity || pullResult.RARITY || 'common').toUpperCase() }</span>
+                  <span className={`${styles.rarityTag} bg-${(pullResult.rarity || pullResult.RARITY || 'common').toLowerCase()}`}>{(pullResult.rarity || pullResult.RARITY || 'common').toUpperCase()}</span>
                   {!isDuplicate ? (
                     <div className={styles.resultVisual}>
                       {(pullResult.itemCategory || pullResult.category) === "BADGE" ? (
-                         <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
+                        <img src={getItemImage(pullResult)} alt="res" className={`${styles.badgeImg}`} />
                       ) : (
-                         <ItemCssPreview item={pullResult} />
+                        <ItemCssPreview item={pullResult} />
                       )}
                     </div>
                   ) : (
@@ -337,7 +326,9 @@ const ShopPage = () => {
                       </div>
                     )}
                   </div>
-                  <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px" height="40px">확인</Button>
+                  <Button color="#14b8a6" onClick={() => setIsPulling(false)} width="100px" height="40px">
+                    <span className={styles.buyBtnText}>확인</span>
+                  </Button>
                 </>
               )}
             </div>
