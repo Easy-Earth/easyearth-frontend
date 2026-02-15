@@ -81,3 +81,51 @@
     from { opacity: 0; transform: translateY(-20px); }
     to { opacity: 1; transform: translateY(0); }
 }
+.container {
+    width: 100%;
+    position: relative;
+    min-height: calc(100vh - 70px);
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+    display: flex;
+    flex-direction: column;
+}
+
+/* 상단 섹션: 좌우 배치 */
+.topLayout {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 30px 50px; /* 여백 충분히 확보 */
+    position: relative;
+    z-index: 20;
+}
+
+.leftSection {
+    flex: 1;
+}
+
+.rightSection {
+    flex: 0 0 auto;
+    margin-left: 20px;
+}
+
+/* 날씨 위젯: 왼쪽 상단 고정 스타일 */
+.weatherWidget {
+    display: inline-flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 25px;
+    background: white;
+    border-radius: 50px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+    border: 1px solid #f0fdf4;
+}
+
+/* 나머지 기존 애니메이션 및 히어로 스타일 유지 */
+.hero { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding-top: 20px; }
+.hero h1 { font-size: 3.5rem; font-weight: 800; color: #15803d; margin-bottom: 30px; }
+
+.secretaryContainer { max-width: 800px; margin-bottom: 40px; position: relative; }
+.speechBubble { background: white; border-radius: 24px; padding: 25px 30px; border: 2px solid #bbf7d0; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+
+/* (중략) 기존 사이드바 및 웨더스크롤 스타일 그대로 유지... */
