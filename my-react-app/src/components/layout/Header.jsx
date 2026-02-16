@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/easyearthLOGO.png";
 import kakaoBtnImg from "../../assets/images/kakaoBtn.png";
@@ -102,11 +102,11 @@ const Header = ({ openLoginModal }) => {
 
 const NotificationCenter = ({ setModalConfig }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
-    const [isOpen, setIsOpen] = React.useState(false);
-    const dropdownRef = React.useRef(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
@@ -157,19 +157,20 @@ const NotificationCenter = ({ setModalConfig }) => {
                                 <li 
                                     key={n.id} 
                                     className={`${styles.notificationItem} ${n.read ? styles.read : ''}`}
-                                    onClick={() => handleNotificationClick(n)} // ✨ 클릭 핸들러 상위 이동
+                                    onClick={() => handleNotificationClick(n)}
                                 >
                                     <div className={styles.notificationContent}>
                                         <div className={styles.notificationHeader}>
                                             <div className={styles.headerText}>
                                                 <div className={styles.senderInfo}>
-                                                    {/* ✨ 채팅방 이름이 있으면 표시 (그룹챗 등) */}
                                                     {n.roomName && (
                                                         <span className={styles.roomName}>[{n.roomName}]</span>
                                                     )}
                                                     <span className={styles.notificationSender}>{n.senderName}</span>
                                                 </div>
-                                                <span className={styles.notificationTime}>{new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                                <span className={styles.notificationTime}>
+                                                    {new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className={styles.notificationText}>{getNotificationMessage(n)}</div>
@@ -177,7 +178,7 @@ const NotificationCenter = ({ setModalConfig }) => {
                                     <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); removeNotification(n.id); }}>×</button>
                                 </li>
                             ))
-                        }
+                        )}
                     </ul>
                 </div>
             )}
