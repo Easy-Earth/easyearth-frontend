@@ -116,7 +116,15 @@ const authApi = {
   getMemberPoint: async (memberId) => {
     const res = await api.get(`/point/${memberId}`);
     return res.data; // MemberWalletVO 반환
-  }
+  },
+
+  //카카오 로그인
+  kakaoLogin: async (code) => {
+    const res = await axios.get(`/spring/api/auth/kakao`, {
+      params: { code }
+    });
+    return res.data;
+  },
 };
 
 export default authApi;

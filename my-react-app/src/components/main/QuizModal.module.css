@@ -3,6 +3,7 @@
     padding: 8px 4px;
 }
 
+/* ── 난이도 선택 ── */
 .diffRow {
     display: flex;
     gap: 12px;
@@ -11,19 +12,20 @@
 
 .diffBtn {
     flex: 1;
-    padding: 16px 12px;
+    padding: 18px 12px;
     border: 2px solid var(--gray-200);
     border-radius: 16px;
     background: var(--bg-primary);
     cursor: pointer;
     text-align: center;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
 }
 
 .diffBtn:hover {
     border-color: var(--green-500);
     background: var(--green-50);
-    transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(22, 163, 74, 0.15);
 }
 
 .dLabel {
@@ -50,6 +52,7 @@
     color: var(--danger);
 }
 
+/* ── 퀴즈 진행 상태 바 ── */
 .quizProgRow {
     display: flex;
     justify-content: space-between;
@@ -60,7 +63,7 @@
 .quizProg {
     font-size: 0.85rem;
     color: var(--gray-500);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .progDots {
@@ -78,21 +81,28 @@
 
 .dotActive {
     transform: scale(1.3);
-    box-shadow: 0 0 0 2px var(--blue-200);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    background: var(--gray-300);
 }
 
 .dotDone {
     background: var(--green-500);
 }
 
+/* ── 퀴즈 문제 ── */
 .quizQ {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--gray-900);
-    line-height: 1.6;
-    margin-bottom: 24px;
+    line-height: 1.55;
+    margin-bottom: 16px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, var(--green-50), var(--blue-50));
+    border-radius: 14px;
+    border-left: 4px solid var(--green-500);
 }
 
+/* ── 선택지 ── */
 .options {
     display: flex;
     flex-direction: column;
@@ -100,72 +110,105 @@
 }
 
 .option {
-    padding: 16px 20px;
-    border: 2px solid var(--gray-100);
+    padding: 13px 16px;
+    border: 2px solid var(--gray-200);
     border-radius: 12px;
-    background: var(--gray-50);
+    background: var(--bg-primary);
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 0.95rem;
     font-weight: 500;
+    color: var(--gray-800);
     transition: all 0.2s ease;
 }
 
-.option:hover {
+.option:hover:not(.disabled) {
     border-color: var(--green-400);
     background: var(--green-50);
+    color: var(--green-800);
+    transform: translateX(4px);
 }
 
 .option.selected {
-    border-color: var(--blue-500);
-    background: var(--blue-50);
-    box-shadow: 0 0 0 2px var(--blue-200);
+    border-color: #2563eb;
+    background: #eef2ff;
+    color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    font-weight: 600;
 }
 
+/* 정답 */
 .option.correct {
     border-color: var(--green-500);
-    background: var(--green-100);
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
     color: var(--green-800);
     font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
 }
 
+.option.correct::before {
+    content: "✅ ";
+}
+
+/* 오답 */
 .option.wrong {
-    border-color: var(--danger);
-    background: #fee2e2;
-    color: var(--danger);
+    border-color: #ef4444;
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    color: #991b1b;
     font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
 }
 
+.option.wrong::before {
+    content: "❌ ";
+}
+
+/* 정답 확인 후 비활성화 — hover 무시 */
 .option.disabled {
     pointer-events: none;
+    opacity: 0.85;
 }
 
+/* 정답 / 오답은 강조 유지 */
+.option.disabled.correct,
+.option.disabled.wrong {
+    opacity: 1;
+}
+
+/* ── 해설 ── */
 .expl {
-    margin-top: 20px;
-    padding: 16px;
-    background: var(--green-50);
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
     border-radius: 12px;
     border-left: 4px solid var(--green-500);
-    font-size: 0.95rem;
-    color: var(--green-900);
+    font-size: 0.9rem;
+    color: #166534;
     line-height: 1.5;
+    font-weight: 500;
 }
 
+/* ── 네비게이션 ── */
 .navRow {
-    margin-top: 24px;
+    margin-top: 20px;
+    padding-bottom: 20px;
     display: flex;
     justify-content: center;
 }
 
+/* ── 결과 화면 ── */
 .resultBox {
     text-align: center;
-    padding: 20px 0;
+    padding: 24px 0;
 }
 
 .bigScore {
     font-size: 3.5rem;
     font-weight: 800;
-    color: var(--green-600);
-    margin: 10px 0;
+    background: linear-gradient(135deg, var(--green-500), #059669);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 10px 0 4px;
 }
 
 .sub {
@@ -180,13 +223,14 @@
     justify-content: center;
 }
 
+/* ── 버튼 공통 ── */
 .btn {
     padding: 14px 28px;
     border-radius: 14px;
     font-size: 1.05rem;
     font-weight: 700;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.25s ease;
     border: none;
     width: 100%;
     max-width: 300px;
@@ -196,29 +240,38 @@
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
-    transform: none;
+    transform: none !important;
+    box-shadow: none !important;
 }
 
-.btnGreen {
-    background: var(--green-600);
-    color: white;
-}
-
-.btnGreen:hover:not(:disabled) {
-    background: var(--green-700);
-    transform: translateY(-2px);
-}
-
+/* 정답 확인 버튼 */
 .btnBlue {
-    background: var(--blue-500);
-    color: white;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .btnBlue:hover:not(:disabled) {
-    background: var(--blue-600);
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    color: #ffffff;
+}
+
+/* 다음 / 결과 보기 버튼 */
+.btnGreen {
+    background: linear-gradient(135deg, var(--green-500), #059669);
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.btnGreen:hover:not(:disabled) {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+    color: #ffffff;
 }
 
 .btnGray {
@@ -238,8 +291,10 @@
 
 .btnOutline:hover:not(:disabled) {
     background: var(--green-50);
+    color: var(--green-700);
 }
 
+/* ── 로딩 스피너 ── */
 .spinner {
     width: 40px;
     height: 40px;

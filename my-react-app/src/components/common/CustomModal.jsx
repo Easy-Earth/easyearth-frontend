@@ -6,7 +6,7 @@ function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'aler
 
   const overlayStyle = zIndex ? { zIndex } : {};
 
-  // ✨ Enter key handler
+  // ✨ 사용자 경험을 위헤 엔터 키 입력시 확인 버튼 동작 추가/ESC도 동작(기본)
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Enter') {

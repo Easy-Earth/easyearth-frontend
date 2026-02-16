@@ -43,7 +43,15 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
         setReviews(data.reviews || []);
       }
     } catch (err) {
-      console.error("데이터 로딩 실패:", err);
+      // console.error("데이터 로딩 실패:", err);
+      const serverErrorMessage = err.response?.data || '오류 발생';
+
+        setModalConfig({
+          isOpen: true,
+          type: 'alert',
+          message: serverErrorMessage, 
+          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
       setReviews([]);
     }
   };
@@ -71,7 +79,15 @@ function MapModal({ item, theme, onClose, onDrawRoute }) {
         }
         setRouteInfo(data);
       } catch (err) {
-        alert("경로를 가져오는 데 실패했습니다.");
+        // alert("경로를 가져오는 데 실패했습니다.");
+        const serverErrorMessage = err.response?.data || "경로 정보를 불러오는 중 서버 오류가 발생했습니다.";
+
+        setModalConfig({
+          isOpen: true,
+          type: 'alert',
+          message: serverErrorMessage, // 백엔드에서 준 값을 여기에 세팅
+          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        });
       } finally {
         setLoadingRoute(false);
       }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { weatherApi } from "../../apis/weather";
 import AttendanceModal from "../../components/main/AttendanceModal";
+import EcoCalendar from "../../components/main/EcoCalendar";
 import QuestModal from "../../components/main/QuestModal";
 import QuizModal from "../../components/main/QuizModal";
 import styles from "./MainPage.module.css";
@@ -24,7 +25,7 @@ function MainPage() {
                     weatherApi.getForecastList(),
                     weatherApi.getSecretaryMessage()
                 ]);
-                
+
                 setWeather(summary);
                 setWeatherList(list);
                 setSecretaryMsg(msg);
@@ -37,7 +38,6 @@ function MainPage() {
         fetchAllData();
     }, []);
 
-
     const getSkyStatus = (sky, pty) => {
         if (pty > 0) return "🌧️ 비/눈";
         if (sky === "1") return "☀️ 맑음";
@@ -48,25 +48,35 @@ function MainPage() {
 
     return (
         <div className={styles.container}>
-            {weather && (
-                <div className={styles.weatherWidget}>
-                    <div className={styles.weatherMain}>
-                        <span className={styles.weatherIcon}>{getSkyStatus(weather.sky, weather.pty)}</span>
-                        <span className={styles.temp}>{weather.tmp}°C</span>
+            {/* 좌측 상단 날씨 섹션 */}
+            <div className={styles.absoluteLeft}>
+                {weather && (
+                    <div className={styles.weatherWidget}>
+                        <div className={styles.weatherMain}>
+                            <span className={styles.weatherIcon}>{getSkyStatus(weather.sky, weather.pty)}</span>
+                            <span className={styles.temp}>{weather.tmp}°C</span>
+                        </div>
+                        <div className={styles.weatherDivider}></div>
+                        <div className={styles.weatherSub}>
+                            <span className={styles.subItem}>미세: {weather.pm10 <= 30 ? "좋음" : "보통"}</span>
+                            <span className={styles.subItem}>자외선: {weather.uvIndex ?? "-"}</span>
+                        </div>
                     </div>
-                    <div className={styles.weatherDivider}></div>
-                    <div className={styles.weatherSub}>
-                        <span className={styles.subItem}>미세: {weather.pm10 <= 30 ? "좋음" : "보통"}</span>
-                        <span className={styles.subItem}>자외선: {weather.uvIndex ?? "-"}</span>
-                    </div>
-                </div>
-            )}
+                )}
+            </div>
 
+            {/* 우측 상단 달력 섹션 - 위치 고정됨 */}
+            <div className={styles.absoluteRight}>
+                <EcoCalendar />
+            </div>
+
+            {/* 메인 콘텐츠 영역 */}
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
-                
+
                 <div className={styles.secretaryContainer}>
                     <div className={styles.speechBubble}>
+                        {/* 🚩 기념일 문구는 삭제하고 순수 비서 메시지만 출력 */}
                         {loading ? (
                             <p>에코봇이 메시지를 준비 중입니다... 🤖</p>
                         ) : (

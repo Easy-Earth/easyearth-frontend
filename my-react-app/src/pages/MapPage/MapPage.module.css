@@ -54,7 +54,7 @@
 .themeRow {
   display: flex;
   align-items: center;
-  justify-content: space-between; /* 이름은 왼쪽, 체크박스는 오른쪽 */
+  justify-content: space-between;
   padding: 14px 18px;
   background: white;
   border: 1px solid var(--gray-100);
@@ -88,18 +88,15 @@
   color: var(--gray-800);
 }
 
-/* ✅ 체크박스 초록색 스타일링 */
 .greenCheckbox {
   width: 20px;
   height: 20px;
   cursor: pointer;
-  /* 최신 브라우저에서 체크박스 색상 변경 */
   accent-color: var(--green-500); 
   border: 2px solid var(--gray-300);
   border-radius: 4px;
 }
 
-/* 검색하기 버튼 등 텍스트 강조 */
 .primaryBtnText {
   color: white;
   font-size: 16px;
@@ -134,7 +131,6 @@
 
 .themeRow:hover { border-color: var(--green-200); background: white; }
 
-/* ✅ 흰색 V 체크박스 커스텀 */
 .checkboxWrapper {
   position: relative;
   width: 20px;
@@ -162,7 +158,6 @@
   transition: all 0.2s;
 }
 
-/* 체크되었을 때 배경색 변경 및 V 표시 생성 */
 .hiddenCheckbox:checked + .customCheck {
   background: var(--green-300);
   border-color: var(--green-300);
@@ -226,13 +221,10 @@
 .mapEl { 
   width: 100%; 
   height: 100%; 
-  /* ✅ 비수동(non-passive) 경고 억제를 위한 최적화 */
   touch-action: pan-x pan-y; 
-  /* 지도 위에서 휠 스크롤 시 브라우저 기본 동작과의 충돌 방지 */
   overscroll-behavior: contain; 
 }
 
-/* ✅ 지도 내 네이버 로고나 컨트롤러가 휠 이벤트를 가로채지 않도록 설정 */
 .mapEl [class*="naver-maps-control"] {
   touch-action: none;
 }

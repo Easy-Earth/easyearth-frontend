@@ -53,11 +53,18 @@
 }
 
 .confirmBtn {
-  background: #14b8a6;
+  background: var(--btn-modal-color);
   color: white;
 }
-
+.confirmBtn:hover {
+  background: var(--btn-modal-color-hover);
+  color: white;
+}
 .cancelBtn {
-  background: #f1f5f9;
+  background: var(--btn-modal-cancel-color);
+  color: #64748b;
+}
+.cancelBtn:hover {
+  background: var(--btn-modal-cancel-color-hover);
   color: #64748b;
 }
