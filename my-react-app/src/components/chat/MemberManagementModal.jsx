@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { searchMember, inviteUser, kickMember, updateRole, updateChatRoomTitle, updateRoomImage, uploadFile } from '../../apis/chatApi'; // ✨ import 추가
+import { searchMember, inviteUser, kickMember, updateRole, updateChatRoomTitle, updateRoomImage, uploadFile, getInvitedUsers, cancelInvitation } from '../../apis/chatApi'; // ✨ import 추가
 import { getFullUrl } from '../../utils/imageUtil'; // ✨ import 추가
 import Modal from '../common/Modal'; 
 import styles from './MemberManagementModal.module.css';
@@ -13,6 +13,32 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
     // ✨ 이미지 관련 State
     const [previewImage, setPreviewImage] = useState(currentRoomImage || null);
     const fileInputRef = useRef(null);
+
+    // ✨ 초대 대기 멤버 State
+    const [invitedMembers, setInvitedMembers] = useState([]);
+
+    // ✨ 초대 대기 멤버 조회
+    const fetchInvitedMembers = async () => {
+        try {
+            const data = await getInvitedUsers(roomId);
+            setInvitedMembers(data || []);
+        } catch (error) {
+            console.error("초대 대기 멤버 조회 실패", error);
+        }
+    };
+    
+    // ✨ 포커스용 Ref
+    const searchInputRef = useRef(null);
+
+    useEffect(() => {
+        if (activeTab === 'MANAGE' && roomType !== 'SINGLE') {
+            fetchInvitedMembers();
+            // ✨ 탭 변경 시 자동 포커스
+            if (searchInputRef.current) {
+                searchInputRef.current.focus();
+            }
+        }
+    }, [activeTab, roomId, roomType]);
 
     // ✨ currentRoomImage 변경 시 previewImage 업데이트
     useEffect(() => {
@@ -62,6 +88,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
             // setSearchValue(''); // ✨ 검색 값 유지
             // setSearchResult(null); // ✨ 검색 결과 유지
             onMemberUpdate(); // ✨ 멤버 목록 갱신 트리거
+            fetchInvitedMembers(); // ✨ [Fix] 초대 대기 목록 즉시 갱신
             // onClose(); // ✨ 계속 초대할 수 있도록 닫지 않음
         } catch (error) {
             console.error(error);
@@ -96,8 +123,8 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                 await updateRole(roomId, targetId, currentUserId, "OWNER");
                 showAlert(`${targetName}님에게 방장 권한을 위임했습니다.`);
                 onClose(); 
-                // 페이지 새로고침하여 권한 업데이트
-                window.location.reload();
+                // ✨ [Fix] 페이지 새로고침 제거 (MEMBER_UPDATE 이벤트가 처리함)
+                // window.location.reload();
             } catch (error) {
                 console.error(error);
                 showAlert("권한 위임 실패.");
@@ -147,6 +174,20 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         }
     };
 
+    // ✨ 초대 취소 핸들러
+    const handleCancelInvitation = async (targetId, targetName) => {
+        showConfirm(`${targetName}님의 초대를 취소하시겠습니까?`, async () => {
+            try {
+                await cancelInvitation(roomId, targetId, currentUserId);
+                showAlert(`${targetName}님의 초대를 취소했습니다.`);
+                fetchInvitedMembers(); // 목록 갱신
+            } catch (error) {
+                console.error("초대 취소 실패", error);
+                showAlert("초대 취소에 실패했습니다.");
+            }
+        }, "초대 취소");
+    };
+
     return (
         <Modal
             isOpen={true}
@@ -179,6 +220,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                 <div className={styles.searchBox}>
                                     <input 
                                         type="text"
+                                        ref={searchInputRef} // ✨ Ref 연결
                                         value={searchValue}
                                         onChange={(e) => setSearchValue(e.target.value)}
                                         placeholder="초대할 닉네임 검색"
@@ -206,7 +248,35 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                             </div>
                         )}
 
+                        {/* ✨ 초대 대기 멤버 목록 (New Section) */}
+                        {invitedMembers.length > 0 && (
+                            <div className={styles.sectionHeader}>
+                                <span>초대 대기 ({invitedMembers.length})</span>
+                            </div>
+                        )}
+                        <ul className={styles.memberList}>
+                             {invitedMembers.map(member => (
+                                <li key={member.memberId} className={styles.memberItem}>
+                                    <div className={styles.memberInfo}>
+                                        <span className={styles.memberName}>{member.name}</span>
+                                        <span className={styles.pendingBadge}>수락 대기중</span>
+                                        {(isOwner || member.inviterId === currentUserId) && (
+                                            <button 
+                                                className={styles.cancelBtn} // Style needed
+                                                onClick={() => handleCancelInvitation(member.memberId, member.name)}
+                                                title="초대 취소"
+                                            >
+                                                ✖
+                                            </button>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
 
+                        <div className={styles.sectionHeader}>
+                            <span>참여 멤버 ({currentMembers.length})</span>
+                        </div>
                         <ul className={styles.memberList}>
                             {/* Me first */}
                             <li className={styles.memberItem}>
@@ -221,6 +291,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                 <li key={member.memberId} className={styles.memberItem}>
                                     <div className={styles.memberInfo}>
                                         <span className={styles.memberName}>{member.name}</span>
+                                        {/* PENDING Status already filtered out from currentMembers by ChatServiceImpl changes, but safe to keep check */}
                                         {member.invitationStatus === 'PENDING' && (
                                             <span className={styles.pendingBadge}>초대 대기중</span>
                                         )}
@@ -290,6 +361,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                             onChange={(e) => setNewTitle(e.target.value)}
                                             placeholder="채팅방 이름을 입력하세요(최대 15글자)"
                                             maxLength={15} // ✨ 10글자 제한
+                                            onKeyPress={(e) => e.key === 'Enter' && handleUpdateTitle()} // ✨ Enter Key Support
                                         />
                                         <button 
                                             className={styles.actionBtn}

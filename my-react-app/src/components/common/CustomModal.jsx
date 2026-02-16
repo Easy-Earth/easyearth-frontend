@@ -1,9 +1,28 @@
+import { useEffect } from 'react';
 import styles from './CustomModal.module.css';
 
 function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'alert', zIndex }) {
   if (!isOpen) return null;
 
   const overlayStyle = zIndex ? { zIndex } : {};
+
+  // ✨ Enter key handler
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onConfirm();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onConfirm]);
 
   return (
     <div className={styles.overlay} style={overlayStyle}>

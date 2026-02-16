@@ -27,6 +27,17 @@ const ChatRoomDetail = ({ roomId }) => {
     const messagesEndRef = useRef(null);
     const observerTarget = useRef(null);
     const prevScrollHeight = useRef(0);
+    const chatInputRef = useRef(null); // ✨ 포커스용 Ref
+
+    // ✨ 방 변경 시 입력창 포커스
+    useEffect(() => {
+        if (chatInputRef.current) {
+            // 약간의 지연 후 포커스 (모달 닫힘 등 UI 변경 고려)
+            setTimeout(() => {
+                chatInputRef.current.focus();
+            }, 100);
+        }
+    }, [roomId]);
     
     const setHasMore = (val) => {
         hasMoreRef.current = val;
@@ -38,8 +49,31 @@ const ChatRoomDetail = ({ roomId }) => {
     const [roomInfo, setRoomInfo] = useState({ title: '', type: 'SINGLE', members: [], creatorId: null, noticeContent: null, noticeMessageId: null, roomImage: null });
     
     const [replyTo, setReplyTo] = useState(null);
-    const [newlyArrivedMessage, setNewlyArrivedMessage] = useState(null); // ✨ [Restored] 상대방 메시지 알림
-    const [myNewMessageNotification, setMyNewMessageNotification] = useState(null); // ✨ [New] 내가 보낸 메시지 알림
+    // ✨ Stacked Notifications State
+    const [incomingNotifications, setIncomingNotifications] = useState([]);
+    const [outgoingNotifications, setOutgoingNotifications] = useState([]);
+
+    // Helper to add notification (Max 3, Auto-remove 5s)
+    const addNotification = (setter, message) => {
+        const id = Date.now() + Math.random(); 
+        const newNoti = { ...message, _id: id, closing: false };
+        
+        setter(prev => {
+            const next = [...prev, newNoti];
+            if (next.length > 3) next.shift(); // Keep max 3
+            return next;
+        });
+
+        // Trigger Fade Out after 4.7s
+        setTimeout(() => {
+            setter(prev => prev.map(n => n._id === id ? { ...n, closing: true } : n));
+        }, 4700);
+
+        // Auto remove after 5s
+        setTimeout(() => {
+            setter(prev => prev.filter(n => n._id !== id));
+        }, 5000);
+    };
 
     const [modalConfig, setModalConfig] = useState({
         isOpen: false, title: "", message: "", type: "alert", onConfirm: null, onCancel: null
@@ -90,13 +124,16 @@ const ChatRoomDetail = ({ roomId }) => {
             }
 
             if (cursorId === 0) {
-                setMessages(data);
+                // ✨ [Fix] localId 할당 logic
+                const messagesWithLocalId = data.map(msg => ({ ...msg, localId: msg.messageId }));
+                setMessages(messagesWithLocalId);
             } else {
                 // ✨ 목록 앞부분에 추가될 때 현재 스크롤 높이 저장
                 if (messagesContainerRef.current) {
                     prevScrollHeight.current = messagesContainerRef.current.scrollHeight;
                 }
-                setMessages(prev => [...data, ...prev]);
+                const messagesWithLocalId = data.map(msg => ({ ...msg, localId: msg.messageId }));
+                setMessages(prev => [...messagesWithLocalId, ...prev]);
             }
             
              if (data.length < 30) setHasMore(false);
@@ -108,29 +145,50 @@ const ChatRoomDetail = ({ roomId }) => {
     }, [roomId, user.memberId]); // ✨ [Fix] hasMore 제거 -> Stable Function
 
 
-    // ✨ [Fix] 초기화 Effect 분리 (의존성 최소화)
+    // ✨ [Fix] 초기화 및 재연결 Effect
     useEffect(() => {
         if (!connected || !roomId) return;
 
-        setMessages([]);
-        setHasMore(true);
-        isFirstLoad.current = true;
-        setReplyTo(null);
+        console.log(`🔌 ChatRoomDetail: Connection Status Changed. Connected: ${connected}, RoomId: ${roomId}`);
 
         const initializeRoom = async () => {
             try {
+                // 재연결 시에는 기존 메시지를 유지한 채로 최신 데이터를 가져옴 (깜빡임 방지)
+                if (isFirstLoad.current) {
+                   setMessages([]); 
+                   setHasMore(true);
+                   setReplyTo(null);
+                }
+
                 // ✨ [Fix] 읽음 처리를 먼저 실행하여 unreadCount 갱신
                 await markAsRead(roomId, user.memberId, null);
                 await fetchMessages(0);
                 await fetchRoomInfo();
                 loadChatRooms(); 
+                
+                isFirstLoad.current = false; // 초기화 완료
             } catch (error) {
                 console.error("채팅방 초기화 실패", error);
             }
         };
+
         initializeRoom();
         markNotificationsAsReadForRoom(roomId);
-    }, [roomId, connected]); // ✨ fetchMessages 제거 (Stable 하므로 포함해도 되지만 명시적 분리)
+        
+        // Cleanup: 방이 바뀔 때만 isFirstLoad 리셋
+        return () => {
+            // 이 cleanup은 컴포넌트 언마운트나 의존성 변경 시 실행됨
+            // roomId가 바뀌는 경우에만 isFirstLoad를 true로 설정해야 함
+            // 하지만 useEffect cleanup에서는 next props를 알 수 없음.
+            // 대신 roomId를 key로 하는 별도의 ref나 state 관리가 필요할 수 있음.
+            // 여기서는 단순화를 위해 생략하되, 상위에서 key를 변경하여 컴포넌트를 재생성하는 것이 안전함.
+        };
+    }, [roomId, connected]); // ✨ fetchMessages 제거
+
+    // ✨ 방이 변경되었을 때 isFirstLoad 리셋을 위한 별도 Effect
+    useEffect(() => {
+        isFirstLoad.current = true;
+    }, [roomId]);
 
 
     // ✨ [Fix] 구독 Effect 분리 (fetchMessages 의존성 제거)
@@ -174,6 +232,17 @@ const ChatRoomDetail = ({ roomId }) => {
                 return; // ✨ 중요: 여기서 종료
             }
 
+            // ✨ [New] 멤버 변경 이벤트 (입장/퇴장) -> 멤버 목록 및 방 정보 갱신
+            if (receivedMsg.type === 'MEMBER_UPDATE') {
+                console.log("👥 멤버 업데이트 수신:", receivedMsg);
+                fetchRoomInfo(); // 인원수 등 갱신
+                // 멤버 목록 모달이 열려있다면 갱신
+                if (showMemberModal) { 
+                    getChatRoomUsers(roomId).then(data => setRoomMembers(data));
+                }
+                return;
+            }
+
             // Message handling
             setMessages(prev => {
                 const receivedId = String(receivedMsg.messageId || receivedMsg.id);
@@ -193,13 +262,17 @@ const ChatRoomDetail = ({ roomId }) => {
                 let updatedMessages = [...prev];
 
                 if (existingIndex !== -1) {
-                    updatedMessages[existingIndex] = { ...updatedMessages[existingIndex], ...receivedMsg };
+                    // 기존 메시지 업데이트 (localId 유지)
+                    const existingMsg = updatedMessages[existingIndex];
+                    updatedMessages[existingIndex] = { ...existingMsg, ...receivedMsg, localId: existingMsg.localId };
                 } else if (optimisticIndex !== -1) {
-                    // ✨ 낙관적 메시지 교체
+                    // ✨ 낙관적 메시지 교체 (localId 유지하여 Re-mount 방지)
                     console.log("🔄 낙관적 메시지 교체:", receivedMsg.messageId);
-                    updatedMessages[optimisticIndex] = receivedMsg;
+                    const optimisticMsg = updatedMessages[optimisticIndex];
+                    updatedMessages[optimisticIndex] = { ...receivedMsg, localId: optimisticMsg.localId };
                 } else {
-                    updatedMessages.push(receivedMsg);
+                    // 새 메시지 (localId = messageId)
+                    updatedMessages.push({ ...receivedMsg, localId: receivedMsg.messageId });
                 }
                 
                 if (receivedMsg.messageType === 'DELETED') {
@@ -219,13 +292,13 @@ const ChatRoomDetail = ({ roomId }) => {
                 // ✨ [Old Logic] Check if user is NOT at bottom
                 if (!isUserAtBottomRef.current) {
                     console.log(" 새 메시지 도착 (스크롤 상단):", receivedMsg.content);
-                    setNewlyArrivedMessage(receivedMsg);
+                    addNotification(setIncomingNotifications, receivedMsg);
                 }
             } else {
                 // ✨ [New] 내가 보낸 메시지도 스크롤 상단에 있으면 알림 표시
                 if (!isUserAtBottomRef.current) {
                     console.log("🔔 내 메시지 전송됨 (스크롤 상단):", receivedMsg.content);
-                    setMyNewMessageNotification(receivedMsg);
+                    addNotification(setOutgoingNotifications, receivedMsg);
                 }
             }
             // Notice type handling logic removed/moved up
@@ -359,7 +432,8 @@ const ChatRoomDetail = ({ roomId }) => {
 
             // ✨ [New] 하단 도달 시 알림 해제
             if (isAtBottom) {
-                setNewlyArrivedMessage(null);
+                setIncomingNotifications([]);
+                setOutgoingNotifications([]);
             }
         };
         
@@ -376,7 +450,8 @@ const ChatRoomDetail = ({ roomId }) => {
             isFirstLoad.current = false;
             previousMessageCountRef.current = messages.length;
             isUserAtBottomRef.current = true;
-            setNewlyArrivedMessage(null); // Clear on first load
+            setIncomingNotifications([]);
+            setOutgoingNotifications([]);
         } 
         // ✨ 새 메시지가 추가되고 사용자가 하단에 있을 때만 스크롤
         else if (messages.length > previousMessageCountRef.current && isUserAtBottomRef.current) {
@@ -424,6 +499,7 @@ const ChatRoomDetail = ({ roomId }) => {
         const optimisticMsg = {
             ...msgDto,
             messageId: tempId, 
+            localId: tempId, // ✨ localId 추가 (낙관적 ID)
             senderName: user.name || "나", // 현재 유저 이름
             senderProfileImage: user.profileImage, // 현재 유저 프로필
             createdAt: new Date().toISOString(),
@@ -519,6 +595,14 @@ const ChatRoomDetail = ({ roomId }) => {
     }, []);
 
     // ✨ 검색 핸들러 함수들
+    const searchInputRef = useRef(null); // ✨ 포커스용 Ref
+
+    useEffect(() => {
+        if (showSearch && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [showSearch]);
+
     const handleSearch = async () => {
         if (!searchKeyword.trim()) {
             showAlert("검색어를 입력해주세요.");
@@ -710,6 +794,7 @@ const ChatRoomDetail = ({ roomId }) => {
                 <div className={styles.searchBar}>
                     <input 
                         type="text"
+                        ref={searchInputRef} // ✨ Ref 연결
                         value={searchKeyword}
                         onChange={(e) => setSearchKeyword(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
@@ -740,7 +825,7 @@ const ChatRoomDetail = ({ roomId }) => {
                     const isNewDate = currentDate !== prevDate;
 
                     return (
-                        <React.Fragment key={msg.messageId || index}>
+                        <React.Fragment key={msg.localId || msg.messageId || index}>
                             {isNewDate && (
                                 <div className={styles.dateSeparator}>
                                     <span>
@@ -779,47 +864,51 @@ const ChatRoomDetail = ({ roomId }) => {
 
             {/* Input Area */}
             <div className={styles.inputAreaWrapper}>
-                {/* ✨ New Message Notification (Other) */}
-                {newlyArrivedMessage && (
-                    <div 
-                        className={styles.newMessageNotification} 
-                        onClick={() => {
-                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                            setNewlyArrivedMessage(null);
-                        }}
-                    >
-                        <span className={styles.notificationIcon}>⬇️</span>
-                        <div className={styles.notificationContent}>
-                            <span className={styles.notificationSender}>{newlyArrivedMessage.senderName}</span>
-                            <span className={styles.notificationText}>
-                                {(newlyArrivedMessage.contentType === 'IMAGE' || newlyArrivedMessage.messageType === 'IMAGE') ? '사진' : 
-                                 (newlyArrivedMessage.contentType === 'FILE' || newlyArrivedMessage.messageType === 'FILE') ? extractOriginalFileName(newlyArrivedMessage.content) : 
-                                 newlyArrivedMessage.content}
-                            </span>
+                {/* ✨ Stacked Incoming Notifications (Left) */}
+                <div className={styles.notificationStackLeft}>
+                    {incomingNotifications.map((noti) => (
+                        <div 
+                            key={noti._id}
+                            className={`${styles.newMessageNotification} ${noti.closing ? styles.fadeOut : ''}`} 
+                            onClick={() => {
+                                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                setIncomingNotifications([]); // Clear all on click (or filter)
+                            }}
+                        >
+                            <div className={styles.notificationContent}>
+                                <span className={styles.notificationSender}>{noti.senderName}</span>
+                                <span className={styles.notificationText}>
+                                    {(noti.contentType === 'IMAGE' || noti.messageType === 'IMAGE') ? '사진' : 
+                                     (noti.contentType === 'FILE' || noti.messageType === 'FILE') ? extractOriginalFileName(noti.content) : 
+                                     noti.content}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    ))}
+                </div>
 
-                {/* ✨ New Message Notification (My Own) */}
-                {myNewMessageNotification && (
-                    <div 
-                        className={`${styles.newMessageNotification} ${styles.myNotification}`} 
-                        onClick={() => {
-                            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-                            setMyNewMessageNotification(null);
-                        }}
-                    >
-                        <span className={styles.notificationIcon}>⬇️</span>
-                        <div className={styles.notificationContent}>
-                            <span className={styles.notificationSender}>내 메시지</span>
-                            <span className={styles.notificationText}>
-                                {(myNewMessageNotification.contentType === 'IMAGE' || myNewMessageNotification.messageType === 'IMAGE') ? '사진 보냄' : 
-                                 (myNewMessageNotification.contentType === 'FILE' || myNewMessageNotification.messageType === 'FILE') ? extractOriginalFileName(myNewMessageNotification.content) : 
-                                 myNewMessageNotification.content}
-                            </span>
+                {/* ✨ Stacked Outgoing Notifications (Right) */}
+                <div className={styles.notificationStackRight}>
+                    {outgoingNotifications.map((noti) => (
+                        <div 
+                            key={noti._id}
+                            className={`${styles.newMessageNotification} ${styles.myNotification} ${noti.closing ? styles.fadeOut : ''}`} 
+                            onClick={() => {
+                                messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+                                setOutgoingNotifications([]);
+                            }}
+                        >
+                            <div className={styles.notificationContent}>
+                                <span className={styles.notificationSender}>내 메시지</span>
+                                <span className={styles.notificationText}>
+                                    {(noti.contentType === 'IMAGE' || noti.messageType === 'IMAGE') ? '사진 보냄' : 
+                                     (noti.contentType === 'FILE' || noti.messageType === 'FILE') ? extractOriginalFileName(noti.content) : 
+                                     noti.content}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    ))}
+                </div>
                 {replyTo && (
                     <div className={styles.replyBanner}>
                         <div className={styles.replyInfo}>
@@ -833,6 +922,7 @@ const ChatRoomDetail = ({ roomId }) => {
                 <div className={styles.inputArea}>
                     <FileUploadButton onFileUploaded={handleFileUpload} showAlert={showAlert} />
                     <textarea 
+                        ref={chatInputRef} // ✨ Ref 연결
                         className={styles.input}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
@@ -866,7 +956,8 @@ const ChatRoomDetail = ({ roomId }) => {
                     roomType={roomInfo.roomType}
                     currentMembers={roomMembers}
                     currentUserId={user.memberId}
-                    isOwner={String(roomInfo.creatorId) === String(user.memberId)}
+                    // ✨ [Fix] creatorId가 아니라 현재 멤버 목록에서 내 Role이 OWNER인지 확인
+                    isOwner={roomMembers.find(m => String(m.memberId) === String(user.memberId))?.role === 'OWNER'}
                     showAlert={showAlert}
                     showConfirm={showConfirm}
                     onMemberUpdate={() => {

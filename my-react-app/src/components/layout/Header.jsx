@@ -126,8 +126,12 @@ const NotificationCenter = () => {
                             <li className={styles.emptyItem}>새로운 알림이 없습니다.</li>
                         ) : (
                             notifications.map(notification => (
-                                <li key={notification.id} className={`${styles.notificationItem} ${notification.read ? styles.read : ''}`}>
-                                    <div className={styles.notificationContent} onClick={() => handleNotificationClick(notification)}>
+                                <li 
+                                    key={notification.id} 
+                                    className={`${styles.notificationItem} ${notification.read ? styles.read : ''}`}
+                                    onClick={() => handleNotificationClick(notification)} // ✨ 클릭 핸들러 상위 이동
+                                >
+                                    <div className={styles.notificationContent}>
                                         <div className={styles.notificationHeader}>
                                             <div className={styles.headerText}>
                                                 <div className={styles.senderInfo}>

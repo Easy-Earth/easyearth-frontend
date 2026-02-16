@@ -106,6 +106,7 @@ const ChatRoomList = () => {
             await acceptInvitation(chatRoomId, user.memberId);
             loadChatRooms(); // 목록 새로고침
             markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
+            navigate(`/chat/${chatRoomId}`); // ✨ [Fix] 수락 후 바로 해당 채팅방으로 이동
         } catch (error) {
             console.error("초대 수락 실패", error);
             showAlert("초대 수락에 실패했습니다.");
