@@ -4,18 +4,19 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #ffffff;
-    border-right: 1px solid #e5e7eb;
+    background: #f8fafc; /* Slate 50 */
+    border-right: 1px solid #e2e8f0; /* Slate 200 */
 }
 
 .header {
     padding: 16px 20px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid #e2e8f0; /* Slate 200 */
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 70px; /* 높이 고정으로 안정감 부여 */
+    height: 70px;
     box-sizing: border-box;
+    background: white;
 }
 
 .headerTitle {
@@ -27,14 +28,14 @@
 .title {
     font-size: 22px;
     font-weight: 800;
-    color: #111827;
+    color: #1e293b; /* Slate 800 */
     margin: 0;
     letter-spacing: -0.5px;
 }
 
 .count {
-    background: #eff6ff;
-    color: #3b82f6;
+    background: #f0fdfa; /* Teal 50 */
+    color: #14b8a6; /* Teal 500 */
     font-size: 13px;
     font-weight: 700;
     padding: 2px 8px;
@@ -43,23 +44,19 @@
     text-align: center;
 }
 
-/* .headerActions 제거됨 */
-
 .headerRight {
     display: flex;
     align-items: center;
-    gap: 8px; /* 타이틀과 버튼 사이 간격 */
+    gap: 8px;
 }
-
-/* .divider 제거됨 */
 
 .iconBtn {
     width: 40px;
     height: 40px;
     border-radius: 50%;
     border: none;
-    background: transparent; /* ✨ 배경 제거 */
-    color: #3b82f6; /* 아이콘 색상: Primary Blue */
+    background: transparent;
+    color: #14b8a6; /* Teal 500 */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,16 +66,15 @@
 }
 
 .iconBtn:hover {
-    background: #eff6ff; /* 호버 시 아주 연한 파란 배경 */
-    color: #2563eb;
-    transform: scale(1.1); /* 약간 확대 */
+    background: #f0fdfa; /* Teal 50 */
+    color: #0d9488; /* Teal 600 */
+    transform: scale(1.1);
 }
 
-/* SVG 아이콘 크기 및 스타일 조정 */
 .iconBtn svg {
-    width: 30px; /* 아이콘 크기 확대 */
+    width: 30px;
     height: 30px;
-    fill: currentColor !important; /* CSS color 상속 */
+    fill: currentColor !important;
     stroke: none !important;
 }
 
@@ -99,20 +95,32 @@
     list-style: none;
 }
 
+/* ✨ Missing Class Added */
+.sectionHeader {
+    padding: 8px 16px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #64748b; /* Slate 500 */
+    background: #f1f5f9; /* Slate 100 */
+    border-bottom: 1px solid #e2e8f0;
+}
+
 .item {
     display: flex;
     padding: 12px 16px;
     cursor: pointer;
     transition: background 0.2s;
-    border-bottom: 1px solid #f3f4f6;
+    border-bottom: 1px solid #f1f5f9; /* Slate 100 */
+    background: white;
 }
 
 .item:hover {
-    background: #f9fafb;
+    background: #f8fafc; /* Slate 50 */
 }
 
 .item.active {
-    background: #eff6ff;
+    background: #f0fdfa; /* Teal 50 */
+     border-left: 3px solid #14b8a6; /* Teal 500 Accent */
 }
 
 .avatar {
@@ -120,39 +128,39 @@
     height: 48px;
     margin-right: 12px;
     flex-shrink: 0;
-    position: relative; /* ✨ 뱃지 위치 잡기 위해 추가 */
+    position: relative;
 }
 
 .avatar img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 50%; /* ✨ 이미지 원형 처리 */
-    background: #e5e7eb;
+    border-radius: 50%;
+    background: #e2e8f0; /* Slate 200 */
     display: block;
 }
 
 .groupCount {
     position: absolute;
-    bottom: 0; /* 우측 하단 배치 */
+    bottom: 0;
     right: 0;
-    background-color: rgba(107, 114, 128, 0.9); /* #6b7280 + opacity */
+    background-color: rgba(100, 116, 139, 0.9); /* Slate 500 */
     color: white;
     font-size: 10px;
     font-weight: 700;
     padding: 1px 5px;
     border-radius: 10px;
-    border: 2px solid #ffffff; /* 흰색 테두리로 구분감 */
+    border: 2px solid white;
     min-width: 14px;
     text-align: center;
     line-height: 1.2;
     box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    z-index: 1; /* 이미지 위에 표시 */
+    z-index: 1;
 }
 
 .content {
     flex: 1;
-    min-width: 0; /* text-overflow working */
+    min-width: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -166,8 +174,8 @@
 }
 
 .name {
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: #1e293b; /* Slate 800 */
     font-size: 15px;
     white-space: nowrap;
     overflow: hidden;
@@ -176,7 +184,7 @@
 
 .time {
     font-size: 12px;
-    color: #9ca3af;
+    color: #94a3b8; /* Slate 400 */
     flex-shrink: 0;
     margin-left: 8px;
 }
@@ -189,14 +197,14 @@
 
 .message {
     font-size: 13px;
-    color: #6b7280;
+    color: #64748b; /* Slate 500 */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .badge {
-    background: #ef4444;
+    background: #ef4444; /* Red 500 */
     color: white;
     font-size: 11px;
     font-weight: 600;
@@ -214,7 +222,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    color: #fbbf24; 
+    color: #fbbf24; /* Amber 400 */
     font-size: 18px;
     padding: 4px;
     opacity: 0;
@@ -226,9 +234,9 @@
     opacity: 1;
 }
 
-/* 초대받은 방 스타일 */
+/* 초대받은 방 */
 .pending {
-    background: #fffbeb;
+    background: #fffbeb; /* Amber 50 */
 }
 
 .invitationButtons {
@@ -246,14 +254,13 @@
     border-radius: 4px;
 }
 
-.acceptBtn:hover { background: #dcfce7; }
-.rejectBtn:hover { background: #fee2e2; }
+.acceptBtn:hover { background: #dcfce7; /* Green 100 */ }
+.rejectBtn:hover { background: #fee2e2; /* Red 100 */ }
 
 /* 내 프로필 */
 .myProfile {
     position: relative;
     cursor: pointer;
-    /* margin-right: 8px; 제거 */
 }
 
 .myProfileImg {
@@ -268,10 +275,10 @@
 .myNickname {
     font-size: 14px;
     font-weight: 600;
-    color: #374151;
-    margin-right: 8px; /* 프로필 이미지와의 간격 */
+    color: #475569; /* Slate 600 */
+    margin-right: 8px;
 }
 
 .myProfile:hover .myProfileImg {
-    border-color: #3b82f6;
+    border-color: #14b8a6; /* Teal 500 */
 }
