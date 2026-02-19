@@ -91,17 +91,17 @@ function App() {
 
                   {/* 채팅 관련 라우트 */}
                   <Route path="/chat" element={
-                    <PrivateRoute>
+                    <PrivateRoute alertLogin={true}>
                       <ChatPage />
                     </PrivateRoute>
                   } />
                   <Route path="/chat/:roomId" element={
-                    <PrivateRoute>
+                    <PrivateRoute alertLogin={true}>
                       <ChatPage />
                     </PrivateRoute>
                   } />
                   <Route path="/chat/join/:roomId" element={
-                    <PrivateRoute>
+                    <PrivateRoute alertLogin={true}>
                       <ChatJoinPage />
                     </PrivateRoute>
                   } />

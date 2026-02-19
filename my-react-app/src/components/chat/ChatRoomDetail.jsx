@@ -768,6 +768,39 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
 
+    // ✨ [Fix] 1:1 채팅방 상대방 정보 찾기 (백엔드 selectChatRoom이 memberId 의존적이지 않으므로 프론트에서 찾음)
+    const getOtherMember = () => {
+        if (roomInfo.roomType === 'SINGLE' && roomInfo.participants && user) {
+            return roomInfo.participants.find(p => String(p.memberId) !== String(user.memberId));
+        }
+        return null;
+    };
+
+    const otherMember = getOtherMember();
+    
+    // 화면에 표시할 이미지 URL 결정
+    const displayRoomImage = (() => {
+        if (roomInfo.roomType === 'SINGLE') {
+             // 1순위: participants에서 찾은 상대방 프사
+             if (otherMember?.profileImageUrl) return getFullUrl(otherMember.profileImageUrl);
+             // 2순위: roomInfo에 이미 있다면 사용 (목록 등에서 넘어온 경우)
+             if (roomInfo.otherMemberProfile) return getFullUrl(roomInfo.otherMemberProfile);
+             return "/default-profile.svg";
+        } else {
+             // GROUP
+             return getFullUrl(roomInfo.roomImage) || "/default-room.svg";
+        }
+    })();
+
+    // 화면에 표시할 제목 결정
+    const displayTitle = (() => {
+        if (roomInfo.title) return roomInfo.title;
+        if (roomInfo.roomType === 'SINGLE') {
+            return otherMember?.memberName || roomInfo.otherMemberName || "알 수 없는 대화방";
+        }
+        return "그룹 채팅";
+    })();
+
     return (
         <div className={styles.container}>
             {/* Header */}
@@ -775,18 +808,14 @@ const ChatRoomDetail = ({ roomId }) => {
                 {/* ✨ Header Image */}
                 <div className={styles.headerImage}>
                     <img 
-                        src={
-                            roomInfo.roomType === 'SINGLE' 
-                                ? (getFullUrl(roomInfo.otherMemberProfile) || "/default-profile.svg") 
-                                : (getFullUrl(roomInfo.roomImage) || "/default-room.svg") 
-                        }
+                        src={displayRoomImage}
                         alt="Room"
                         className={styles.roomImg}
                         onError={(e) => { e.target.src = roomInfo.roomType === 'SINGLE' ? "/default-profile.svg" : "/default-room.svg"; }}
                     />
                 </div>
                 <h3 className={styles.title}>
-                    {roomInfo.title || (roomInfo.roomType === 'SINGLE' ? roomInfo.otherMemberName : '그룹 채팅')}
+                    {displayTitle}
                 </h3>
                 <div className={styles.actions} ref={menuRef}>
                     <button 
