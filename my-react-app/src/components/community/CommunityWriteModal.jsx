@@ -18,21 +18,20 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
   const [filesToDelete, setFilesToDelete] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  
-  // 유효성 검사
+  // ── [기존 유지] 유효성 검사 모달 ──
   const [validationModal, setValidationModal] = useState({
     isOpen: false,
     message: "",
   });
 
-  // 확인 : 초기화, 닫기 등
+  // ── [기존 유지] 확인 모달 (여기서 type만 alert으로 바꿈) ──
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
     message: "",
     onConfirm: () => {},
   });
 
-  // 수정 모드: 원본 데이터 저장
+  // ── [기존 유지] 수정 모드: 원본 데이터 저장 ──
   const [originalData, setOriginalData] = useState({
     category: "",
     title: "",
@@ -64,7 +63,6 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
         setFilesToDelete([]);
         setSelectedFiles([]);
         
-        // 원본 데이터 저장
         setOriginalData({
           category: post.category || "",
           title: post.title || "",
@@ -98,7 +96,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
   const resetToOriginal = () => {
     setConfirmModal({
       isOpen: true,
-      message: "원본 상태로 되돌리시겠습니까?",
+      message: "원본 상태로 되돌렸습니다.", // 메시지만 살짝 수정 (확인용)
       onConfirm: () => {
         setCategory(originalData.category);
         setTitle(originalData.title);
@@ -114,14 +112,12 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
   // 초기화 핸들러
   const handleReset = () => {
     if (postId) {
-      // 수정 모드: 원본으로 복원
       resetToOriginal();
     } else {
-      // 글쓰기 모드: 전체 초기화
       if (title || content || selectedFiles.length > 0) {
         setConfirmModal({
           isOpen: true,
-          message: "작성 중인 내용을 모두 지우시겠습니까?",
+          message: "내용이 초기화되었습니다.", // 알림 메시지 형태로 변경
           onConfirm: () => {
             resetForm();
             setConfirmModal({ isOpen: false, message: "", onConfirm: () => {} })
@@ -163,30 +159,16 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     
-    // 유효성 검사 - 간단한 alert (모달 안에서)
     if (!category) {
-      setValidationModal({
-        isOpen: true,
-        message: "카테고리를 선택해주세요.",
-      });
+      setValidationModal({ isOpen: true, message: "카테고리를 선택해주세요." });
       return;
     }
-
-    // 제목 체크
     if (!title.trim()) {
-      setValidationModal({
-        isOpen: true,
-        message: "제목을 입력해주세요.",
-      });
+      setValidationModal({ isOpen: true, message: "제목을 입력해주세요." });
       return;
     }
-
-    // 내용 체크
     if (!content.trim()) {
-      setValidationModal({
-        isOpen: true,
-        message: "내용을 입력해주세요.",
-      });
+      setValidationModal({ isOpen: true, message: "내용을 입력해주세요." });
       return;
     }
 
@@ -223,15 +205,16 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
           isOpen: true,
           message: postId ? "수정 중 오류가 발생했습니다." : "등록 중 오류가 발생했습니다.",
         });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const handleClose = () => {
-    // 수정 모드: 변경사항 있을 때만 confirm
     if (postId && hasChanges()) {
       setConfirmModal({
         isOpen: true,
-        message: "변경된 내용이 있습니다. 정말 닫으시겠습니까?",
+        message: "작성을 취소하고 닫습니다.", // 알림 문구
         onConfirm: () => {
           resetForm();
           onClose();
@@ -241,11 +224,10 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
       return;
     }
     
-    // 글쓰기 모드: 내용 있을 때만 confirm
     if (!postId && (title || content || selectedFiles.length > 0)) {
       setConfirmModal({
         isOpen: true,
-        message: "작성 중인 내용이 있습니다. 정말 닫으시겠습니까?",
+        message: "작성을 취소하고 닫습니다.", // 알림 문구
         onConfirm: () => {
           resetForm();
           onClose();
@@ -255,7 +237,6 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
       return;
     }
     
-    // 변경사항 없으면 바로 닫기
     resetForm();
     onClose();
   };
@@ -270,12 +251,8 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
     >
       <form onSubmit={handleSubmit}>
         <div className={styles.modalBody}>
-          
-          {/* 카테고리 */}
           <div className={styles.formRow}>
-            <label className={styles.formLabel}>
-              <span className={styles.required}>*</span> 카테고리
-            </label>
+            <label className={styles.formLabel}><span className={styles.required}>*</span> 카테고리</label>
             <div className={styles.categoryGroup}>
               {categories.map((cat) => (
                 <button
@@ -290,27 +267,20 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
             </div>
           </div>
 
-          {/* 제목 */}
           <div className={styles.formRow}>
-            <label className={styles.formLabel}>
-              <span className={styles.required}>*</span> 제목
-            </label>
-            <div className={styles.titleInput}>
-              <Input
-                placeholder="제목을 입력하세요 (최대 200자)"
-                maxLength={200}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                fullWidth
-              />
-            </div>
+            <label className={styles.formLabel}><span className={styles.required}>*</span> 제목</label>
+            <Input
+              placeholder="제목을 입력하세요 (최대 200자)"
+              maxLength={200}
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              fullWidth
+              style={{ color: "var(--gray-400)" }}
+            />
           </div>
 
-          {/* 내용 */}
           <div className={styles.formRow}>
-            <label className={styles.formLabel}>
-              <span className={styles.required}>*</span> 내용
-            </label>
+            <label className={styles.formLabel}><span className={styles.required}>*</span> 내용</label>
             <textarea
               className={styles.textareaContent}
               placeholder="내용을 입력하세요"
@@ -319,19 +289,14 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
             />
           </div>
 
-          {/* 기존 파일 */}
           {postId && existingFiles.length > 0 && (
             <div className={styles.formRow}>
-              <label className={styles.formLabel}>
-                기존 파일 (삭제할 이미지 선택)
-              </label>
+              <label className={styles.formLabel}>기존 파일 (삭제할 이미지 선택)</label>
               <div className={styles.existingFiles}>
                 {existingFiles.map((file) => (
                   <div
                     key={file.filesId}
-                    className={`${styles.existingFileItem} ${
-                      filesToDelete.includes(file.filesId) ? styles.toDelete : ""
-                    }`}
+                    className={`${styles.existingFileItem} ${filesToDelete.includes(file.filesId) ? styles.toDelete : ""}`}
                     onClick={() => toggleDeleteExisting(file.filesId)}
                   >
                     <img
@@ -354,39 +319,19 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
             </div>
           )}
 
-          {/* 파일 첨부 */}
           <div className={styles.formRow}>
-            <label className={styles.formLabel}>
-              {postId ? "새 파일 추가" : "파일 첨부"}
-            </label>
+            <label className={styles.formLabel}>{postId ? "새 파일 추가" : "파일 첨부"}</label>
             <div className={styles.fileArea}>
-              <input
-                type="file"
-                id="fileInput"
-                className={styles.fileInput}
-                multiple
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-              <label htmlFor="fileInput" className={styles.fileLabel}>
-                📎 파일 선택
-              </label>
-              <p style={{color: "var(--gray-600)"}}>
-                이미지 파일만 첨부 가능합니다
-              </p>
+              <input type="file" id="fileInput" className={styles.fileInput} multiple accept="image/*" onChange={handleFileChange} />
+              <label htmlFor="fileInput" className={styles.fileLabel}>📎 파일 선택</label>
+              <p style={{color: "var(--gray-600)"}}>이미지 파일만 첨부 가능합니다</p>
             </div>
             {selectedFiles.length > 0 && (
               <div className={styles.fileList}>
                 {selectedFiles.map((file, index) => (
                   <div key={index} className={styles.fileItem}>
                     <span className={styles.fileName}>📷 {file.name}</span>
-                    <button
-                      type="button"
-                      className={styles.fileRemove}
-                      onClick={() => removeFile(index)}
-                    >
-                      삭제
-                    </button>
+                    <button type="button" className={styles.fileRemove} onClick={() => removeFile(index)}>삭제</button>
                   </div>
                 ))}
               </div>
@@ -395,42 +340,27 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
         </div>
 
         <div className={styles.modalFooter}>
-          <button
-            type="button"
-            className={styles.btnCancel}
-            onClick={handleReset}
-            disabled={isSubmitting}
-          >
-            초기화
-          </button>
-          <button
-            type="submit"
-            className={styles.btnSubmit}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "처리 중..." : postId ? "수정 완료" : "등록"}
-          </button>
+          <button type="button" className={styles.btnCancel} onClick={handleReset} disabled={isSubmitting}>초기화</button>
+          <button type="submit" className={styles.btnSubmit} disabled={isSubmitting}>{isSubmitting ? "처리 중..." : postId ? "수정 완료" : "등록"}</button>
         </div>
       </form>
     </Modal>
 
-    {/* 유효성 검사 모달 */}
+    {/* ── [기존 유지] 유효성 검사 모달 (type="alert" 적용) ── */}
     <CustomModal
       isOpen={validationModal.isOpen}
-      type="confirm"
+      type="alert" 
       message={validationModal.message}
       onConfirm={() => setValidationModal({ isOpen: false, message: "" })}
-      onCancel={() => setValidationModal({ isOpen: false, message: "" })}
       zIndex={15000}
     />
 
-    {/* 확인 모달 (초기화, 닫기 등) */}
+    {/* ── [기존 유지] 확인 모달 (type="alert" 적용하여 확인 버튼만 노출) ── */}
     <CustomModal
       isOpen={confirmModal.isOpen}
-      type="confirm"
+      type="alert" 
       message={confirmModal.message}
       onConfirm={confirmModal.onConfirm}
-      onCancel={() => setConfirmModal({ isOpen: false, message: "", onConfirm: () => {} })}
       zIndex={15000}
     />
   </>

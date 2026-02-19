@@ -347,12 +347,7 @@ const ChatRoomList = () => {
                                 }}
                             />
                             {/* ✨ 그룹 채팅 인원수 표시 */}
-                            {(function() {
-                                const url = room.roomType === 'SINGLE' 
-                                    ? (getFullUrl(room.otherMemberProfile) || "/default-profile.svg") 
-                                    : (getFullUrl(room.roomImage) || "/default-room.svg");
-                                console.log(`Room ${room.chatRoomId} Image:`, url, "Raw:", room.roomType === 'SINGLE' ? room.otherMemberProfile : room.roomImage);
-                            })()}
+                            {/* ✨ 그룹 채팅 인원수 표시 */ }
                             {room.roomType === 'GROUP' && room.memberCount > 0 && (
                                 <span className={styles.groupCount}>{room.memberCount}</span>
                             )}

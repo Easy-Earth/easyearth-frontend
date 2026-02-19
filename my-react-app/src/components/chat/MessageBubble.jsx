@@ -153,7 +153,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                                 {(message.contentType === 'TEXT' || message.messageType === 'TEXT') && message.content}
                                 
                                 {/* 이미지 메시지 */}
-                                {(message.contentType === 'IMAGE' || message.messageType === 'IMAGE') && (
+                                {(message.messageType === 'IMAGE' || message.contentType === 'IMAGE') && (
                                     <div 
                                         className={styles.imageLink} 
                                         style={{ cursor: 'pointer' }}
@@ -187,12 +187,13 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                                             className={styles.imageContent} 
                                             onLoad={onImageLoad} 
                                             title="클릭하여 다운로드" 
+                                            onError={(e) => { e.target.src = "/default-image.png"; }}
                                         />
                                     </div>
                                 )}
                                 
                                 {/* 파일 메시지 */}
-                                {(message.contentType === 'FILE' || message.messageType === 'FILE') && (
+                                {(message.messageType === 'FILE' || message.contentType === 'FILE') && (
                                     <div
                                         className={styles.fileLink}
                                         style={{ cursor: 'pointer', textDecoration: 'underline' }}

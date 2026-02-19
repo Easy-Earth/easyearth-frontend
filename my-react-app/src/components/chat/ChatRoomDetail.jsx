@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react';
-import { useChat } from '../../context/ChatContext';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { clearNotice, getChatRoomDetail, getChatRoomUsers, getMessages, leaveChatRoom, markAsRead, searchMessages, setNotice } from '../../apis/chatApi'; // searchMessages 추가
 import { useAuth } from '../../context/AuthContext';
+import { useChat } from '../../context/ChatContext';
 import { useNotification } from '../../context/NotificationContext';
 import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember, getChatRoomUsers, setNotice, clearNotice, getChatRoomDetail, searchMessages } from '../../apis/chatApi'; // searchMessages 추가
 import { getFullUrl } from '../../utils/chatImageUtil';
@@ -10,8 +12,11 @@ import FileUploadButton from './FileUploadButton';
 import MemberManagementModal from './MemberManagementModal';
 import CustomModal from '../common/CustomModal';
 import UserDatailModal from '../common/UserDatailModal';
+import { extractOriginalFileName } from './chatFileUtil';
 import styles from './ChatRoomDetail.module.css';
-import { useNavigate } from 'react-router-dom';
+import FileUploadButton from './FileUploadButton';
+import MemberManagementModal from './MemberManagementModal';
+import MessageBubble from './MessageBubble';
 
 const ChatRoomDetail = ({ roomId }) => {
     const { client, connected, loadChatRooms } = useChat();
@@ -136,7 +141,8 @@ const ChatRoomDetail = ({ roomId }) => {
         try {
             // ✨ [Fix] hasMoreRef 사용
             if (!hasMoreRef.current && cursorId !== 0) return;
-            
+            if (!user) return; // ✨ user가 없으면 중단
+
             const data = await getMessages(roomId, cursorId, user.memberId);
             
             if (data.length === 0) {
@@ -163,7 +169,7 @@ const ChatRoomDetail = ({ roomId }) => {
             console.error("메시지 로드 실패", error);
             showAlert("메시지를 불러올 수 없습니다. 페이지를 새로고침해주세요.");
         }
-    }, [roomId, user.memberId]); // ✨ [Fix] hasMore 제거 -> Stable Function
+    }, [roomId, user?.memberId]); // ✨ [Fix] hasMore 제거 -> Stable Function
 
 
     // ✨ [Fix] 초기화 및 재연결 Effect
@@ -407,7 +413,7 @@ const ChatRoomDetail = ({ roomId }) => {
             readSubscription.unsubscribe(); 
             userSubscription.unsubscribe(); // ✨ [New] Unsubscribe
         };
-    }, [roomId, client, connected, user.memberId, showAlert]); // ✨ showAlert added
+    }, [roomId, client, connected, user?.memberId, showAlert]); // ✨ showAlert added
 
 
     // Infinite Scroll
@@ -602,7 +608,7 @@ const ChatRoomDetail = ({ roomId }) => {
              console.error("공지 설정 실패", error);
              showAlert("공지 설정에 실패했습니다.");
         }
-    }, [roomId, user.memberId, showAlert]);
+    }, [roomId, user?.memberId, showAlert]);
 
     const handleClearNotice = useCallback(async () => {
         try {
@@ -611,7 +617,7 @@ const ChatRoomDetail = ({ roomId }) => {
             console.error("공지 해제 실패", error);
              showAlert("공지 해제에 실패했습니다.");
         }
-    }, [roomId, user.memberId, showAlert]);
+    }, [roomId, user?.memberId, showAlert]);
 
     const handleRefresh = useCallback(() => { fetchRoomInfo(); fetchMessages(0); }, [fetchRoomInfo, fetchMessages]);
     // ✨ [Fix] 이미지가 로드될 때, 사용자가 이미 하단에 있는 경우에만 스크롤
