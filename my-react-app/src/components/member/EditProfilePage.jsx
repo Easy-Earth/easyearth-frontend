@@ -3,7 +3,7 @@ import DaumPostcode from "react-daum-postcode";
 import authApi from "../../apis/authApi";
 import styles from "./EditProfilePage.module.css";
 import { uploadFile, updateProfile } from '../../apis/chatApi'; // Static import
-import { getFullUrl } from '../../utils/imageUtil';
+import { getFullUrl } from '../../utils/chatImageUtil';
 
 const EditProfile = ({ user }) => {
   const [formData, setFormData] = useState({

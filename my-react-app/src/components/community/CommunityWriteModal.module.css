@@ -65,6 +65,15 @@
 
 .required { color: #ef4444; }
 
+.titleInput :global(input) {
+  color: var(--gray-700); /* 실제 입력되는 글자 색상 */
+}
+
+.titleInput :global(input::placeholder) {
+  color: var(--gray-400); /* placeholder 글자 색상 */
+  opacity: 1; 
+}
+
 /* 카테고리 버튼 */
 .categoryGroup {
   display: flex;

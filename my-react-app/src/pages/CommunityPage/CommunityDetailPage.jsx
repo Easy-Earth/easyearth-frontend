@@ -7,8 +7,10 @@ import Profile from "../../components/common/Profile";
 import ReportModal from "../../components/common/ReportModal";
 import UserDetailModal from "../../components/common/UserDatailModal";
 import CommunityWriteModal from "../../components/community/CommunityWriteModal";
+
+import { getFullUrl2 } from "../../utils/communityImageUtil";
 import { useAuth } from "../../context/AuthContext";
-import { getFullUrl } from "../../utils/imageUtil";
+
 import styles from "./CommunityDetailPage.module.css";
 
 function CommunityDetailPage() {
@@ -417,7 +419,17 @@ function CommunityDetailPage() {
           {files.length > 0 && (
             <div className={styles.imageGrid}>
               {files.map((f) => (
-                <img key={f.filesId} src={getFullUrl(`/community/file/${f.changeName}`)} alt="첨부" className={styles.postImg} onClick={() => setSelectedImage(getFullUrl(`/community/file/${f.changeName}`))} />
+                <img
+                  key={f.filesId}
+                  src={getFullUrl2(`/community/file/${f.changeName}`)}
+                  alt="첨부이미지"
+                  className={styles.postImg}
+                  onClick={() => setSelectedImage(getFullUrl2(`/community/file/${f.changeName}`))}
+                  onError={(e) => {
+                    console.error("이미지 로드 실패:", f.changeName);
+                    e.target.style.display = "none";
+                  }}
+                />
               ))}
             </div>
           )}

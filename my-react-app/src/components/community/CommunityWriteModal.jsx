@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { communityApi } from "../../apis/communityApi";
 import { useAuth } from "../../context/AuthContext";
-import { getFullUrl } from "../../utils/imageUtil";
+import { getFullUrl2 } from "../../utils/communityImageUtil";
 import CustomModal from "../common/CustomModal";
 import Input from "../common/Input";
 import Modal from "../common/Modal";
@@ -299,8 +299,18 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
                     className={`${styles.existingFileItem} ${filesToDelete.includes(file.filesId) ? styles.toDelete : ""}`}
                     onClick={() => toggleDeleteExisting(file.filesId)}
                   >
-                    <img src={getFullUrl(`/community/file/${file.changeName}`)} alt={file.originName} className={styles.existingFileImg} />
-                    <input type="checkbox" className={styles.deleteCheckbox} checked={filesToDelete.includes(file.filesId)} onChange={() => toggleDeleteExisting(file.filesId)} onClick={(e) => e.stopPropagation()} />
+                    <img
+                      src={getFullUrl2(`/community/file/${file.changeName}`)}
+                      alt={file.originName}
+                      className={styles.existingFileImg}
+                    />
+                    <input
+                      type="checkbox"
+                      className={styles.deleteCheckbox}
+                      checked={filesToDelete.includes(file.filesId)}
+                      onChange={() => toggleDeleteExisting(file.filesId)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
                     <div className={styles.deleteOverlay}>삭제 예정</div>
                   </div>
                 ))}

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'; // useRef added
 import { uploadFile } from '../../apis/chatApi'; // ✨ import added
-import { getFullUrl } from '../../utils/imageUtil'; // ✨ import added
+import { getFullUrl } from '../../utils/chatImageUtil'; // ✨ import added
 import styles from './ChatRoomTypeModal.module.css';
 import Modal from '../common/Modal'; 
 
