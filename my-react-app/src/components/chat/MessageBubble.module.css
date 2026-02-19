@@ -85,9 +85,9 @@
 }
 
 .myMessage .replyPreview {
-    background: rgba(255, 255, 255, 0.2);
-    color: rgba(255, 255, 255, 0.9);
-    border-left-color: rgba(255, 255, 255, 0.5);
+    background: rgba(0, 0, 0, 0.03);
+    color: #64748b;
+    border-left-color: #14b8a6; /* Teal match */
     align-self: flex-end;
 }
 

@@ -225,7 +225,9 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                         onChange={(e) => setSearchValue(e.target.value)}
                                         placeholder="초대할 닉네임 검색"
                                         className={styles.input}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSearch();
+                                        }}
                                     />
                                     <button onClick={handleSearch} className={styles.searchBtn}>검색</button>
                                 </div>
@@ -361,7 +363,9 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                             onChange={(e) => setNewTitle(e.target.value)}
                                             placeholder="채팅방 이름을 입력하세요(최대 15글자)"
                                             maxLength={15} // ✨ 10글자 제한
-                                            onKeyPress={(e) => e.key === 'Enter' && handleUpdateTitle()} // ✨ Enter Key Support
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleUpdateTitle();
+                                            }}
                                         />
                                         <button 
                                             className={styles.actionBtn}

@@ -4,6 +4,8 @@ import AttendanceModal from "../../components/main/AttendanceModal";
 import EcoCalendar from "../../components/main/EcoCalendar";
 import QuestModal from "../../components/main/QuestModal";
 import QuizModal from "../../components/main/QuizModal";
+import GlobalEcoNews from "../../components/main/GlobalEcoNews";
+
 import styles from "./MainPage.module.css";
 
 function MainPage() {
@@ -75,6 +77,30 @@ function MainPage() {
                 <h1>🌍 EasyEarth</h1>
 
                 <div className={styles.secretaryContainer}>
+                    <button 
+                        onClick={async () => {
+                            if(window.confirm("날씨와 뉴스 정보를 최신으로 갱신하시겠습니까? (약 3~5초 소요)")) {
+                                setLoading(true);
+                                await weatherApi.refreshCache();
+                                window.location.reload(); 
+                            }
+                        }}
+                        style={{
+                            position: 'absolute',
+                            top: '-30px',
+                            right: '0',
+                            padding: '5px 10px',
+                            backgroundColor: '#4CAF50',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '5px',
+                            cursor: 'pointer',
+                            fontSize: '0.8rem',
+                            zIndex: 10
+                        }}
+                    >
+                        🔄 데이터 갱신
+                    </button>
                     <div className={styles.speechBubble}>
                         {/* 🚩 기념일 문구는 삭제하고 순수 비서 메시지만 출력 */}
                         {loading ? (
@@ -109,6 +135,9 @@ function MainPage() {
                         <p className={styles.loadingText}>표시할 날씨 정보가 없습니다.</p>
                     )}
                 </div>
+
+                {/* 🌍 글로벌 환경 뉴스 섹션 추가 */}
+                {!loading && <GlobalEcoNews />}
             </div>
 
             <aside className={styles.sidebar}>
