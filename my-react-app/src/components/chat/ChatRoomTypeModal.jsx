@@ -86,7 +86,9 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 placeholder="상대방 닉네임을 입력하세요"
                                 className={styles.input}
-                                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()} // ✨ Enter Key Support
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSubmit();
+                                }}
                             />
                         </div>
                     ) : (
@@ -127,7 +129,9 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                                     placeholder="채팅방 제목을 입력하세요(최대 15자)"
                                     className={styles.input}
                                     maxLength={15} // ✨ 10글자 제한
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSubmit()} // ✨ Enter Key Support
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSubmit();
+                                    }}
                                 />
                                 <p className={styles.hint}>* 그룹 채팅 멤버 초대는 방 생성 후에도 가능합니다.</p>
                             </div>

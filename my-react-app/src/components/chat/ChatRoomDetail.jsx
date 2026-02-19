@@ -581,7 +581,8 @@ const ChatRoomDetail = ({ roomId }) => {
         });
     };
 
-    const handleKeyPress = (e) => {
+    const handleKeyDown = (e) => {
+        if (e.nativeEvent.isComposing) return; // ✨ 한글 조합 중일 때는 전송 막기
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSend();
@@ -863,7 +864,9 @@ const ChatRoomDetail = ({ roomId }) => {
                         ref={searchInputRef} // ✨ Ref 연결
                         value={searchKeyword}
                         onChange={(e) => setSearchKeyword(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSearch();
+                        }}
                         placeholder="메시지 검색..."
                         className={styles.searchInput}
                     />
@@ -994,7 +997,7 @@ const ChatRoomDetail = ({ roomId }) => {
                         className={styles.input}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
-                        onKeyPress={handleKeyPress}
+                        onKeyDown={handleKeyDown}
                         placeholder={replyTo ? `${replyTo.senderName}님에게 답장...` : "메시지를 입력하세요..."}
                         rows={1}
                     />
