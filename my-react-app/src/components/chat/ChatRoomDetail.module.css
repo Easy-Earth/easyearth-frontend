@@ -1,59 +1,49 @@
+/* ChatRoomDetail.module.css */
+
 .container {
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: #f9fafb;
-    border-radius: 8px; /* Optional: adds rounded corners if it floats */
-    overflow: hidden; /* Prevent outer scroll */
-    position: relative; /* ✨ 알림 배너 절대 위치 기준점 */
+    background: #f8fafc; /* Slate 50 */
+    position: relative;
 }
 
 .header {
-    flex: 0 0 60px; /* 고정 높이 */
+    height: 70px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e2e8f0; /* Slate 200 */
     padding: 0 20px;
-    border-bottom: 1px solid #e5e7eb;
-    background: #fff;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* 헤더 강조 */
+    justify-content: space-between;
+    flex-shrink: 0;
     z-index: 10;
 }
 
-/* ✨ Header Image */
 .headerImage {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    overflow: hidden;
-    margin-right: 12px; /* 간격 */
-    border: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    width: 42px;
+    height: 42px;
+    margin-right: 12px;
+    flex-shrink: 0;
 }
-
-/* 1:1 채팅일 때 클릭 가능한 경우 hover 효과 */
-.headerImage[style*="pointer"]:hover {
-    transform: scale(1.08);
-}
-
-.headerImage[style*="pointer"]:hover .roomImg {
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
-    filter: brightness(1.05);
-}
-
-.headerImage .roomImg {
+.roomImg {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid #e2e8f0;
 }
 
 .title {
     font-size: 18px;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 800;
+    color: #1e293b; /* Slate 800 */
+    margin: 0;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .actions {
@@ -61,100 +51,299 @@
     gap: 8px;
 }
 
-.actionBtn, .leaveBtn {
-    padding: 6px 12px;
-    font-size: 13px;
-    border-radius: 6px;
-    cursor: pointer;
-    border: 1px solid #e5e7eb;
-    background: white;
-    transition: all 0.2s;
+/* Header Actions */
+.actions {
+    display: flex;
+    gap: 8px;
+    position: relative; /* Dropdown positioning context */
 }
 
-.leaveBtn:hover {
-    background: #fee2e2;
-    color: #ef4444;
-    border-color: #fca5a5;
+.menuBtn {
+    background: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #64748b; /* Slate 500 */
+    padding: 4px 8px;
+    border-radius: 50%;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.menuBtn:hover {
+    background: #f1f5f9; /* Slate 100 */
+    color: #1e293b; /* Slate 800 */
+}
+
+.menuBtn.active {
+    background: #e2e8f0; /* Slate 200 */
+    color: #0f172a; /* Slate 900 */
+}
+
+/* Dropdown Menu */
+.dropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    background: white;
+    border: 1px solid #e2e8f0; /* Slate 200 */
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    min-width: 160px;
+    overflow: hidden;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 0;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.menuItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: white;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #334155; /* Slate 700 */
+    text-align: left;
+    transition: background 0.2s;
+    width: 100%;
+}
+
+.menuItem:hover {
+    background: #f0fdfa; /* Teal 50 */
+    color: #0f766e; /* Teal 700 */
+}
+
+.menuItem.danger {
+    color: #ef4444; /* Red 500 */
+    border-top: 1px solid #f1f5f9;
+}
+
+.menuItem.danger:hover {
+    background: #fef2f2; /* Red 50 */
+    color: #dc2626; /* Red 600 */
 }
 
 /* Notice Banner */
 .noticeBanner {
-    background: #fef9c3;
-    padding: 8px 16px;
     display: flex;
-    align-items: center; /* Center vertically */
-    justify-content: center; /* Center horizontally */
-    gap: 8px;
-    border-bottom: 1px solid #fde047;
+    align-items: center;
+    justify-content: space-between;
+    background: #fffbeb; /* Amber 50 */
+    padding: 10px 20px;
+    border-bottom: 1px solid #fde68a; /* Amber 200 */
+    color: #92400e; /* Amber 800 */
     font-size: 13px;
-    color: #854d0e;
-    z-index: 5;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    position: relative; /* For absolute positioning of close button if needed */
+    flex-shrink: 0;
 }
+
 .noticeContentWrapper {
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
     flex: 1;
     overflow: hidden;
-    white-space: nowrap; /* Single line */
-    cursor: pointer; /* ✨ Clickable */
-    transition: opacity 0.2s;
 }
-.noticeContentWrapper:hover {
-    opacity: 0.7;
-}
-.noticeIcon {
-    font-size: 16px;
-    margin-right: 6px;
-    flex-shrink: 0;
-}
+
+.noticeIcon { font-size: 14px; }
+
 .noticeTextContainer {
     display: flex;
     align-items: center;
+    gap: 6px;
     overflow: hidden;
-    text-overflow: ellipsis;
 }
+
 .noticeText {
-    font-weight: 500;
-    margin-right: 4px;
+    font-weight: 700;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
 .noticeSender {
-    font-size: 11px;
-    color: #a16207;
-    white-space: nowrap;
-    opacity: 0.8;
+    font-size: 12px;
+    color: #f59e0b; /* Amber 500 */
+    flex-shrink: 0;
 }
+
 .noticeCloseBtn {
     background: none;
     border: none;
-    font-size: 14px;
+    color: #f59e0b; /* Amber 500 */
     cursor: pointer;
-    color: #a16207;
-    padding: 2px;
-    margin-left: 8px;
-    flex-shrink: 0;
-}
-.noticeCloseBtn:hover {
-    color: #713f12;
+    font-size: 14px;
+    padding: 0 4px;
 }
 
+/* Search Bar */
+.searchBar {
+    background: white;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.searchInput {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 13px;
+    outline: none;
+}
+
+.searchInput:focus {
+    border-color: #14b8a6;
+}
+
+.searchButton, .navButton, .closeSearchButton {
+    background: #f1f5f9;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.searchButton:hover, .navButton:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+.searchCount {
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 600;
+    min-width: 40px;
+    text-align: center;
+}
+
+/* Message List */
 .messageList {
-    flex: 1; /* 남은 공간 모두 차지 */
-    overflow-y: auto; /* 내부 스크롤 */
+    flex: 1;
+    overflow-y: auto;
     padding: 20px;
     display: flex;
     flex-direction: column;
+    gap: 16px;
+    scroll-behavior: smooth;
 }
 
-/* Input Area Wrapper */
+.dateSeparator {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.dateSeparator span {
+    background: rgba(0, 0, 0, 0.05);
+    color: #64748b;
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* Input Area */
 .inputAreaWrapper {
-    flex: 0 0 auto;
+    padding: 16px 20px;
     background: white;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #e2e8f0;
+    flex-shrink: 0;
+    position: relative;
+}
+
+/* Stacked Notifications */
+.notificationStackLeft {
+    position: absolute;
+    bottom: 80px;
+    left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 60%;
+    pointer-events: none;
+}
+
+.notificationStackRight {
+    position: absolute;
+    bottom: 80px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 60%;
+    pointer-events: none;
+}
+
+.newMessageNotification {
+    background: rgba(30, 41, 59, 0.9); /* Slate 800 */
+    backdrop-filter: blur(4px);
+    color: white;
+    padding: 10px 16px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    pointer-events: auto;
+    animation: slideUp 0.3s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.myNotification {
+    background: rgba(20, 184, 166, 0.9); /* Teal 500 */
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.fadeOut {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateY(-10px); }
+}
+
+.notificationContent {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.notificationSender {
+    font-size: 11px;
+    opacity: 0.8;
+    font-weight: 600;
+}
+
+.notificationText {
+    font-size: 13px;
+    font-weight: 500;
 }
 
 /* Reply Banner */
@@ -162,337 +351,78 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 16px;
     background: #f1f5f9;
-    border-bottom: 1px solid #e2e8f0;
-    font-size: 13px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border-left: 3px solid #14b8a6;
 }
+
 .replyInfo {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
-    align-items: flex-start; /* ✨ Force left alignment */
-    text-align: left;
-}
-.replyToName {
-    font-weight: bold;
-    color: #475569;
+    gap: 2px;
     font-size: 12px;
 }
-.replyToContent {
-    color: #64748b;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.replyCloseBtn {
-    background: none;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    color: #94a3b8;
-    padding: 4px;
-}
-.replyCloseBtn:hover {
-    color: #64748b;
-}
 
+.replyToName { font-weight: 700; color: #1e293b; }
+.replyToContent { color: #64748b; }
+.replyCloseBtn { background: none; border: none; color: #94a3b8; cursor: pointer; }
+
+/* Input Field Area */
 .inputArea {
     display: flex;
-    padding: 16px;
+    align-items: flex-end; /* 텍스트 많아질 때 하단 정렬 */
     gap: 10px;
-    align-items: flex-end; /* 텍스트area 늘어날 때 버튼 하단 정렬 */
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    transition: border-color 0.2s;
+}
+
+.inputArea:focus-within {
+    background: white;
+    border-color: #14b8a6; /* Teal 500 */
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.1);
 }
 
 .input {
     flex: 1;
-    padding: 10px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-    resize: none;
-    font-family: inherit;
+    border: none;
+    background: transparent;
+    padding: 8px 4px;
     font-size: 14px;
     line-height: 1.5;
-    max-height: 100px;
+    resize: none;
     outline: none;
-    transition: border-color 0.2s;
+    max-height: 100px;
+    color: #1e293b;
+    font-family: inherit;
 }
 
-.input:focus {
-    border-color: #3b82f6;
-}
+.input::placeholder { color: #94a3b8; }
 
 .sendBtn {
-    padding: 10px 20px;
-    background-color: #3b82f6;
+    background: #14b8a6;
     color: white;
     border: none;
-    border-radius: 20px;
-    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 13px;
     cursor: pointer;
-    transition: background-color 0.2s;
-    height: 42px; /* 높이 맞춤 */
+    transition: all 0.2s;
+    height: 38px;
+    flex-shrink: 0;
 }
 
 .sendBtn:disabled {
-    background-color: #93c5fd;
+    background: #cbd5e1;
     cursor: not-allowed;
 }
 
-/* Date Separator */
-.dateSeparator {
-    display: flex;
-    justify-content: center;
-    margin: 24px 0 16px;
-    align-items: center;
-}
-
-.dateSeparator span {
-    background-color: rgba(0, 0, 0, 0.05);
-    color: #6b7280;
-    font-size: 11px;
-    padding: 4px 12px;
-    border-radius: 9999px;
-    font-weight: 500;
-}
-
-/* ✨ Modern Search Bar Styles */
-.searchBar {
-    padding: 14px 20px;
-    background: linear-gradient(to bottom, #ffffff, #f9fafb);
-    border-bottom: 1px solid #e5e7eb;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-.searchInput {
-    flex: 1;
-    padding: 10px 16px;
-    border: 1.5px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-    outline: none;
-    transition: all 0.2s;
-    background: white;
-}
-
-.searchInput:focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-}
-
-.searchButton {
-    padding: 10px 20px;
-    background: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.2s;
-    box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
-}
-
-.searchButton:hover {
-    background: #2563eb;
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+.sendBtn:hover:not(:disabled) {
+    background: #0d9488;
     transform: translateY(-1px);
-}
-
-.navButton {
-    padding: 8px 14px;
-    background: white;
-    color: #374151;
-    border: 1.5px solid #d1d5db;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: all 0.2s;
-}
-
-.navButton:hover {
-    background: #f3f4f6;
-    border-color: #9ca3af;
-    transform: scale(1.05);
-}
-
-.searchCount {
-    padding: 8px 14px;
-    background: #f3f4f6;
-    border-radius: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #374151;
-    min-width: 60px;
-    text-align: center;
-    border: 1px solid #e5e7eb;
-}
-
-.closeSearchButton {
-    padding: 8px 12px;
-    background: #fee2e2;
-    color: #dc2626;
-    border: 1.5px solid #fecaca;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: all 0.2s;
-}
-
-.closeSearchButton:hover {
-    background: #fca5a5;
-    border-color: #f87171;
-    transform: scale(1.05);
-}
-
-/* ✨ Highlight Animation */
-/* ✨ Highlight Animation */
-@keyframes highlightPulse {
-    0% { background-color: rgba(0, 0, 0, 0.0); }
-    15% { background-color: rgba(255, 247, 237, 1); } /* Soft Orange/Yellow tint */
-    100% { background-color: rgba(0, 0, 0, 0.0); }
-}
-
-.highlight {
-    animation: highlightPulse 2s ease-out forwards;
-    border-radius: 12px;
-}
-
-
-/* ✨ Notification Stacks */
-.notificationStackLeft,
-.notificationStackRight {
-    position: absolute;
-    bottom: 80px; /* Input area height + padding */
-    display: flex;
-    flex-direction: column; /* Stack Top to Bottom (Oldest Top, Newest Bottom) */
-    justify-content: flex-end; /* Anchor to bottom */
-    gap: 10px;
-    z-index: 100;
-    max-width: 70%;
-    pointer-events: none; 
-}
-
-.notificationStackLeft {
-    left: 20px;
-    align-items: flex-start;
-}
-
-.notificationStackRight {
-    right: 20px;
-    align-items: flex-end; 
-}
-
-/* ✨ Individual Notification Item */
-.newMessageNotification {
-    position: relative; 
-    bottom: auto; 
-    left: auto;
-    right: auto;
-    transform: none;
-    
-    background-color: rgba(58, 58, 58, 0.9);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    pointer-events: auto; 
-    
-    transition: all 0.3s ease;
-    animation: slideIn 0.3s ease-out forwards; /* Changed from slideUp */
-}
-
-.fadeOut {
-    animation: fadeOut 0.3s ease-in forwards;
-}
-
-@keyframes slideIn {
-    from {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-@keyframes fadeOut {
-    from {
-        opacity: 1;
-        transform: scale(1);
-    }
-    to {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-}
-
-/* 왼쪽 (상대방 메시지) */
-.newMessageNotification:not(.myNotification) {
-    border-bottom-left-radius: 4px; 
-}
-
-/* 오른쪽 (내 메시지) */
-.myNotification {
-    background-color: rgba(59, 130, 246, 0.9); 
-    border-bottom-right-radius: 4px;
-}
-
-.newMessageNotification:hover {
-    background-color: rgba(40, 40, 40, 0.95);
-    transform: translateY(-2px); /* 좌우 이동 제거 */
-}
-
-.myNotification:hover {
-    background-color: rgba(37, 99, 235, 0.95);
-}
-
-.notificationIcon {
-    display: none; /* 아이콘 숨김 처리 (JSX에서 제거해도 되지만 CSS로도 보장) */
-}
-
-.notificationContent {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    overflow: hidden;
-}
-
-.notificationSender {
-    font-size: 0.8rem;
-    font-weight: bold;
-    color: #4CAF50; /* Accent color */
-}
-
-.myNotification .notificationSender {
-    color: #bfdbfe; /* 내 메시지는 옅은 파랑 */
-    align-self: flex-end; /* 오른쪽 정렬 */
-}
-
-.notificationText {
-    font-size: 0.9rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 200px;
-}
-
-@keyframes slideUp {
-    from {
-        opacity: 0;
-        transform: translateY(20px); /* 좌우 이동 제거 */
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
 }

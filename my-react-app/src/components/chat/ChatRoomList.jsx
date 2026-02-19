@@ -275,7 +275,7 @@ const ChatRoomList = () => {
             {/* 초대받은 채팅방 섹션 */}
             {pendingRooms.length > 0 && (
                 <>
-                    <div className={styles.sectionHeader} style={{padding: '8px 16px', fontSize: '12px', color: '#6b7280', background: '#f9fafb'}}>초대받은 채팅방</div>
+                    <div className={styles.sectionHeader}>초대받은 채팅방</div>
                     <ul className={styles.list} style={{flex: 'none'}}>
                         {pendingRooms.map((room) => (
                             <li 

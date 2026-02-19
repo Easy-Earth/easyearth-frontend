@@ -260,16 +260,16 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                     <div className={styles.memberInfo}>
                                         <span className={styles.memberName}>{member.name}</span>
                                         <span className={styles.pendingBadge}>수락 대기중</span>
-                                        {(isOwner || member.inviterId === currentUserId) && (
-                                            <button 
-                                                className={styles.cancelBtn} // Style needed
-                                                onClick={() => handleCancelInvitation(member.memberId, member.name)}
-                                                title="초대 취소"
-                                            >
-                                                ✖
-                                            </button>
-                                        )}
                                     </div>
+                                    {(isOwner || member.inviterId === currentUserId) && (
+                                        <button 
+                                            className={styles.cancelBtn} 
+                                            onClick={() => handleCancelInvitation(member.memberId, member.name)}
+                                            title="초대 취소"
+                                        >
+                                            ✖
+                                        </button>
+                                    )}
                                 </li>
                             ))}
                         </ul>
@@ -295,24 +295,24 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                         {member.invitationStatus === 'PENDING' && (
                                             <span className={styles.pendingBadge}>초대 대기중</span>
                                         )}
-                                        {isOwner && (
-                                            <div className={styles.actionBtns}>
-                                                <button 
-                                                    className={styles.delegateBtn}
-                                                    onClick={() => handleDelegate(member.memberId, member.name, member.invitationStatus)}
-                                                    disabled={member.invitationStatus === 'PENDING'}
-                                                >
-                                                    위임
-                                                </button>
-                                                <button 
-                                                    className={styles.kickBtn}
-                                                    onClick={() => handleKick(member.memberId, member.name)}
-                                                >
-                                                    강퇴
-                                                </button>
-                                            </div>
-                                        )}
                                     </div>
+                                    {isOwner && (
+                                        <div className={styles.actionBtns}>
+                                            <button 
+                                                className={styles.delegateBtn}
+                                                onClick={() => handleDelegate(member.memberId, member.name, member.invitationStatus)}
+                                                disabled={member.invitationStatus === 'PENDING'}
+                                            >
+                                                위임
+                                            </button>
+                                            <button 
+                                                className={styles.kickBtn}
+                                                onClick={() => handleKick(member.memberId, member.name)}
+                                            >
+                                                강퇴
+                                            </button>
+                                        </div>
+                                    )}
                                 </li>
                             ))}
                         </ul>

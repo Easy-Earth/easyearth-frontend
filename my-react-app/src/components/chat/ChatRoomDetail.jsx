@@ -89,8 +89,29 @@ const ChatRoomDetail = ({ roomId }) => {
     const [hasMoreSearchResults, setHasMoreSearchResults] = useState(false);
 
     const [showProfileModal, setShowProfileModal] = useState(false);
+    
+    // ✨ Header Menu State
+    const [showMenu, setShowMenu] = useState(false);
+    const menuRef = useRef(null);
 
-    const closeModal = useCallback(() => setModalConfig(prev => ({ ...prev, isOpen: false })), []);
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                setShowMenu(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const closeModal = useCallback(() => {
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+        // ✨ 모달 닫힐 때 채팅 입력창으로 포커스 복귀
+        if (chatInputRef.current) {
+            chatInputRef.current.focus();
+        }
+    }, []);
     
     const showAlert = useCallback((message, title = "알림") => { 
         setModalConfig({ isOpen: true, title, message, type: "alert", onConfirm: closeModal, onCancel: closeModal }); 
@@ -760,12 +781,52 @@ const ChatRoomDetail = ({ roomId }) => {
                 <h3 className={styles.title}>
                     {roomInfo.title || (roomInfo.roomType === 'SINGLE' ? roomInfo.otherMemberName : '그룹 채팅')}
                 </h3>
-                <div className={styles.actions}>
-                    <button onClick={() => setShowSearch(!showSearch)} className={styles.actionBtn} title="검색">🔍</button>
-                    {roomInfo.roomType !== 'SINGLE' && (
-                        <button onClick={() => setShowMemberModal(true)} className={styles.actionBtn}>설정</button>
+                <div className={styles.actions} ref={menuRef}>
+                    <button 
+                        className={`${styles.menuBtn} ${showMenu ? styles.active : ''}`} 
+                        onClick={() => setShowMenu(!showMenu)}
+                        title="더보기"
+                    >
+                        ⋮
+                    </button>
+
+                    {showMenu && (
+                        <div className={styles.dropdownMenu}>
+                            <button 
+                                className={styles.menuItem} 
+                                onClick={() => {
+                                    setShowSearch(!showSearch);
+                                    setShowMenu(false);
+                                    // ✨ 검색창 열리면 포커스 (useEffect로 처리되지만 명시적으로도 좋음)
+                                    if (!showSearch) setTimeout(() => searchInputRef.current?.focus(), 100);
+                                }}
+                            >
+                                <span>🔍</span> 메시지 검색
+                            </button>
+                            
+                            {roomInfo.roomType !== 'SINGLE' && (
+                                <button 
+                                    className={styles.menuItem} 
+                                    onClick={() => {
+                                        setShowMemberModal(true);
+                                        setShowMenu(false);
+                                    }}
+                                >
+                                    <span>⚙️</span> 채팅방 설정
+                                </button>
+                            )}
+                            
+                            <button 
+                                className={`${styles.menuItem} ${styles.danger}`} 
+                                onClick={() => {
+                                    handleLeave();
+                                    setShowMenu(false);
+                                }}
+                            >
+                                <span>🚪</span> 나가기
+                            </button>
+                        </div>
                     )}
-                    <button onClick={handleLeave} className={styles.leaveBtn}>나가기</button>
                 </div>
             </div>
 
@@ -937,10 +998,15 @@ const ChatRoomDetail = ({ roomId }) => {
             </div>
 
             {/* 프로필 모달 */}
+            {/* 프로필 모달 */}
             {showProfileModal && roomInfo.roomType === 'SINGLE' && (
                 <UserDatailModal
                     isOpen={showProfileModal}
-                    onClose={() => setShowProfileModal(false)}
+                    onClose={() => {
+                        setShowProfileModal(false);
+                        // ✨ 모달 닫힐 때 채팅 입력창으로 포커스 복귀
+                        if (chatInputRef.current) chatInputRef.current.focus();
+                    }}
                     memberId={roomInfo.otherMemberId}
                     zIndex={15000}
                 />
@@ -949,7 +1015,11 @@ const ChatRoomDetail = ({ roomId }) => {
             {/* Modals */}
             {showMemberModal && (
                 <MemberManagementModal 
-                    onClose={() => setShowMemberModal(false)}
+                    onClose={() => {
+                        setShowMemberModal(false);
+                        // ✨ 모달 닫힐 때 채팅 입력창으로 포커스 복귀
+                        if (chatInputRef.current) chatInputRef.current.focus();
+                    }}
                     roomId={roomId}
                     currentRoomTitle={roomInfo.title} 
                     currentRoomImage={roomInfo.roomImage}
