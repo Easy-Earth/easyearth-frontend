@@ -41,7 +41,7 @@ export const TITLE_LIST = {
     { id: "legendary-2", title: "푸른 행성의 수호신", subtitle: "모든 생명과 공존하는 지혜" },
     { id: "legendary-3", title: "자연의 대변인", subtitle: "대지의 목소리를 전하는 자" },
     { id: "legendary-4", title: "영원한 녹색 군주", subtitle: "변치 않는 친환경의 정점" },
-    { id: "legendary-5", title: "기적의 싹을 틔우는 자", subtitle: "황폐한 땅에 생명을 부활시키다" },
+    { id: "legendary-5", title: "생명의 개척자", subtitle: "황폐한 땅에 생명을 부활시키다" },
     { id: "legendary-6", title: "탄소 중립의 화신", subtitle: "완벽한 조화를 이룬 존재" },
     { id: "legendary-7", title: "생태계의 창조자", subtitle: "지구의 미래를 다시 쓰는 손" },
     { id: "legendary-8", title: "대지의 성자", subtitle: "모든 자연이 고개 숙여 경의를" },

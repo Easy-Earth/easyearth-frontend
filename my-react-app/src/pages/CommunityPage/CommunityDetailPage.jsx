@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { useNavigate, useParams } from "react-router-dom";
 import { communityApi } from "../../apis/communityApi";
-import { getFullUrl } from "../../utils/imageUtil";
+import { reviewApi } from "../../apis/reviewApi";
 import CustomModal from "../../components/common/CustomModal";
-import CommunityWriteModal from "../../components/community/CommunityWriteModal";
 import Profile from "../../components/common/Profile";
+import ReportModal from "../../components/common/ReportModal";
 import UserDetailModal from "../../components/common/UserDatailModal";
-
+import CommunityWriteModal from "../../components/community/CommunityWriteModal";
+import { useAuth } from "../../context/AuthContext";
+import { getFullUrl } from "../../utils/imageUtil";
 import styles from "./CommunityDetailPage.module.css";
-
 function CommunityDetailPage() {
   const { postId } = useParams();
   const navigate = useNavigate();
@@ -21,6 +21,10 @@ function CommunityDetailPage() {
   const [replies, setReplies] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  const loginUser = JSON.parse(localStorage.getItem("user"));
+  const currentMemberId = loginUser ? loginUser.memberId : null;
+  const currentMemberName = loginUser ? loginUser.name : null;
+
   const getBadgeClass = (cat) => {
     if (cat === "나눔") return styles.badgeShare;
     if (cat === "자유") return styles.badgeFree;
@@ -29,7 +33,10 @@ function CommunityDetailPage() {
     if (cat === "기타") return styles.badgeEtc;
     return styles.badgeDefault;
   };
-
+  console.log('currentMemberId : ' + currentMemberId);
+  console.log('loginMemberId : ' + loginUser);
+  console.log('user : ' + user);
+  // console.log('로그인 한 사람이 게시글 쓴 사람이랑 같나 ? : ' + isAuthor);
   // 게시글 좋아요
   const [isLiked, setIsLiked] = useState(false);
 
@@ -68,6 +75,68 @@ function CommunityDetailPage() {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState(null);
 
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [reportTargetId, setReportTargetId] = useState(null);
+  const [selectedReportReviewId, setSelectedReportReviewId] = useState(null); 
+
+const [reportTargetInfo, setReportTargetInfo] = useState({ id: null, name: "", type: "", targetId: null });
+
+// ── 신고 버튼 클릭 시 중복 체크 ──
+const onReport = async (targetMemberId, targetName, type, targetId) => {
+  if (!checkAuth()) return;
+
+  try {
+    const data = {
+      reviewId: 0,
+      postId: type === 'post' ? targetId : 0,
+      replyId: type === 'reply' ? targetId : 0
+    };
+
+    // reviewApi를 사용하여 신고 내역이 있는지 확인
+    await reviewApi.reviewCheck(user.memberId, targetMemberId, data);
+    
+    // 내역이 없으면 모달 정보 세팅
+    setReportTargetInfo({ id: targetMemberId, name: targetName, type: type, targetId: targetId });
+    setIsReportModalOpen(true);
+  } catch (err) {
+    const serverErrorMessage = err.response?.data || "이미 신고한 내역이 존재합니다.";
+    setModalConfig({
+      isOpen: true,
+      type: 'alert',
+      message: serverErrorMessage,
+      onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+    });
+  }
+};
+
+// ── 신고 모달에서 '제출' 클릭 시 ──
+const handleReportSubmit = async (reportData) => {
+  try {
+    const data = {
+      memberId: user.memberId,
+      targetMemberId: reportData.targetId,
+      postId: reportTargetInfo.type === "post" ? reportTargetInfo.targetId : 0,
+      replyId: reportTargetInfo.type === "reply" ? reportTargetInfo.targetId : 0,
+      reviewId: 0,
+      type: reportTargetInfo.type === "post" ? "POST" : "REPLY",
+      reason: reportData.reportTag,
+      detail: reportData.details
+    };
+
+    await reviewApi.reviewReport(data);
+
+    setModalConfig({
+      isOpen: true,
+      type: 'alert',
+      message: '신고가 정상적으로 접수되었습니다.',
+      onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+    });
+  } catch (error) {
+    console.error("신고 실패:", error);
+    alert(error.response?.data || "신고 처리 중 오류가 발생했습니다.");
+  }
+  setIsReportModalOpen(false);
+};
   /* ── 데이터 로드 ── */
   useEffect(() => {
     const fetchData = async () => {
@@ -405,7 +474,14 @@ function CommunityDetailPage() {
               >
                 {likedReplies[child.replyId] ? "❤️" : "🩶"} {child.likeCount || 0}
               </button>
-              <button className={styles.replyReportBtn} onClick={checkAuth}>🚨 신고</button>
+              {isAuthenticated && !isAuthor && (
+                <button 
+                  className={styles.reportBtn} 
+                  onClick={() => onReport(post.memberId, post.name, 'post', postId)}
+                >
+                  🚨 신고
+                </button>
+              )}
               <button
                 className={`${styles.replyReplyBtn} ${openReplyBoxId === child.replyId ? styles.active : ""}`}
                 onClick={() => toggleReplyBox(child.replyId)}
@@ -473,9 +549,14 @@ function CommunityDetailPage() {
               <span>{post.likeCount}</span>
             </button>
             {/* 게시글 신고 */}
-            <button className={styles.reportBtn} onClick={checkAuth}>
-              🚨 신고
-            </button>
+            {isAuthenticated && !isAuthor && (
+              <button 
+                className={styles.reportBtn} 
+                onClick={() => onReport(post.memberId, post.name, 'post', postId)}
+              >
+                🚨 신고
+              </button>
+            )}
           </div>
           <div className={styles.rightBtns}>
             {/* 작성자만 수정/삭제 버튼 보임 */}
@@ -501,6 +582,14 @@ function CommunityDetailPage() {
             <div className={styles.headerMeta}>
               <div className={styles.headerTop}>
                 {/* 왼쪽: 카테고리 + 작성일/조회수 */}
+                <div className={styles.headerRight}>
+                  <Profile
+                    size="small"
+                    memberId={post.memberId}
+                    userName={post.name || String(post.memberId)}
+                    onClick={handleProfileClick}
+                  />
+                </div>
                 <div className={styles.headerLeft}>
                   <div className={styles.headerRow1}>
                     <span className={`${styles.categoryBadge} ${getBadgeClass(post.category)}`}>
@@ -515,14 +604,7 @@ function CommunityDetailPage() {
                 </div>
 
                 {/* 오른쪽: Profile */}
-                <div className={styles.headerRight}>
-                  <Profile
-                    size="small"
-                    memberId={post.memberId}
-                    userName={post.name || String(post.memberId)}
-                    onClick={handleProfileClick}
-                  />
-                </div>
+                
               </div>
             </div>
             <h1 className={styles.postMainTitle}>{post.title}</h1>
@@ -601,7 +683,14 @@ function CommunityDetailPage() {
                       >
                         {likedReplies[r.replyId] ? "❤️" : "🩶"} {r.likeCount || 0}
                       </button>
-                      <button className={styles.replyReportBtn} onClick={checkAuth}>🚨 신고</button>
+                      {isAuthenticated && user?.memberId !== r.memberId && (
+                      <button 
+                        className={styles.replyReportBtn} 
+                        onClick={() => onReport(r.memberId, r.name, 'reply', r.replyId)}
+                      >
+                        🚨 신고
+                      </button>
+                    )}
                       <button
                         className={`${styles.replyReplyBtn} ${openReplyBoxId === r.replyId ? styles.active : ""}`}
                         onClick={() => toggleReplyBox(r.replyId)}
@@ -657,6 +746,15 @@ function CommunityDetailPage() {
           onClose={() => setIsUserModalOpen(false)}
           memberId={selectedMemberId}
           zIndex={20000}
+        />
+        <ReportModal 
+          isOpen={isReportModalOpen}
+          onClose={() => setIsReportModalOpen(false)}
+          reporterId={user?.memberId}
+          reporterName={user?.name} 
+          targetName={reportTargetInfo.name}
+          targetId={reportTargetInfo.id} 
+          onSubmit={handleReportSubmit}
         />
 
         {/* 이미지 크게 보기 */}
