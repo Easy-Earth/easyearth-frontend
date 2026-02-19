@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { communityApi } from "../../apis/communityApi.js";
-import { useAuth } from "../../context/AuthContext";
 import Button from "../../components/common/Button.jsx";
-import Input from "../../components/common/Input.jsx";
-import Pagination from "../../components/pagination/Pagination.jsx";
-import CommunityWriteModal from "../../components/community/CommunityWriteModal.jsx";
 import CustomModal from "../../components/common/CustomModal.jsx";
+import Input from "../../components/common/Input.jsx";
+import CommunityWriteModal from "../../components/community/CommunityWriteModal.jsx";
+import Pagination from "../../components/pagination/Pagination.jsx";
+import { useAuth } from "../../context/AuthContext";
 
 import styles from "./CommunityPage.module.css";
 

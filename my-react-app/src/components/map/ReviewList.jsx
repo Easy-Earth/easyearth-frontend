@@ -3,8 +3,8 @@ import { reviewApi } from "../../apis/reviewApi";
 import Button from "../common/Button";
 import CustomModal from "../common/CustomModal";
 import Profile from "../common/Profile";
+import ReportModal from "../common/ReportModal";
 import UserDetailModal from "../common/UserDatailModal";
-import ReportModal from "./ReportModal";
 import ReviewFormModal from "./ReviewFormModal";
 import styles from "./ReviewList.module.css";
 

@@ -14,8 +14,7 @@ function ReportModal({ isOpen, onClose, reporterId,reporterName, targetId, targe
       targetId,
       reportTag,
       details,
-    });
-    // 초기화
+    }); 
     setDetails("");
     setReportTag("부적절한 콘텐츠");
   };

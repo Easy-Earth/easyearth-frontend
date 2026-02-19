@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
-import { useAuth } from "../../context/AuthContext";
+import { useEffect, useState } from "react";
 import { communityApi } from "../../apis/communityApi";
+import { useAuth } from "../../context/AuthContext";
 import { getFullUrl } from "../../utils/imageUtil";
 import CustomModal from "../common/CustomModal";
-import Modal from "../common/Modal";
 import Input from "../common/Input";
+import Modal from "../common/Modal";
 import styles from "./CommunityWriteModal.module.css";
 
 function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
@@ -18,6 +18,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
   const [filesToDelete, setFilesToDelete] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  
   // 유효성 검사
   const [validationModal, setValidationModal] = useState({
     isOpen: false,
