@@ -102,13 +102,31 @@ const InquiriesPage = () => {
   const handleWriteSuccess = (message) => {
     setAlertConfig({
       isOpen: true,
-      type: "alert", // 🚩 confirm에서 alert로 변경하여 확인 버튼만 노출
+      type: "confirm",
       message: message || "건의글이 등록되었습니다.",
       onConfirm: () => {
         setAlertConfig((prev) => ({ ...prev, isOpen: false }));
         loadInquiriesList(1);
       },
     });
+  };
+
+  // 비공개글 클릭 권한 체크 로직 추가
+  const handleDetailClick = (inquiry) => {
+    const isOwner = user && Number(user.memberId) === Number(inquiry.memberId);
+    const isAdmin = user && Number(user.memberId) === 1;
+
+    if (inquiry.isPublic === "N" && !isOwner && !isAdmin) {
+      setAlertConfig({
+        isOpen: true,
+        type: "alert",
+        message: "비공개 건의글은 작성자와 관리자만 확인할 수 있습니다.",
+        onConfirm: () => setAlertConfig((prev) => ({ ...prev, isOpen: false })),
+      });
+      return;
+    }
+
+    navigate(`/inquiries/detail/${inquiry.inquiriesId}`);
   };
 
   return (
@@ -140,7 +158,7 @@ const InquiriesPage = () => {
             type="button"
             onClick={handleWriteClick}
           >
-            <span style={{ fontWeight: 900, color: "#fff" }}>✏️ 글 쓰기</span>
+            <span style={{ fontWeight: 900 ,color: "#fff"}}>✏️ 글쓰기</span>
           </Button>
         </div>
 
@@ -160,7 +178,7 @@ const InquiriesPage = () => {
               <div
                 key={inquiry.inquiriesId}
                 className={`${styles.card} ${inquiry.isFaq === "Y" ? styles.cardFaq : ""}`}
-                onClick={() => navigate(`/inquiries/detail/${inquiry.inquiriesId}`)}
+                onClick={() => handleDetailClick(inquiry)}
               >
                 {inquiry.isPublic === "N" && <span className={styles.badgePrivate}>🔒</span>}
                 
