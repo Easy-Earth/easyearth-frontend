@@ -67,7 +67,7 @@ function MainPage() {
                 )}
             </div>
 
-            {/* 우측 상단 달력 섹션 - 위치 고정됨 */}
+            {/* 우측 상단 달력 섹션 - 위치 고정 */}
             <div className={styles.absoluteRight}>
                 <EcoCalendar />
             </div>
@@ -102,7 +102,7 @@ function MainPage() {
                         🔄 데이터 갱신
                     </button>
                     <div className={styles.speechBubble}>
-                        {/* 🚩 기념일 문구는 삭제하고 순수 비서 메시지만 출력 */}
+                        {/* 비서 메시지 출력 */}
                         {loading ? (
                             <p>에코봇이 메시지를 준비 중입니다... 🤖</p>
                         ) : (
@@ -136,7 +136,7 @@ function MainPage() {
                     )}
                 </div>
 
-                {/* 🌍 글로벌 환경 뉴스 섹션 추가 */}
+                {/* 글로벌 환경 뉴스 섹션 */}
                 {!loading && <GlobalEcoNews />}
             </div>
 
