@@ -1,15 +1,11 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import { clearNotice, getChatRoomDetail, getChatRoomUsers, getMessages, leaveChatRoom, markAsRead, searchMessages, setNotice } from '../../apis/chatApi'; // searchMessages 추가
 import { useAuth } from '../../context/AuthContext';
 import { useChat } from '../../context/ChatContext';
 import { useNotification } from '../../context/NotificationContext';
-import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember, getChatRoomUsers, setNotice, clearNotice, getChatRoomDetail, searchMessages } from '../../apis/chatApi'; // searchMessages 추가
 import { getFullUrl } from '../../utils/chatImageUtil';
-import { extractOriginalFileName } from './chatFileUtil';
-import MessageBubble from './MessageBubble';
-import FileUploadButton from './FileUploadButton';
-import MemberManagementModal from './MemberManagementModal';
 import CustomModal from '../common/CustomModal';
 import UserDatailModal from '../common/UserDatailModal';
 import { extractOriginalFileName } from './chatFileUtil';

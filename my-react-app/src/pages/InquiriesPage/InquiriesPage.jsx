@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { inquiriesApi } from "../../apis/inquiriesApi.js";
-import { useAuth } from "../../context/AuthContext";
 import Button from "../../components/common/Button.jsx";
-import Input from "../../components/common/Input.jsx";
-import Pagination from "../../components/pagination/Pagination.jsx";
-import InquiriesWriteModal from "../../components/inquiries/InquiriesWriteModal.jsx";
-import InquiriesStatusModal from "../../components/inquiries/InquiriesStatusModal.jsx";
 import CustomModal from "../../components/common/CustomModal.jsx";
+import Input from "../../components/common/Input.jsx";
+import InquiriesStatusModal from "../../components/inquiries/InquiriesStatusModal.jsx";
+import InquiriesWriteModal from "../../components/inquiries/InquiriesWriteModal.jsx";
+import Pagination from "../../components/pagination/Pagination.jsx";
+import { useAuth } from "../../context/AuthContext";
 
 import styles from "./InquiriesPage.module.css";
 
@@ -102,7 +102,7 @@ const InquiriesPage = () => {
   const handleWriteSuccess = (message) => {
     setAlertConfig({
       isOpen: true,
-      type: "confirm",
+      type: "alert", // 🚩 confirm에서 alert로 변경하여 확인 버튼만 노출
       message: message || "건의글이 등록되었습니다.",
       onConfirm: () => {
         setAlertConfig((prev) => ({ ...prev, isOpen: false }));
@@ -140,7 +140,7 @@ const InquiriesPage = () => {
             type="button"
             onClick={handleWriteClick}
           >
-            <span style={{ fontWeight: 900 }}>✏️ 글쓰기</span>
+            <span style={{ fontWeight: 900, color: "#fff" }}>✏️ 글 쓰기</span>
           </Button>
         </div>
 
