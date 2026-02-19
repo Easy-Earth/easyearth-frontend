@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import Modal from "../common/Modal";
 import { getQuizByDifficulty, saveQuizAttempt } from "../../apis/quizApi";
+import { useAuth } from "../../context/AuthContext";
 import styles from "./QuizModal.module.css";
 
 const QuizModal = ({ isOpen, onClose }) => {
+    const { user, isLoading } = useAuth();
     const [step, setStep] = useState("difficulty"); // difficulty, loading, quiz, result
     const [quizzes, setQuizzes] = useState([]);
     const [difficulty, setDifficulty] = useState(""); // Easy, Normal, Hard
@@ -31,9 +33,21 @@ const QuizModal = ({ isOpen, onClose }) => {
     };
 
     const handleStartQuiz = async (diff) => {
+        if (!user || !user.memberId) {
+            alert("로그인이 필요한 서비스입니다.");
+            return;
+        }
+
         setStep("loading");
         try {
-            const data = await getQuizByDifficulty(diff);
+            const data = await getQuizByDifficulty(diff, user.memberId);
+
+            if (!data || data.length === 0) {
+                alert("오늘 풀 수 있는 퀴즈를 모두 완료하셨습니다!");
+                setStep("difficulty");
+                return;
+            }
+
             setQuizzes(data);
             setDifficulty(diff);
             setPicks(new Array(data.length).fill(null));
@@ -75,14 +89,14 @@ const QuizModal = ({ isOpen, onClose }) => {
             setScore(score + quiz.point);
         }
 
-        // 📝 문제별 이력 저장 (즉시 전송)
         try {
-            const userStr = localStorage.getItem("user");
-            const user = userStr ? JSON.parse(userStr) : null;
-            const userId = user?.memberId || 1;
+            if (!user || !user.memberId) {
+                alert("로그인이 필요한 서비스입니다.");
+                return;
+            }
+            const userId = user.memberId;
 
             await saveQuizAttempt(userId, quiz.quizNo, isCorrect, quiz.point);
-            console.log("Quiz attempt saved:", { quizNo: quiz.quizNo, isCorrect, point: quiz.point });
         } catch (error) {
             console.error("Failed to save quiz attempt", error);
         }
@@ -93,7 +107,6 @@ const QuizModal = ({ isOpen, onClose }) => {
         if (currentIndex < quizzes.length - 1) {
             setCurrentIndex(currentIndex + 1);
         } else {
-            // 퀴즈 종료 -> 결과 화면으로 이동 (저장은 이미 완료됨)
             setStep("result");
         }
     };
@@ -104,117 +117,127 @@ const QuizModal = ({ isOpen, onClose }) => {
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="📝 환경 퀴즈">
-            {step === "difficulty" && (
-                <div className={styles.body}>
-                    <p style={{ marginBottom: "14px", color: "#555", fontWeight: "600" }}>
-                        난이도를 선택하세요
-                    </p>
-                    <div className={styles.diffRow}>
-                        <div className={`${styles.diffBtn} ${styles.easy}`} onClick={() => handleStartQuiz("Easy")}>
-                            <span className={styles.dLabel}>🟢 Easy</span>
-                            <span className={styles.dPt}>10P / 문제</span>
-                        </div>
-                        <div className={`${styles.diffBtn} ${styles.normal}`} onClick={() => handleStartQuiz("Normal")}>
-                            <span className={styles.dLabel}>🟠 Normal</span>
-                            <span className={styles.dPt}>20P / 문제</span>
-                        </div>
-                        <div className={`${styles.diffBtn} ${styles.hard}`} onClick={() => handleStartQuiz("Hard")}>
-                            <span className={styles.dLabel}>🔴 Hard</span>
-                            <span className={styles.dPt}>50P / 문제</span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {step === "loading" && (
-                <div className={styles.spinner}></div>
-            )}
-
-            {step === "quiz" && currentQuiz && (
-                <div className={styles.body}>
-                    <div className={styles.quizProgRow}>
-                        <div className={styles.quizProg}>
-                            {currentIndex + 1} / {quizzes.length} &nbsp;·&nbsp; 점수: {score}P
-                        </div>
-                        <div className={styles.progDots}>
-                            {verifiedStatus.map((v, i) => (
-                                <span
-                                    key={i}
-                                    className={`${styles.dot} ${v ? styles.dotDone : ""} ${currentIndex === i ? styles.dotActive : ""}`}
-                                />
-                            ))}
-                        </div>
-                    </div>
-                    <div className={styles.quizQ}>{currentQuiz.quizQuestion}</div>
-                    <div className={styles.options}>
-                        {[currentQuiz.option1, currentQuiz.option2, currentQuiz.option3, currentQuiz.option4].map((text, i) => {
-                            const optionNumber = i + 1;
-                            const isSelected = currentSelected === optionNumber;
-                            const isCorrectAtVerification = currentQuiz.quizAnswer === optionNumber;
-
-                            let optionClass = styles.option;
-
-                            if (isCurrentVerified) {
-                                if (isCorrectAtVerification) optionClass += ` ${styles.correct}`;
-                                else if (isSelected) optionClass += ` ${styles.wrong}`;
-                                optionClass += ` ${styles.disabled}`;
-                            } else if (isSelected) {
-                                optionClass += ` ${styles.selected}`;
-                            }
-
-                            return (
-                                <div key={i} className={optionClass} onClick={() => handlePick(optionNumber)}>
-                                    {optionNumber}. {text}
+            {isLoading ? (
+                <div className={styles.spinner} style={{ padding: "40px 0" }}></div>
+            ) : !user ? (
+                <p style={{ textAlign: "center", color: "#999", padding: "40px 0" }}>
+                    로그인이 필요한 서비스입니다.
+                </p>
+            ) : (
+                <>
+                    {step === "difficulty" && (
+                        <div className={styles.body}>
+                            <p style={{ marginBottom: "14px", color: "#555", fontWeight: "600" }}>
+                                난이도를 선택하세요
+                            </p>
+                            <div className={styles.diffRow}>
+                                <div className={`${styles.diffBtn} ${styles.easy}`} onClick={() => handleStartQuiz("Easy")}>
+                                    <span className={styles.dLabel}>🟢 Easy</span>
+                                    <span className={styles.dPt}>10P / 문제</span>
                                 </div>
-                            );
-                        })}
-                    </div>
-
-                    {isCurrentVerified && (
-                        <div className={styles.expl}>💡 {currentQuiz.quizExplanation}</div>
+                                <div className={`${styles.diffBtn} ${styles.normal}`} onClick={() => handleStartQuiz("Normal")}>
+                                    <span className={styles.dLabel}>🟠 Normal</span>
+                                    <span className={styles.dPt}>20P / 문제</span>
+                                </div>
+                                <div className={`${styles.diffBtn} ${styles.hard}`} onClick={() => handleStartQuiz("Hard")}>
+                                    <span className={styles.dLabel}>🔴 Hard</span>
+                                    <span className={styles.dPt}>50P / 문제</span>
+                                </div>
+                            </div>
+                        </div>
                     )}
 
-                    <div className={styles.navRow}>
-                        {!isCurrentVerified ? (
-                            <button
-                                className={`${styles.btn} ${styles.btnBlue}`}
-                                onClick={handleVerify}
-                                disabled={currentSelected === null}
-                            >
-                                정답 확인
-                            </button>
-                        ) : (
-                            <button
-                                className={`${styles.btn} ${styles.btnGreen}`}
-                                onClick={handleNext}
-                            >
-                                {currentIndex === quizzes.length - 1 ? "결과 보기" : "다음 →"}
-                            </button>
-                        )}
-                    </div>
-                </div>
-            )}
+                    {step === "loading" && (
+                        <div className={styles.spinner}></div>
+                    )}
 
-            {step === "result" && (
-                <div className={styles.resultBox}>
-                    <div style={{ fontSize: "3.2rem" }}>🎉</div>
-                    <div className={styles.bigScore}>{score}P</div>
-                    <div className={styles.sub}>획득 포인트 (최대 {quizzes.reduce((s, q) => s + q.point, 0)}P)</div>
-                    <div className={styles.sub} style={{ marginTop: "6px" }}>
-                        <strong style={{ color: "#1b5e40" }}>
-                            {quizzes.filter((q, i) => verifiedStatus[i] && picks[i] === q.quizAnswer).length}문제
-                        </strong>{" "}
-                        정답 / {quizzes.length}문제
-                    </div>
-                    <div className={styles.resultBtns}>
-                        <button className={`${styles.btn} ${styles.btnGreen}`} onClick={resetQuiz}>
-                            다시 시작
-                        </button>
-                        <button className={`${styles.btn} ${styles.btnOutline}`} onClick={onClose}>
-                            닫기
-                        </button>
-                    </div>
-                </div>
+                    {step === "quiz" && currentQuiz && (
+                        <div className={styles.body}>
+                            <div className={styles.quizProgRow}>
+                                <div className={styles.quizProg}>
+                                    {currentIndex + 1} / {quizzes.length} &nbsp;·&nbsp; 점수: {score}P
+                                </div>
+                                <div className={styles.progDots}>
+                                    {verifiedStatus.map((v, i) => (
+                                        <span
+                                            key={i}
+                                            className={`${styles.dot} ${v ? styles.dotDone : ""} ${currentIndex === i ? styles.dotActive : ""}`}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                            <div className={styles.quizQ}>{currentQuiz.quizQuestion}</div>
+                            <div className={styles.options}>
+                                {[currentQuiz.option1, currentQuiz.option2, currentQuiz.option3, currentQuiz.option4].map((text, i) => {
+                                    const optionNumber = i + 1;
+                                    const isSelected = currentSelected === optionNumber;
+                                    const isCorrectAtVerification = currentQuiz.quizAnswer === optionNumber;
+
+                                    let optionClass = styles.option;
+
+                                    if (isCurrentVerified) {
+                                        if (isCorrectAtVerification) optionClass += ` ${styles.correct}`;
+                                        else if (isSelected) optionClass += ` ${styles.wrong}`;
+                                        optionClass += ` ${styles.disabled}`;
+                                    } else if (isSelected) {
+                                        optionClass += ` ${styles.selected}`;
+                                    }
+
+                                    return (
+                                        <div key={i} className={optionClass} onClick={() => handlePick(optionNumber)}>
+                                            {optionNumber}. {text}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+
+                            {isCurrentVerified && (
+                                <div className={styles.expl}>💡 {currentQuiz.quizExplanation}</div>
+                            )}
+
+                            <div className={styles.navRow}>
+                                {!isCurrentVerified ? (
+                                    <button
+                                        className={`${styles.btn} ${styles.btnBlue}`}
+                                        onClick={handleVerify}
+                                        disabled={currentSelected === null}
+                                    >
+                                        정답 확인
+                                    </button>
+                                ) : (
+                                    <button
+                                        className={`${styles.btn} ${styles.btnGreen}`}
+                                        onClick={handleNext}
+                                    >
+                                        {currentIndex === quizzes.length - 1 ? "결과 보기" : "다음 →"}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {step === "result" && (
+                        <div className={styles.resultBox}>
+                            <div style={{ fontSize: "3.2rem" }}>🎉</div>
+                            <div className={styles.bigScore}>{score}P</div>
+                            <div className={styles.sub}>획득 포인트 (최대 {quizzes.reduce((s, q) => s + q.point, 0)}P)</div>
+                            <div className={styles.sub} style={{ marginTop: "6px" }}>
+                                <strong style={{ color: "#1b5e40" }}>
+                                    {quizzes.filter((q, i) => verifiedStatus[i] && picks[i] === q.quizAnswer).length}문제
+                                </strong>{" "}
+                                정답 / {quizzes.length}문제
+                            </div>
+                            <div className={styles.resultBtns}>
+                                <button className={`${styles.btn} ${styles.btnGreen}`} onClick={resetQuiz}>
+                                    다시 시작
+                                </button>
+                                <button className={`${styles.btn} ${styles.btnOutline}`} onClick={onClose}>
+                                    닫기
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </>
             )}
         </Modal>
     );

@@ -76,9 +76,8 @@ function MainPage() {
 
                 <div className={styles.secretaryContainer}>
                     <div className={styles.speechBubble}>
-                        {/* 🚩 기념일 문구는 삭제하고 순수 비서 메시지만 출력 */}
                         {loading ? (
-                            <p>에코봇이 메시지를 준비 중입니다... 🤖</p>
+                            <p>에코봇이 메시지를 준비 중입니다...</p>
                         ) : (
                             secretaryMsg.split('\n').map((line, i) => (
                                 <p key={i}>{line}</p>

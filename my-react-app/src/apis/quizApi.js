@@ -1,7 +1,7 @@
 import api from "./axios";
 
-export const getQuizByDifficulty = async (difficulty) => {
-  const response = await api.get(`/api/quiz/${difficulty}`);
+export const getQuizByDifficulty = async (difficulty, userId) => {
+  const response = await api.get(`/api/quiz/${difficulty}?userId=${userId}`);
   return response.data;
 };
 
