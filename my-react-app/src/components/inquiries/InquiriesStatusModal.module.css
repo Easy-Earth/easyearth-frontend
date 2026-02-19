@@ -1,0 +1,120 @@
+.modalBody {
+  padding: 24px 28px;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 20px 28px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.btnCancel {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btnCancel:hover { background: var(--gray-200); }
+.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnSubmit {
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--green-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btnSubmit:hover { background: var(--green-600); }
+.btnSubmit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.inquiryInfo {
+  margin-bottom: 20px;
+}
+
+.infoLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-500);
+  margin-bottom: 8px;
+}
+
+.infoTitle {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--gray-800);
+  margin-bottom: 8px;
+}
+
+.infoMeta {
+  font-size: 13px;
+  color: var(--gray-500);
+}
+
+.divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: 20px 0;
+}
+
+.statusSection {
+  margin-top: 20px;
+}
+
+.sectionLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+  margin-bottom: 16px;
+}
+
+.statusGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.statusCard {
+  padding: 20px 16px;
+  border: 2px solid;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.statusCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.statusCard.active {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.statusCard.disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+.statusIcon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+
+.statusLabel {
+  font-size: 14px;
+  font-weight: 800;
+}

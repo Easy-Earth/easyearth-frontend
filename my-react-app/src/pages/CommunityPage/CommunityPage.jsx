@@ -27,8 +27,8 @@ const CommunityPage = () => {
   // 글쓰기 모달
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
-  // CustomModal (alert)
-  const [alertConfig, setAlertConfig] = useState({
+  // 1. ShopPage와 동일한 방식의 CustomModal 설정 (통합 관리)
+  const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     type: "alert",
     message: "",
@@ -88,21 +88,32 @@ const CommunityPage = () => {
     return styles.badgeDefault;
   };
 
-  const handleWriteClick = () => {
+  // 2. 글쓰기 클릭 핸들러 수정
+const handleWriteClick = () => {
     if (!isAuthenticated) {
-      navigate("/", { state: { openLogin: true } });
+      // 1. 리다이렉트나 로그인 모달 호출 없이 알림창만 띄움
+      setModalConfig({
+        isOpen: true,
+        type: "alert",
+        message: "로그인이 필요한 서비스입니다.",
+        onConfirm: () => {
+          // 2. 확인을 누르면 그냥 모달만 닫고 현재 자리에 유지
+          setModalConfig((prev) => ({ ...prev, isOpen: false }));
+        },
+      });
       return;
     }
+    // 로그인 된 상태일 때만 글쓰기 모달 오픈
     setIsWriteModalOpen(true);
   };
 
   const handleWriteSuccess = (message) => {
-    setAlertConfig({
+    setModalConfig({
       isOpen: true,
-      type: "confirm",
+      type: "alert",
       message: message || "게시글이 등록되었습니다.",
       onConfirm: () => {
-        setAlertConfig((prev) => ({ ...prev, isOpen: false }));
+        setModalConfig((prev) => ({ ...prev, isOpen: false }));
         loadCommunityList(1);
       },
     });
@@ -163,7 +174,6 @@ const CommunityPage = () => {
                 className={styles.card}
                 onClick={() => navigate(`/community/detail/${post.postId}`)}
               >
-                {/* 배지 + 작성자 + 날짜 */}
                 <div className={styles.cardHeader}>
                   <span className={`${styles.badge} ${getBadgeClass(post.category)}`}>
                     {post.category || "기타"}
@@ -175,7 +185,6 @@ const CommunityPage = () => {
                   </span>
                 </div>
 
-                {/* 제목 + 내용 미리보기 */}
                 <div className={styles.cardBody}>
                   <div className={styles.cardBodyText}>
                     <h2 className={styles.postTitle}>{post.title}
@@ -191,7 +200,6 @@ const CommunityPage = () => {
                   </div>
                 </div>
 
-                {/* 통계 */}
                 <div className={styles.cardFooter}>
                   <div className={styles.statItem}>👁️‍🗨️ {post.viewCount}</div>
                   <div className={styles.statItem}>♥️ {post.likeCount}</div>
@@ -245,13 +253,13 @@ const CommunityPage = () => {
           onSuccess={handleWriteSuccess}
         />
 
-        {/* Alert 모달 */}
+        {/* 3. 통합된 CustomModal (Alert/Confirm 겸용) */}
         <CustomModal
-          isOpen={alertConfig.isOpen}
-          type={alertConfig.type}
-          message={alertConfig.message}
-          onConfirm={alertConfig.onConfirm}
-          onCancel={() => setAlertConfig((prev) => ({ ...prev, isOpen: false }))}
+          isOpen={modalConfig.isOpen}
+          type={modalConfig.type}
+          message={modalConfig.message}
+          onConfirm={modalConfig.onConfirm}
+          onCancel={() => setModalConfig((prev) => ({ ...prev, isOpen: false }))}
         />
 
       </div>

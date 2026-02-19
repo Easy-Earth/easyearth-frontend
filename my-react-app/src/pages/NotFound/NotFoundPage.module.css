@@ -1,0 +1,70 @@
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 200px); /* 헤더 높이를 고려한 중앙 배치 */
+  padding: 40px 20px;
+  background-color: #fff;
+}
+
+.content {
+  text-align: center;
+  max-width: 500px;
+}
+
+.character {
+  width: 280px; /* 캐릭터 이미지 크기 조절 */
+  height: auto;
+  margin-bottom: 20px;
+  /* 부드럽게 떠있는 듯한 애니메이션 */
+  animation: floating 3s ease-in-out infinite;
+}
+
+.errorCode {
+  font-size: 64px;
+  font-weight: 900;
+  color: #e0e0e0; /* 연한 회색으로 배경 느낌 */
+  margin: 0;
+  letter-spacing: 4px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: #333;
+  margin: 10px 0;
+}
+
+.description {
+  font-size: 16px;
+  color: #777;
+  line-height: 1.6;
+  margin-bottom: 40px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+/* 둥둥 떠있는 효과 애니메이션 */
+@keyframes floating {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+  100% { transform: translateY(0); }
+}
+
+/* 모바일 반응형 */
+@media (max-width: 480px) {
+  .character {
+    width: 200px;
+  }
+  .title {
+    font-size: 24px;
+  }
+  .buttonGroup {
+    flex-direction: column;
+    align-items: center;
+  }
+}

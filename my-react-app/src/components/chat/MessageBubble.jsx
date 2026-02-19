@@ -1,7 +1,7 @@
 import React, { useState, useRef, memo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import styles from './MessageBubble.module.css';
-import { getFullUrl } from '../../utils/imageUtil';
+import { getFullUrl } from '../../utils/chatImageUtil';
 import MessageContextMenu from './MessageContextMenu';
 import { toggleReaction, deleteMessage } from '../../apis/chatApi';
 import UserDatailModal from '../common/UserDatailModal';
@@ -153,35 +153,76 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                                 {(message.contentType === 'TEXT' || message.messageType === 'TEXT') && message.content}
                                 
                                 {/* 이미지 메시지 */}
-                                {(message.contentType === 'IMAGE' || message.messageType === 'IMAGE') && (
-                                    <a 
-                                        href={getFullUrl(message.content)} 
-                                        download={extractOriginalFileName(message.content)} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
+                                {(message.messageType === 'IMAGE' || message.contentType === 'IMAGE') && (
+                                    <div 
                                         className={styles.imageLink} 
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={async (e) => {
+                                            e.preventDefault();
+                                            const url = getFullUrl(message.content);
+                                            const filename = extractOriginalFileName(message.content);
+                                            
+                                            try {
+                                                const response = await fetch(url);
+                                                const blob = await response.blob();
+                                                const blobUrl = window.URL.createObjectURL(blob);
+                                                
+                                                const link = document.createElement('a');
+                                                link.href = blobUrl;
+                                                link.download = filename;
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                window.URL.revokeObjectURL(blobUrl);
+                                            } catch (error) {
+                                                console.error("Image download failed", error);
+                                                if (showAlert) showAlert("이미지 다운로드에 실패했습니다.");
+                                                else alert("이미지 다운로드 실패");
+                                            }
+                                        }}
                                     >
                                         <img 
                                             src={getFullUrl(message.content)} 
                                             alt="Image" 
                                             className={styles.imageContent} 
                                             onLoad={onImageLoad} 
-                                            title={extractOriginalFileName(message.content)} 
+                                            title="클릭하여 다운로드" 
+                                            onError={(e) => { e.target.src = "/default-image.png"; }}
                                         />
-                                    </a>
+                                    </div>
                                 )}
                                 
                                 {/* 파일 메시지 */}
-                                {(message.contentType === 'FILE' || message.messageType === 'FILE') && (
-                                    <a 
-                                        href={getFullUrl(message.content)} 
-                                        download={extractOriginalFileName(message.content)} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
+                                {(message.messageType === 'FILE' || message.contentType === 'FILE') && (
+                                    <div
                                         className={styles.fileLink}
+                                        style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                                        onClick={async (e) => {
+                                            e.preventDefault();
+                                            const url = getFullUrl(message.content);
+                                            const filename = extractOriginalFileName(message.content);
+                                            
+                                            try {
+                                                const response = await fetch(url);
+                                                const blob = await response.blob();
+                                                const blobUrl = window.URL.createObjectURL(blob);
+                                                
+                                                const link = document.createElement('a');
+                                                link.href = blobUrl;
+                                                link.download = filename;
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                                window.URL.revokeObjectURL(blobUrl);
+                                            } catch (error) {
+                                                console.error("File download failed", error);
+                                                if (showAlert) showAlert("파일 다운로드에 실패했습니다.");
+                                                else alert("파일 다운로드 실패");
+                                            }
+                                        }}
                                     >
                                         📎 {extractOriginalFileName(message.content)}
-                                    </a>
+                                    </div>
                                 )}
                             </>
                         )}

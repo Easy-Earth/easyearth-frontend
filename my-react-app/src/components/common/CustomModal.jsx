@@ -2,14 +2,13 @@ import { useEffect } from 'react';
 import styles from './CustomModal.module.css';
 
 function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'alert', zIndex }) {
-  if (!isOpen) return null;
-
   const overlayStyle = zIndex ? { zIndex } : {};
 
   // ✨ 사용자 경험을 위헤 엔터 키 입력시 확인 버튼 동작 추가/ESC도 동작(기본)
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Enter') {
+      // isOpen일 때만 동작하도록 가드 추가 (이중 안전장치)
+      if (isOpen && e.key === 'Enter') {
         e.preventDefault();
         onConfirm();
       }
@@ -23,6 +22,8 @@ function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'aler
       document.removeEventListener('keydown', handleKeyDown);
     };
   }, [isOpen, onConfirm]);
+
+  if (!isOpen) return null;
 
   return (
     <div className={styles.overlay} style={overlayStyle}>

@@ -7,11 +7,12 @@ import MapPage from "../pages/MapPage/MapPage";
 import MyPage from "../pages/MyPage/MyPage";
 import ShopPage from "../pages/ShopPage/ShopPage";
 import SignupPage from "../pages/SignupPage/SignupPage";
-import SuggestionPage from "../pages/SuggestionPage/SuggestionPage";
 
 import { PrivateRoute, PublicRoute } from "./PrivateRouter";
 import InventoryPage from "../pages/InventoryPage/InventoryPage";
 import CommunityDetailPage from "../pages/CommunityPage/CommunityDetailPage";
+import InquiriesPage from "../pages/InquiriesPage/InquiriesPage";
+import InquiriesDetailPage from "../pages/InquiriesPage/InquiriesDetailPage";
 
 function AppRouter() {
   return (
@@ -21,7 +22,8 @@ function AppRouter() {
       <Route path="/map" element={<MapPage />} />
       <Route path="/community" element={<CommunityPage />} />
       <Route path="/community/detail/:postId" element={<CommunityDetailPage />} />
-      <Route path="/suggestions" element={<SuggestionPage />} />
+      <Route path="/inquiries" element={<InquiriesPage />} />
+      <Route path="/inquiries/detail/:inquiriesId" element={<InquiriesDetailPage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/find-password" element={<PasswordFindPage />} />
       <Route path="/inventory" element={<InventoryPage />} />

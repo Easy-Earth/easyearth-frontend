@@ -4,16 +4,17 @@
  * @param {string} url - 원본 URL
  * @returns {string} - 컨텍스트 경로가 포함된 전체 URL
  */
-export const getFullUrl = (url) => {
+export const getFullUrl2 = (url) => {
     if (!url) return "";
     // 외부 링크(http)나 이미 /spring으로 시작하는 경우 그대로 반환
-    if (url.startsWith('http') || url.startsWith('/spring')) return url;
+    if (url.startsWith('http')) return url;
     
-    // /chat/file로 시작하면 /spring 추가 (백엔드 컨텍스트 경로)
-    if (url.startsWith('/chat/file')) return `/spring${url}`;
+    // /community/file로 시작하면 백엔드 전체 경로 추가 (Vite 프록시 우회)
+    if (url.startsWith('/community/file')) {
+        return `http://localhost:8080/spring${url}`;
+    }
 
-    // /community/file에 /spring 추가
-    if (url.startsWith('/community/file')) return `/spring${url}`;
+    if (url.startsWith('/spring')) return `http://localhost:8080${url}`;
     
     // 그 외의 경우 (기본값)
     return url;

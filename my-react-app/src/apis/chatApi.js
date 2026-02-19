@@ -17,7 +17,7 @@ export const getChatRooms = async (memberId) => {
   }
 };
 
-// 1.1 회원 검색 (이름/닉네임 - 목록 반환)
+// 회원 검색 (이름/닉네임)
 export const searchMember = async (keyword) => {
   try {
     const response = await api.get(`/chat/users/search`, {
@@ -33,7 +33,7 @@ export const searchMember = async (keyword) => {
   }
 };
 
-// 2. 채팅방 생성 (1:1 또는 그룹)
+// 채팅방 생성 (1:1 또는 그룹)
 export const createChatRoom = async (roomData) => {
   try {
     const response = await api.post("/chat/room", roomData);
@@ -55,7 +55,7 @@ export const getChatRoomDetail = async (roomId) => {
   }
 };
 
-// 3.1 채팅방 멤버 조회
+// 채팅방 멤버 목록 조회
 export const getChatRoomUsers = async (roomId) => {
     try {
       const response = await api.get(`/chat/room/${roomId}/members`); // Backend endpoint needs verification
@@ -89,12 +89,20 @@ export const leaveChatRoom = async (roomId, memberId) => {
     throw error;
   }
 };
-
+// export const leaveChatRoom = async (roomId, memberId) => {
+//   try {
+//     // URL 뒤에 직접 쿼리 스트링을 붙여서 전달
+//     await api.delete(`/chat/room/${roomId}/leave?memberId=${memberId}`);
+//   } catch (error) {
+//     console.error("채팅방 나가기 실패", error);
+//     throw error;
+//   }
+// };
 // ============================================
 // 메시지 관련
 // ============================================
 
-// 6. 메시지 내역 조회 (페이징 지원 가능)
+// 메시지 내역 조회
 export const getMessages = async (roomId, cursorId, memberId) => {
   try {
     const response = await api.get(`/chat/room/${roomId}/messages`, {
@@ -107,7 +115,7 @@ export const getMessages = async (roomId, cursorId, memberId) => {
   }
 };
 
-// 7. 메시지 읽음 처리
+// 메시지 읽음 처리
 export const markAsRead = async (roomId, memberId, lastMessageId) => {
   try {
     await api.post(`/chat/room/${roomId}/read`, null, {
@@ -119,7 +127,7 @@ export const markAsRead = async (roomId, memberId, lastMessageId) => {
   }
 };
 
-// 8. 메시지 검색 (페이징 지원)
+// 메시지 검색
 export const searchMessages = async (roomId, memberId, keyword, limit = 10, offset = 0) => {
   try {
     const response = await api.get(`/chat/room/${roomId}/search`, {
@@ -132,7 +140,7 @@ export const searchMessages = async (roomId, memberId, keyword, limit = 10, offs
   }
 };
 
-// 8.1. 메시지 삭제 (Soft Delete)
+// 메시지 삭제 (Soft Delete)
 export const deleteMessage = async (messageId, memberId) => {
   try {
     await api.put(`/chat/message/${messageId}/delete`, null, {
@@ -145,7 +153,7 @@ export const deleteMessage = async (messageId, memberId) => {
 };
 
 
-// 9. 파일 업로드
+// 파일 업로드 (스토리지 저장)
 export const uploadFile = async (file) => {
   try {
     const formData = new FormData();
@@ -165,7 +173,7 @@ export const uploadFile = async (file) => {
 // 멤버 관리 (그룹 채팅)
 // ============================================
 
-// 9. 권한 변경 (방장 위임)
+// 권한 변경 (방장 위임)
 export const updateRole = async (roomId, targetMemberId, requesterId, newRole) => {
   try {
     await api.patch(`/chat/room/${roomId}/user/${targetMemberId}/role`, null, {
@@ -177,7 +185,7 @@ export const updateRole = async (roomId, targetMemberId, requesterId, newRole) =
   }
 };
 
-// 10. 멤버 강퇴
+// 멤버 강퇴
 export const kickMember = async (roomId, targetMemberId, requesterId) => {
   try {
     await api.delete(`/chat/room/${roomId}/user/${targetMemberId}`, {
@@ -193,7 +201,7 @@ export const kickMember = async (roomId, targetMemberId, requesterId) => {
 // 채팅방 공지 관리
 // ============================================
 
-// 11. 채팅방 공지 설정
+// 채팅방 공지 설정
 export const setNotice = async (roomId, memberId, messageId) => {
   try {
     await api.post(`/chat/room/${roomId}/notice`, null, {
@@ -205,7 +213,7 @@ export const setNotice = async (roomId, memberId, messageId) => {
   }
 };
 
-// 12. 채팅방 공지 해제
+// 채팅방 공지 해제
 export const clearNotice = async (roomId, memberId) => {
   try {
     await api.delete(`/chat/room/${roomId}/notice`, {
@@ -221,7 +229,7 @@ export const clearNotice = async (roomId, memberId) => {
 // 추가 기능
 // ============================================
 
-// 11. 메시지 리액션 토글
+// 메시지 리액션 토글
 export const toggleReaction = async (messageId, memberId, emojiType) => {
   try {
     const response = await api.post(`/chat/message/${messageId}/reaction`, null, {
@@ -238,7 +246,7 @@ export const toggleReaction = async (messageId, memberId, emojiType) => {
 // 즐겨찾기 및 초대 관리
 // ============================================
 
-// 12. 채팅방 즐겨찾기 토글
+// 채팅방 즐겨찾기 토글
 export const toggleFavorite = async (roomId, memberId) => {
   try {
     await api.put(`/chat/rooms/${roomId}/favorite`, null, {
@@ -250,7 +258,7 @@ export const toggleFavorite = async (roomId, memberId) => {
   }
 };
 
-// 13. 사용자 초대
+// 사용자 초대
 export const inviteUser = async (roomId, invitedMemberId, requesterId) => {
   try {
     await api.post(`/chat/rooms/${roomId}/invite`, null, {
@@ -262,7 +270,7 @@ export const inviteUser = async (roomId, invitedMemberId, requesterId) => {
   }
 };
 
-// 14. 초대 수락
+// 초대 수락
 export const acceptInvitation = async (roomId, memberId) => {
   try {
     await api.put(`/chat/rooms/${roomId}/invitation/accept`, null, {
@@ -274,7 +282,7 @@ export const acceptInvitation = async (roomId, memberId) => {
   }
 };
 
-// 15. 초대 거절
+// 초대 거절
 export const rejectInvitation = async (roomId, memberId) => {
   try {
     await api.put(`/chat/rooms/${roomId}/invitation/reject`, null, {
@@ -286,7 +294,7 @@ export const rejectInvitation = async (roomId, memberId) => {
   }
 };
 
-// 15.1 초대 중인 사용자 목록 조회
+// 초대 중인 사용자 목록 조회
 export const getInvitedUsers = async (roomId) => {
     try {
       const response = await api.get(`/chat/rooms/${roomId}/invitations`);
@@ -297,7 +305,7 @@ export const getInvitedUsers = async (roomId) => {
     }
   };
   
-  // 15.2 초대 취소
+  // 초대 취소
   export const cancelInvitation = async (roomId, targetMemberId, requesterId) => {
     try {
       await api.delete(`/chat/rooms/${roomId}/invitations/${targetMemberId}`, {
@@ -309,7 +317,7 @@ export const getInvitedUsers = async (roomId) => {
     }
   };
 
-// 16. 프로필 이미지 변경 (채팅 전용)
+// 프로필 이미지 변경 (채팅 전용)
 export const updateProfile = async (memberId, profileImageUrl) => {
   try {
     await api.patch(`/chat/user/profile`, null, {
@@ -321,7 +329,7 @@ export const updateProfile = async (memberId, profileImageUrl) => {
   }
 };
 
-// 17. 방 제목 변경 (방장 전용)
+// 방 제목 변경 (방장 전용)
 export const updateChatRoomTitle = async (roomId, memberId, newTitle) => {
   try {
     await api.patch(`/chat/room/${roomId}/title`, null, {
@@ -332,7 +340,7 @@ export const updateChatRoomTitle = async (roomId, memberId, newTitle) => {
     throw error;
   }
 };
-// 18. 방 이미지 변경 (방장 전용)
+// 방 이미지 변경 (방장 전용)
 export const updateRoomImage = async (roomId, memberId, imageUrl) => {
   try {
     await api.patch(`/chat/room/${roomId}/image`, null, {

@@ -4,7 +4,7 @@ import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext'; // ✨ Import
 import { createChatRoom, toggleFavorite, acceptInvitation, rejectInvitation, uploadFile, updateProfile } from '../../apis/chatApi';
-import { getFullUrl } from '../../utils/imageUtil'; // Import utility
+import { getFullUrl } from '../../utils/chatImageUtil'; // Import utility
 import ChatRoomTypeModal from './ChatRoomTypeModal';
 import CustomModal from '../common/CustomModal'; // Use Common CustomModal
 import styles from './ChatRoomList.module.css';
@@ -18,7 +18,7 @@ const ChatRoomList = () => {
     const [showTypeModal, setShowTypeModal] = useState(false);
     const fileInputRef = useRef(null);
 
-    // ✨ 모달 설정 (CustomModal 사용)
+    // 모달 설정 State (CustomModal)
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
         title: "",
@@ -66,16 +66,16 @@ const ChatRoomList = () => {
         if (!file) return;
 
         try {
-            // 1. 파일 업로드
+            // 파일 업로드
             const fileUrl = await uploadFile(file);
-            // 2. 프로필 업데이트
+            // 프로필 업데이트
             await updateProfile(user.memberId, fileUrl);
             
             showAlert("프로필 이미지가 변경되었습니다.", "알림", () => {
                 if (updateUser) {
                     updateUser({ profileImageUrl: fileUrl });
                 }
-                loadChatRooms(); // 채팅 목록의 내 프사도 갱신
+                loadChatRooms();
             });
         } catch (error) {
             console.error("프로필 변경 실패", error);
@@ -104,9 +104,9 @@ const ChatRoomList = () => {
         e.stopPropagation();
         try {
             await acceptInvitation(chatRoomId, user.memberId);
-            loadChatRooms(); // 목록 새로고침
-            markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
-            navigate(`/chat/${chatRoomId}`); // ✨ [Fix] 수락 후 바로 해당 채팅방으로 이동
+            loadChatRooms(); 
+            markNotificationsAsReadForRoom(chatRoomId);
+            navigate(`/chat/${chatRoomId}`); 
         } catch (error) {
             console.error("초대 수락 실패", error);
             showAlert("초대 수락에 실패했습니다.");
@@ -118,8 +118,8 @@ const ChatRoomList = () => {
         e.stopPropagation();
         try {
             await rejectInvitation(chatRoomId, user.memberId);
-            loadChatRooms(); // 목록 새로고침
-            markNotificationsAsReadForRoom(chatRoomId); // ✨ 알림 읽음 처리
+            loadChatRooms(); 
+            markNotificationsAsReadForRoom(chatRoomId); 
         } catch (error) {
             console.error("초대 거절 실패", error);
             showAlert("초대 거절에 실패했습니다.");
@@ -135,7 +135,7 @@ const ChatRoomList = () => {
                     roomType: "GROUP",
                     creatorId: user.memberId,
                     invitedMemberIds: invitedMemberIds,
-                    roomImage: roomImage // ✨ 전달
+                    roomImage: roomImage 
                 });
                 loadChatRooms();
                 navigate(`/chat/${newRoom.chatRoomId}`);
@@ -155,7 +155,7 @@ const ChatRoomList = () => {
                     return;
                 }
 
-                // ✨ 첫 번째 검색 결과 사용 (정확한 닉네임이면 하나만 나올 것)
+                // 첫 번째 검색 결과 사용
                 const targetMember = members[0];
 
                 const newRoom = await createChatRoom({
@@ -209,7 +209,7 @@ const ChatRoomList = () => {
     const getLastMessagePreview = (room) => {
         if (!room.lastMessageContent) return "대화가 없습니다.";
 
-        // 메시지 타입이 있는 경우 (백엔드 지원 시)
+        // 메시지 타입에 따른 미리보기 텍스트
         if (room.lastMessageType === 'IMAGE') return "사진을 보냈습니다.";
         if (room.lastMessageType === 'FILE') return "파일을 보냈습니다.";
         if (room.lastMessageType === 'DELETED') return "삭제된 메시지입니다.";
@@ -332,7 +332,7 @@ const ChatRoomList = () => {
                         onClick={() => navigate(`/chat/${room.chatRoomId}`)}
                     >
                         <div className={styles.avatar}>
-                            {/* ✨ 1:1 채팅은 상대방 프로필, 그룹 채팅은 방 이미지 */}
+                            {/* 1:1은 상대방 프로필, 그룹은 방 이미지 표시 */}
                             <img 
                                 src={
                                     room.roomType === 'SINGLE' 
@@ -346,7 +346,6 @@ const ChatRoomList = () => {
                                     e.target.src = room.roomType === 'SINGLE' ? "/default-profile.svg" : "/default-room.svg";
                                 }}
                             />
-                            {/* ✨ 그룹 채팅 인원수 표시 */}
                             {room.roomType === 'GROUP' && room.memberCount > 0 && (
                                 <span className={styles.groupCount}>{room.memberCount}</span>
                             )}
@@ -396,7 +395,7 @@ const ChatRoomList = () => {
                 type={modalConfig.type}
                 onConfirm={modalConfig.onConfirm}
                 onCancel={modalConfig.onCancel}
-                zIndex={11000} // ✨ z-index 추가 (ChatRoomTypeModal보다 높게)
+                zIndex={11000} 
             />
         </div>
     );

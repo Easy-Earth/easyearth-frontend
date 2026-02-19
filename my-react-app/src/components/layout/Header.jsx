@@ -45,7 +45,7 @@ const Header = ({ openLoginModal }) => {
     { id: 1, title: "메인 페이지", link: "/" },
     { id: 2, title: "지도 탐색", link: "/map" },
     { id: 3, title: "커뮤니티", link: "/community" },
-    { id: 4, title: "건의사항", link: "/suggestions" },
+    { id: 4, title: "건의사항", link: "/inquiries" },
     { id: 5, title: "포인트샵", link: "/shop" },
     { id: 6, title: "채팅", link: "/chat" },
   ];
