@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import styles from './MessageBubble.module.css';
 import { getFullUrl } from '../../utils/imageUtil';
@@ -7,7 +7,7 @@ import { toggleReaction, deleteMessage } from '../../apis/chatApi';
 import UserDatailModal from '../common/UserDatailModal';
 import { extractOriginalFileName } from './chatFileUtil'; // Import local utility
 
-const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted, showAlert, onReplyClick }) => {
+const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted, showAlert, onReplyClick }) => {
     const { user } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
     const [menuPosition, setMenuPosition] = useState({ x: 0, y: 0 });
@@ -142,7 +142,7 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onIm
                      </div>
                 )}
 
-                <div className={styles.bubbleRow}>
+                <div className={styles.bubbleRow} style={{ opacity: message.isOptimistic ? 0.7 : 1 }}>
                     <div className={`${styles.bubble} ${message.messageType === 'DELETED' ? styles.deletedBubble : ''}`}>
                         {/* 삭제된 메시지 */}
                         {message.messageType === 'DELETED' ? (
@@ -230,6 +230,6 @@ const MessageBubble = ({ message, onReply, onSetNotice, isOwner, onRefresh, onIm
             )}
         </div>
     );
-};
+});
 
 export default MessageBubble;

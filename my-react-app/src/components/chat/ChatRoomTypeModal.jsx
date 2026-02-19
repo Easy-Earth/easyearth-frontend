@@ -13,6 +13,14 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
     // ✨ 이미지 관련 State
     const [roomImage, setRoomImage] = useState(null);
     const fileInputRef = useRef(null);
+    const inputRef = useRef(null); // ✨ 포커스용 Ref
+
+    // ✨ 모달 열릴 때 및 타입 변경 시 자동 포커스
+    React.useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [roomType]);
 
     // ✨ 이미지 변경 핸들러
     const handleImageChange = async (e) => {
@@ -73,10 +81,12 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                             <label>상대방 닉네임</label>
                             <input 
                                 type="text" 
+                                ref={inputRef} // ✨ Ref 연결
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 placeholder="상대방 닉네임을 입력하세요"
                                 className={styles.input}
+                                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()} // ✨ Enter Key Support
                             />
                         </div>
                     ) : (
@@ -111,11 +121,13 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                                 <label>채팅방 제목</label>
                                 <input 
                                     type="text" 
+                                    ref={inputRef} // ✨ Ref 연결
                                     value={roomTitle}
                                     onChange={(e) => setRoomTitle(e.target.value)}
                                     placeholder="채팅방 제목을 입력하세요(최대 15자)"
                                     className={styles.input}
                                     maxLength={15} // ✨ 10글자 제한
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSubmit()} // ✨ Enter Key Support
                                 />
                                 <p className={styles.hint}>* 그룹 채팅 멤버 초대는 방 생성 후에도 가능합니다.</p>
                             </div>
