@@ -40,10 +40,10 @@ api.interceptors.response.use(
                     console.error("예외 처리입니다.");
                     break;
                 case 401 : //토큰 만료 
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
+                    // localStorage.removeItem('token');
+                    // localStorage.removeItem('user');
                     //window.location.href = '/login';
-                    console.error("인증 오류 발생했습니다.");
+                    console.error("인증 오류 발생했습니다 (401). 토큰 만료 가능성 있음.");
                 break;
                 case 403 : //권한 불충분
                     console.error('접근권한이 없습니다.');

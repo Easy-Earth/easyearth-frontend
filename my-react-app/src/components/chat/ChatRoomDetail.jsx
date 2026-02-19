@@ -136,7 +136,8 @@ const ChatRoomDetail = ({ roomId }) => {
         try {
             // ✨ [Fix] hasMoreRef 사용
             if (!hasMoreRef.current && cursorId !== 0) return;
-            
+            if (!user) return; // ✨ user가 없으면 중단
+
             const data = await getMessages(roomId, cursorId, user.memberId);
             
             if (data.length === 0) {
