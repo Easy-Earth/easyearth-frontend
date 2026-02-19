@@ -89,7 +89,15 @@ export const leaveChatRoom = async (roomId, memberId) => {
     throw error;
   }
 };
-
+// export const leaveChatRoom = async (roomId, memberId) => {
+//   try {
+//     // URL 뒤에 직접 쿼리 스트링을 붙여서 전달
+//     await api.delete(`/chat/room/${roomId}/leave?memberId=${memberId}`);
+//   } catch (error) {
+//     console.error("채팅방 나가기 실패", error);
+//     throw error;
+//   }
+// };
 // ============================================
 // 메시지 관련
 // ============================================

@@ -1,7 +1,7 @@
 import React, { useState, useRef, memo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import styles from './MessageBubble.module.css';
-import { getFullUrl } from '../../utils/imageUtil';
+import { getFullUrl } from '../../utils/chatImageUtil';
 import MessageContextMenu from './MessageContextMenu';
 import { toggleReaction, deleteMessage } from '../../apis/chatApi';
 import UserDatailModal from '../common/UserDatailModal';

@@ -1,0 +1,136 @@
+/* 모달 바디 */
+.modalBody {
+  padding: 24px 28px;
+  max-height: calc(90vh - 180px);
+  overflow-y: auto;
+}
+
+/* 모달 푸터 */
+.modalFooter {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 20px 28px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.btnCancel {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.15s;
+}
+.btnCancel:hover { background: var(--gray-200); }
+.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnSubmit {
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--green-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.15s;
+}
+.btnSubmit:hover { background: var(--green-600); }
+.btnSubmit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* 폼 */
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.required { color: #ef4444; }
+
+.titleInput :global(input) {
+  color: var(--gray-700); /* 실제 입력되는 글자 색상 */
+}
+
+.titleInput :global(input::placeholder) {
+  color: var(--gray-400); /* placeholder 글자 색상 */
+  opacity: 1; 
+}
+
+.textareaContent {
+  width: 100%;
+  min-height: 200px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 15px;
+  color: var(--gray-700);
+  background-color: #fff;
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  line-height: 1.7;
+  resize: none;
+  transition: border-color 0.15s;
+}
+.textareaContent:focus { border-color: var(--green-400); }
+.textareaContent::placeholder { color: var(--gray-400); }
+
+.radioGroup {
+  display: flex;
+  gap: 16px;
+}
+
+.radioLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.radioLabel input[type="radio"] {
+  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green-500);
+}
+
+.radioLabel input[type="radio"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.radioLabel:has(input:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.adminOnly {
+  background: #faf5ff;
+  padding: 16px;
+  border-radius: 10px;
+  border: 2px dashed #c084fc;
+}
+
+.adminOnly .formLabel {
+  color: #7e22ce;
+}
