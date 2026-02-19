@@ -88,7 +88,7 @@ const QuestModal = ({ isOpen, onClose }) => {
                                     <h4>{q.questTitle}</h4>
                                     <div className={styles.questMeta}>
                                         카테고리: {q.category || "-"}{" "}
-                                        <span className={styles.ptBadge}>10P</span>
+                                        <span className={styles.ptBadge}>{q.point}P</span>
                                     </div>
                                 </div>
                                 <button

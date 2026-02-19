@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import Modal from "../common/Modal";
-import { getQuizByDifficulty, saveQuizAttempt } from "../../apis/quizApi";
+import { getQuizByDifficulty, saveQuizAttempt, getQuizStatus } from "../../apis/quizApi";
 import { useAuth } from "../../context/AuthContext";
 import styles from "./QuizModal.module.css";
 
@@ -14,12 +14,25 @@ const QuizModal = ({ isOpen, onClose }) => {
     const [picks, setPicks] = useState([]); // Verified answers
     const [selectedPicks, setSelectedPicks] = useState([]); // Selected but not verified
     const [verifiedStatus, setVerifiedStatus] = useState([]); // boolean array
+    const [quizStatus, setQuizStatus] = useState({ Easy: true, Normal: true, Hard: true }); // Default true
 
     useEffect(() => {
         if (isOpen) {
             resetQuiz();
+            if (user?.memberId) {
+                checkStatus(user.memberId);
+            }
         }
-    }, [isOpen]);
+    }, [isOpen, user?.memberId]);
+
+    const checkStatus = async (userId) => {
+        try {
+            const status = await getQuizStatus(userId);
+            setQuizStatus(status);
+        } catch (error) {
+            console.error("Failed to load quiz status", error);
+        }
+    };
 
     const resetQuiz = () => {
         setStep("difficulty");
@@ -38,12 +51,19 @@ const QuizModal = ({ isOpen, onClose }) => {
             return;
         }
 
+        // 이미 비활성화되어 클릭 안 되겠지만, 이중 체크
+        if (quizStatus && !quizStatus[diff]) {
+            return;
+        }
+
         setStep("loading");
         try {
+            // ... (기존 로직)
             const data = await getQuizByDifficulty(diff, user.memberId);
 
             if (!data || data.length === 0) {
-                alert("오늘 풀 수 있는 퀴즈를 모두 완료하셨습니다!");
+                // 혹시라도 여기서 걸리면 상태 갱신
+                checkStatus(user.memberId);
                 setStep("difficulty");
                 return;
             }
@@ -61,47 +81,47 @@ const QuizModal = ({ isOpen, onClose }) => {
         }
     };
 
-    const handlePick = (selection) => {
-        // If already verified, clicking doesn't change anything
-        if (verifiedStatus[currentIndex]) return;
-
+    const handlePick = (optionNumber) => {
+        if (verifiedStatus[currentIndex]) return; // 이미 검증된 퀴즈는 선택 불가
         const newSelectedPicks = [...selectedPicks];
-        newSelectedPicks[currentIndex] = selection;
+        newSelectedPicks[currentIndex] = optionNumber;
         setSelectedPicks(newSelectedPicks);
     };
 
     const handleVerify = async () => {
-        const selection = selectedPicks[currentIndex];
-        if (selection === null || verifiedStatus[currentIndex]) return;
+        if (selectedPicks[currentIndex] === null) return; // 선택된 옵션이 없으면 검증 불가
 
+        const currentQuiz = quizzes[currentIndex];
+
+        // 정답 여부 확인
+        const isCorrect = selectedPicks[currentIndex] === currentQuiz.quizAnswer;
+
+        // UI 상태 업데이트 (검증 완료 표시)
         const newVerifiedStatus = [...verifiedStatus];
         newVerifiedStatus[currentIndex] = true;
         setVerifiedStatus(newVerifiedStatus);
 
         const newPicks = [...picks];
-        newPicks[currentIndex] = selection;
+        newPicks[currentIndex] = selectedPicks[currentIndex];
         setPicks(newPicks);
 
-        const quiz = quizzes[currentIndex];
-        const isCorrect = selection === quiz.quizAnswer;
-
         if (isCorrect) {
-            setScore(score + quiz.point);
+            setScore(prevScore => prevScore + currentQuiz.point);
         }
 
+        // API 호출: 결과 저장 (매 문제마다 호출)
         try {
-            if (!user || !user.memberId) {
-                alert("로그인이 필요한 서비스입니다.");
-                return;
-            }
-            const userId = user.memberId;
+            await saveQuizAttempt(user.memberId, currentQuiz.quizNo, isCorrect, currentQuiz.point);
 
-            await saveQuizAttempt(userId, quiz.quizNo, isCorrect, quiz.point);
+            // 마지막 문제였다면 전체 상태 재조회 (버튼 비활성화 위해)
+            if (currentIndex === quizzes.length - 1) {
+                checkStatus(user.memberId);
+            }
         } catch (error) {
             console.error("Failed to save quiz attempt", error);
+            // 에러가 나도 진행은 계속하도록 함 (사용자 경험 위해)
         }
     };
-
 
     const handleNext = () => {
         if (currentIndex < quizzes.length - 1) {
@@ -111,9 +131,26 @@ const QuizModal = ({ isOpen, onClose }) => {
         }
     };
 
+    const getDisabledStyle = (enabled) => {
+        return enabled ? {} : { opacity: 0.4, cursor: "not-allowed", pointerEvents: "none", filter: "grayscale(100%)" };
+    };
+
     const currentQuiz = quizzes[currentIndex];
-    const isCurrentVerified = verifiedStatus[currentIndex];
     const currentSelected = selectedPicks[currentIndex];
+    const isCurrentVerified = verifiedStatus[currentIndex];
+
+    if (step === "quiz" && !currentQuiz) {
+        return (
+            <Modal isOpen={isOpen} onClose={onClose} title="📝 환경 퀴즈">
+                <div style={{ padding: "40px", textAlign: "center" }}>
+                    <p>퀴즈 데이터를 불러오지 못했습니다.</p>
+                    <button onClick={resetQuiz} style={{ marginTop: "20px", padding: "8px 16px", cursor: "pointer" }}>
+                        돌아가기
+                    </button>
+                </div>
+            </Modal>
+        );
+    }
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="📝 환경 퀴즈">
@@ -129,26 +166,41 @@ const QuizModal = ({ isOpen, onClose }) => {
                         <div className={styles.body}>
                             <p style={{ marginBottom: "14px", color: "#555", fontWeight: "600" }}>
                                 난이도를 선택하세요
+                                <span style={{ fontSize: "0.8em", fontWeight: "normal", marginLeft: "8px", color: "#888" }}>
+                                    (일일 5문제, 완료 시 비활성화)
+                                </span>
                             </p>
                             <div className={styles.diffRow}>
-                                <div className={`${styles.diffBtn} ${styles.easy}`} onClick={() => handleStartQuiz("Easy")}>
+                                <div
+                                    className={`${styles.diffBtn} ${styles.easy}`}
+                                    onClick={() => quizStatus.Easy && handleStartQuiz("Easy")}
+                                    style={getDisabledStyle(quizStatus.Easy)}
+                                >
                                     <span className={styles.dLabel}>🟢 Easy</span>
-                                    <span className={styles.dPt}>10P / 문제</span>
+                                    <span className={styles.dPt}>100P / 문제</span>
                                 </div>
-                                <div className={`${styles.diffBtn} ${styles.normal}`} onClick={() => handleStartQuiz("Normal")}>
+                                <div
+                                    className={`${styles.diffBtn} ${styles.normal}`}
+                                    onClick={() => quizStatus.Normal && handleStartQuiz("Normal")}
+                                    style={getDisabledStyle(quizStatus.Normal)}
+                                >
                                     <span className={styles.dLabel}>🟠 Normal</span>
-                                    <span className={styles.dPt}>20P / 문제</span>
+                                    <span className={styles.dPt}>200P / 문제</span>
                                 </div>
-                                <div className={`${styles.diffBtn} ${styles.hard}`} onClick={() => handleStartQuiz("Hard")}>
+                                <div
+                                    className={`${styles.diffBtn} ${styles.hard}`}
+                                    onClick={() => quizStatus.Hard && handleStartQuiz("Hard")}
+                                    style={getDisabledStyle(quizStatus.Hard)}
+                                >
                                     <span className={styles.dLabel}>🔴 Hard</span>
-                                    <span className={styles.dPt}>50P / 문제</span>
+                                    <span className={styles.dPt}>300P / 문제</span>
                                 </div>
                             </div>
                         </div>
                     )}
 
                     {step === "loading" && (
-                        <div className={styles.spinner}></div>
+                        <div className={styles.spinner} style={{ padding: "40px 0" }}></div>
                     )}
 
                     {step === "quiz" && currentQuiz && (
@@ -166,7 +218,13 @@ const QuizModal = ({ isOpen, onClose }) => {
                                     ))}
                                 </div>
                             </div>
-                            <div className={styles.quizQ}>{currentQuiz.quizQuestion}</div>
+                            <div className={styles.quizHeader}>
+                                <span className={styles.qNum}>Q{currentIndex + 1}</span>
+                                <span className={styles.qDiff}>{difficulty}</span>
+                            </div>
+                            <div className={styles.quizContent}>
+                                {currentQuiz.quizQuestion}
+                            </div>
                             <div className={styles.options}>
                                 {[currentQuiz.option1, currentQuiz.option2, currentQuiz.option3, currentQuiz.option4].map((text, i) => {
                                     const optionNumber = i + 1;
