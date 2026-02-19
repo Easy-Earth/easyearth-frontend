@@ -1,0 +1,260 @@
+/* ── 모달 바디 ── */
+.modalBody {
+  padding: 24px 28px;
+  max-height: calc(90vh - 180px);
+  overflow-y: auto;
+}
+
+/* ── 모달 푸터 ── */
+.modalFooter {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 20px 28px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.btnCancel {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+  border: none;
+  background: var(--gray-100);
+  color: var(--gray-600);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.15s;
+}
+.btnCancel:hover { background: var(--gray-200); }
+.btnCancel:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btnSubmit {
+  height: 42px;
+  padding: 0 22px;
+  border-radius: 10px;
+  border: none;
+  background: var(--green-500);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: background 0.15s;
+}
+.btnSubmit:hover { background: var(--green-600); }
+.btnSubmit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── 폼 ── */
+.formRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.formLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-700);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.required { color: #ef4444; }
+
+/* 카테고리 버튼 */
+.categoryGroup {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.categoryBtn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.categoryBtn:hover {
+  border-color: var(--green-300);
+  background: var(--green-50);
+}
+.categoryBtn.active {
+  border-color: var(--green-500);
+  background: var(--green-500);
+  color: #fff;
+}
+
+/* 제목 입력 */
+.inputTitle {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 0 16px;
+  font-size: 15px;
+  color: var(--gray-700);
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.inputTitle:focus { border-color: var(--green-400); }
+.inputTitle::placeholder { color: var(--gray-400); }
+
+/* 내용 입력 */
+.textareaContent {
+  width: 100%;
+  min-height: 200px;
+  border: 1px solid var(--gray-200);
+  border-radius: 10px;
+  padding: 16px;
+  font-size: 15px;
+  color: var(--gray-700);
+  background-color: var(--color-bg-primary);
+  font-family: 'Noto Sans KR', sans-serif;
+  outline: none;
+  line-height: 1.7;
+  resize: none;
+  transition: border-color 0.15s;
+}
+.textareaContent:focus { border-color: var(--green-400); }
+.textareaContent::placeholder { color: var(--gray-400); }
+
+/* 파일 첨부 영역 */
+.fileArea {
+  border: 2px dashed var(--gray-200);
+  border-radius: 12px;
+  padding: 24px;
+  background: var(--gray-50);
+  text-align: center;
+  transition: all 0.2s;
+}
+.fileArea:hover {
+  border-color: var(--green-300);
+  background: var(--green-50);
+}
+
+.fileInput { display: none; }
+
+.fileLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-600);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.fileLabel:hover {
+  border-color: var(--green-400);
+  color: var(--green-600);
+}
+
+/* 새 파일 목록 */
+.fileList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+.fileName {
+  font-size: 14px;
+  color: var(--gray-700);
+  font-weight: 600;
+}
+
+.fileRemove {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.fileRemove:hover { background: #fee2e2; }
+
+/* 기존 파일 (수정 모드) */
+.existingFiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.existingFileItem {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid var(--green-200);
+  background: var(--green-50);
+  cursor: pointer;
+}
+
+.existingFileImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.deleteCheckbox {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 22px;
+  height: 22px;
+  accent-color: #ef4444;
+  cursor: pointer;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.deleteOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(239, 68, 68, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.existingFileItem.toDelete .deleteOverlay {
+  display: flex;
+}
+
+/* 구분선 */
+.divider {
+  height: 1px;
+  background: var(--gray-200);
+  margin: 16px 0;
+}

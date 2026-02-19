@@ -11,6 +11,7 @@ import SuggestionPage from "../pages/SuggestionPage/SuggestionPage";
 
 import { PrivateRoute, PublicRoute } from "./PrivateRouter";
 import InventoryPage from "../pages/InventoryPage/InventoryPage";
+import CommunityDetailPage from "../pages/CommunityPage/CommunityDetailPage";
 
 function AppRouter() {
   return (
@@ -19,6 +20,7 @@ function AppRouter() {
       <Route path="/" element={<MainPage />} />
       <Route path="/map" element={<MapPage />} />
       <Route path="/community" element={<CommunityPage />} />
+      <Route path="/community/detail/:postId" element={<CommunityDetailPage />} />
       <Route path="/suggestions" element={<SuggestionPage />} />
       <Route path="/shop" element={<ShopPage />} />
       <Route path="/find-password" element={<PasswordFindPage />} />

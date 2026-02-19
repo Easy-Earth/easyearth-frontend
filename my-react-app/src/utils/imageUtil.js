@@ -11,6 +11,9 @@ export const getFullUrl = (url) => {
     
     // /chat/file로 시작하면 /spring 추가 (백엔드 컨텍스트 경로)
     if (url.startsWith('/chat/file')) return `/spring${url}`;
+
+    // /community/file에 /spring 추가
+    if (url.startsWith('/community/file')) return `/spring${url}`;
     
     // 그 외의 경우 (기본값)
     return url;

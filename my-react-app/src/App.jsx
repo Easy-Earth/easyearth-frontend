@@ -23,6 +23,7 @@ import { ChatProvider } from "./context/ChatContext";
 import { NotificationProvider } from "./context/NotificationContext";
 import ChatJoinPage from "./pages/ChatPage/ChatJoinPage";
 import ChatPage from "./pages/ChatPage/ChatPage";
+import CommunityDetailPage from "./pages/CommunityPage/CommunityDetailPage";
 
 // 🚀 수정된 모달 관리자: 네비게이션 state를 감시하고 즉시 비웁니다.
 const ModalManager = ({ openLoginModal }) => {
@@ -70,6 +71,7 @@ function App() {
                   <Route path="/" element={<MainPage />} />
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/community" element={<CommunityPage />} />
+                  <Route path="/community/detail/:postId" element={<CommunityDetailPage />} />
                   <Route path="/suggestions" element={<SuggestionPage />} />
                   <Route path="/shop" element={<ShopPage />} />
                   <Route path="/find-password" element={<PasswordFindPage />} />
