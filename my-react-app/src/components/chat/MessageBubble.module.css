@@ -1,48 +1,47 @@
+/* MessageBubble.module.css */
+
 .wrapper {
     display: flex;
-    margin-bottom: 20px;
-    align-items: flex-start; /* ✨ 프로필 이미지 상단 고정 */
-    user-select: none;
+    margin-bottom: 0; /* 마진은 List에서 gap으로 처리 */
+    max-width: 100%;
 }
 
-/* ✨ 내 메시지 정렬 복구: 오른쪽 정렬 */
 .myMessage {
-    flex-direction: row-reverse;
+    justify-content: flex-end;
 }
 
-/* ✨ 온라인 상태 표시 */
+.otherMessage {
+    justify-content: flex-start;
+}
+
+/* 시스템 메시지 */
+.systemMessage {
+    align-self: center;
+    background: #f1f5f9; /* Slate 100 */
+    color: #64748b; /* Slate 500 */
+    padding: 6px 14px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 500;
+    margin: 10px auto;
+    text-align: center;
+    width: fit-content;
+}
+
+.systemText {
+    /* systemMessage 내부 텍스트 스타일 */
+}
+
 .avatar {
-    width: 40px;
-    height: 40px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     margin-right: 10px;
-    background-color: #ddd;
-    overflow: hidden;
     flex-shrink: 0;
-    position: relative;
     cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.avatar:hover {
-    transform: scale(1.1);
-    filter: brightness(1.1);
-}
-
-.avatar:hover img {
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
-}
-
-.onlineIndicator {
-    position: absolute;
-    bottom: 2px;
-    right: 2px;
-    width: 12px;
-    height: 12px;
-    background-color: #10b981;
-    border: 2px solid white;
-    border-radius: 50%;
-    box-shadow: 0 0 4px rgba(16, 185, 129, 0.5);
+    overflow: hidden;
+    background: #e2e8f0;
+    border: 1px solid #f1f5f9;
 }
 
 .avatar img {
@@ -55,198 +54,201 @@
     display: flex;
     flex-direction: column;
     max-width: 70%;
-    align-items: flex-start; 
+    position: relative;
+    /* 내 메시지일 때 오른쪽 정렬은 myMessage .content에서 처리 */
 }
 
-/* ✨ 내 메시지는 우측 정렬 */
 .myMessage .content {
-    align-items: flex-end; 
-}
-
-.name {
-    font-size: 13px;
-    margin-bottom: 4px;
-    color: #555;
-    margin-left: 2px;
-}
-
-.bubbleRow {
-    display: flex;
     align-items: flex-end;
 }
 
-/* ✨ 내 메시지 시간/말풍선 순서도 원래대로 (시간-말풍선) */
+.name {
+    font-size: 12px;
+    color: #475569; /* Slate 600 */
+    margin-bottom: 4px;
+    margin-left: 2px;
+}
+
+/* 답장 원본 표시 */
+.replyPreview {
+    font-size: 11px;
+    color: #64748b;
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    background: rgba(0, 0, 0, 0.03);
+    border-radius: 8px;
+    border-left: 2px solid #cbd5e1;
+    width: fit-content;
+    max-width: 100%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.myMessage .replyPreview {
+    background: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.9);
+    border-left-color: rgba(255, 255, 255, 0.5);
+    align-self: flex-end;
+}
+
+.replyName {
+    font-weight: 700;
+    margin-right: 4px;
+}
+
+.replyContent {
+    display: inline;
+    text-overflow: ellipsis;
+}
+
+/* 말풍선 + 시간/정보 행 */
+.bubbleRow {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+}
+
 .myMessage .bubbleRow {
     flex-direction: row-reverse;
 }
 
 .bubble {
-    background-color: #fff;
     padding: 10px 14px;
-    border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    border-radius: 16px;
     font-size: 14px;
     line-height: 1.5;
-    word-break: break-all;
     position: relative;
-    border: 1px solid #e5e7eb;
-    text-align: left; /* ✨ 모든 메시지 텍스트 왼쪽 정렬 */
+    word-break: break-word;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
-/* .bubbleGroup 제거됨 */
-
+/* 내 메시지 스타일 */
 .myMessage .bubble {
-    background-color: #dbeafe; /* Light Blue */
-    border-color: #bfdbfe;
-    color: #1e3a8a;
-    /* 오른쪽 정렬 스타일 복구 */
+    background: #14b8a6; /* Teal 500 */
+    color: white;
     border-top-right-radius: 2px;
-    border-top-left-radius: 12px; /* Reset */
 }
 
+/* 상대방 메시지 스타일 */
 .wrapper:not(.myMessage) .bubble {
+    background: white;
+    color: #1e293b; /* Slate 800 */
+    border: 1px solid #e2e8f0; /* Slate 200 */
     border-top-left-radius: 2px;
 }
 
-.info {
-    font-size: 11px;
-    color: #999;
-    margin-left: 6px;
-    margin-right: 6px;
-    display: flex;
-    flex-direction: column;
-    min-width: 45px;
-    justify-content: flex-end;
-}
-
-/* 내 메시지 정보 정렬도 오른쪽으로 */
-.myMessage .info {
-    align-items: flex-end;
-}
-
-.unread {
-    color: #f59e0b; /* Yellow/Orange */
-    font-weight: bold;
-    margin-bottom: 2px;
-    font-size: 10px;
-}
-
-.systemMessage {
-    text-align: center;
-    margin: 20px 0;
-}
-
-.systemText {
-    background-color: rgba(0,0,0,0.05);
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    color: #666;
-}
-
-.imageContent {
-    max-width: 100%;
-    border-radius: 8px;
-    display: block;
-}
-
-.imageLink {
-    display: block; /* Ensure it behaves as a block container for the image */
-    cursor: pointer;
-    text-decoration: none;
-}
-
-.fileLink {
-    text-decoration: none;
-    color: #2563eb;
-    font-weight: 500;
-}
-.fileLink:hover {
-    text-decoration: underline;
-}
-
-/* Reply Preview Style in Bubble */
-.replyPreview {
-    background: rgba(0,0,0,0.04);
-    border-left: 3px solid #cbd5e1;
-    padding: 4px 8px;
-    margin-bottom: 4px;
-    border-radius: 4px;
-    font-size: 12px;
-    display: flex;
-    flex-direction: column;
-}
-.replyName {
-    font-weight: bold;
-    color: #64748b;
-    margin-bottom: 2px;
-}
-.replyContent {
-    color: #475569;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* Reactions Display */
-.reactions {
-    display: flex;
-    gap: 4px;
-    /* margin-top: 2px; 제거 */
-    flex-wrap: wrap;
-    max-width: 100%;
-    align-items: flex-end; /* 하단 정렬 */
-    margin-bottom: 2px; /* 아주 약간의 여백 */
-}
-.reaction {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 12px;
-    padding: 2px 6px;
-    font-size: 11px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 1px 1px rgba(0,0,0,0.05);
-    cursor: pointer; /* ✨ Clickable */
-    font-family: inherit; /* Reset button font */
-    transition: background-color 0.2s;
-}
-.reaction:hover {
-    background-color: #f9fafb;
-}
-
-.myReaction {
-    background: #eff6ff;
-    border-color: #3b82f6;
-    color: #1e40af;
-}
-.myReaction:hover {
-    background: #dbeafe;
-}
-
-/* ✨ Deleted Message Style */
 .deletedBubble {
-    background-color: #f3f4f6 !important;
-    border-color: #e5e7eb !important;
-    color: #9ca3af !important;
-    box-shadow: none;
+    background: #f1f5f9 !important;
+    border: 1px dashed #cbd5e1 !important;
+    color: #94a3b8 !important;
 }
 
 .deletedText {
     font-style: italic;
     font-size: 13px;
-    color: #9ca3af;
 }
 
-/* ✨ 검색 결과 하이라이트 (버블 자체 강조) */
-.highlighted .bubble {
-    background-color: #fee500 !important; /* Kakao Yellow for strong visibility */
-    transition: background-color 0.5s ease;
-    box-shadow: 0 0 10px rgba(254, 229, 0, 0.5); /* Glowing effect */
+/* 하이라이트 애니메이션 */
+.wrapper:not(.myMessage).highlighted .bubble {
+    animation: highlightPulse 2s ease-out;
 }
 
-/* 래퍼 배경 제거 */
-.highlighted {
-    background-color: transparent !important;
+.myMessage.highlighted .bubble {
+    animation: highlightPulseMy 2s ease-out;
 }
 
+@keyframes highlightPulse {
+    0% { background: rgba(251, 191, 36, 0.4); } /* Amber 400 with opacity */
+    100% { background: white; }
+}
+
+@keyframes highlightPulseMy {
+    0% { background: #d97706; } /* Amber 600 - Darker yellow for contrast */
+    100% { background: #14b8a6; } /* Reverts to Teal 500 */
+}
+
+/* 이미지/파일 링크 스타일 */
+.imageLink {
+    display: block;
+    max-width: 250px;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.imageLink:hover { transform: scale(1.02); }
+
+.imageContent {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.fileLink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: inherit;
+    font-weight: 500;
+}
+
+/* 시간 및 읽음 정보 */
+.info {
+    display: flex;
+    flex-direction: column;
+    font-size: 10px;
+    color: #94a3b8; /* Slate 400 */
+    min-width: 30px;
+    margin-bottom: 2px;
+}
+
+.myMessage .info {
+    align-items: flex-end;
+}
+
+.unread {
+    color: #f59e0b; /* Amber 500 */
+    font-weight: 700;
+}
+
+.time {
+    /* formatTime handles visual */
+}
+
+/* 리액션 */
+.reactions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.myMessage .reactions {
+    justify-content: flex-end;
+}
+
+.reaction {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    transition: all 0.2s;
+}
+
+.reaction:hover {
+    background: #f8fafc;
+    transform: translateY(-1px);
+}
+
+.myReaction {
+    background: #f0fdfa; /* Teal 50 */
+    border-color: #14b8a6; /* Teal 500 */
+    color: #0f766e;
+}

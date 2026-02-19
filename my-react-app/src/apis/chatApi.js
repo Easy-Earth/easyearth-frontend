@@ -286,6 +286,29 @@ export const rejectInvitation = async (roomId, memberId) => {
   }
 };
 
+// 15.1 초대 중인 사용자 목록 조회
+export const getInvitedUsers = async (roomId) => {
+    try {
+      const response = await api.get(`/chat/rooms/${roomId}/invitations`);
+      return response.data;
+    } catch (error) {
+      console.error("초대 중인 사용자 목록 조회 실패", error);
+      throw error;
+    }
+  };
+  
+  // 15.2 초대 취소
+  export const cancelInvitation = async (roomId, targetMemberId, requesterId) => {
+    try {
+      await api.delete(`/chat/rooms/${roomId}/invitations/${targetMemberId}`, {
+        params: { requesterId }
+      });
+    } catch (error) {
+      console.error("초대 취소 실패", error);
+      throw error;
+    }
+  };
+
 // 16. 프로필 이미지 변경 (채팅 전용)
 export const updateProfile = async (memberId, profileImageUrl) => {
   try {

@@ -79,7 +79,7 @@ function UserDetailModal({ isOpen, onClose, memberId, zIndex }) {
                   {userInfo.isOnline ? "● 온라인" : "○ 오프라인"}
                 </div>
                 <button onClick={handleChatRequest} className={styles.chatButton}>
-                  💬 1:1 채팅 신청
+                  1:1 채팅 신청
                 </button>
               </div>
             </div>

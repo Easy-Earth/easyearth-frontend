@@ -30,7 +30,9 @@
   --blue-500: #3b82f6;
 
   --btn-modal-color : #14b8a6;
-
+  --btn-modal-color-hover :#11a08f;
+  --btn-modal-cancel-color :#f1f5f9;
+  --btn-modal-cancel-color-hover :#dee1e3;
   --earth-50:  #faf7f2;
   --earth-100: #f0e6d8;
   --earth-300: #d6bfa3;

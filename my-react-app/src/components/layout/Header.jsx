@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from "react-router-dom";
+import logo from "../../assets/images/easyearthLOGO.png";
 import kakaoBtnImg from "../../assets/images/kakaoBtn.png";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
@@ -10,7 +11,6 @@ const Header = ({ openLoginModal }) => {
   const navigate = useNavigate();
   const { isAuthenticated, logout, user } = useAuth();
   
-  // ✨ 모달 상태 관리
   const [modalConfig, setModalConfig] = useState({ 
     isOpen: false, 
     title: '', 
@@ -53,7 +53,9 @@ const Header = ({ openLoginModal }) => {
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
-        <Link to="/">EasyEarth</Link>
+        <Link to="/">
+          <img src={logo} alt="EasyEarth Logo" className={styles.logoImg} />
+        </Link>
       </div>
 
       <nav className={styles.nav}>
@@ -90,7 +92,6 @@ const Header = ({ openLoginModal }) => {
         {isAuthenticated && <NotificationCenter setModalConfig={setModalConfig} />}
       </div>
 
-      {/* ✨ 헤더 공용 커스텀 모달 */}
       <CustomModal 
         {...modalConfig} 
         onCancel={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
@@ -99,14 +100,13 @@ const Header = ({ openLoginModal }) => {
   );
 };
 
-// ... NotificationCenter 코드는 기존과 동일하되 alert 부분만 setModalConfig로 교체 ...
 const NotificationCenter = ({ setModalConfig }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
-    const [isOpen, setIsOpen] = React.useState(false);
-    const dropdownRef = React.useRef(null);
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    React.useEffect(() => {
+    useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsOpen(false);
@@ -150,20 +150,35 @@ const NotificationCenter = ({ setModalConfig }) => {
                         {unreadCount > 0 && <button className={styles.markAllBtn} onClick={markAllAsRead}>모두 읽음</button>}
                     </div>
                     <ul className={styles.notificationList}>
-                        {notifications.length === 0 ? <li className={styles.emptyItem}>새로운 알림이 없습니다.</li> : 
+                        {notifications.length === 0 ? (
+                            <li className={styles.emptyItem}>새로운 알림이 없습니다.</li>
+                        ) : (
                             notifications.map(n => (
-                                <li key={n.id} className={`${styles.notificationItem} ${n.read ? styles.read : ''}`}>
-                                    <div className={styles.notificationContent} onClick={() => handleNotificationClick(n)}>
-                                        <div className={styles.headerText}>
-                                            <span>{n.senderName}</span>
-                                            <span className={styles.notificationTime}>{new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                <li 
+                                    key={n.id} 
+                                    className={`${styles.notificationItem} ${n.read ? styles.read : ''}`}
+                                    onClick={() => handleNotificationClick(n)}
+                                >
+                                    <div className={styles.notificationContent}>
+                                        <div className={styles.notificationHeader}>
+                                            <div className={styles.headerText}>
+                                                <div className={styles.senderInfo}>
+                                                    {n.roomName && (
+                                                        <span className={styles.roomName}>[{n.roomName}]</span>
+                                                    )}
+                                                    <span className={styles.notificationSender}>{n.senderName}</span>
+                                                </div>
+                                                <span className={styles.notificationTime}>
+                                                    {new Date(n.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                </span>
+                                            </div>
                                         </div>
                                         <div className={styles.notificationText}>{getNotificationMessage(n)}</div>
                                     </div>
                                     <button className={styles.deleteBtn} onClick={(e) => { e.stopPropagation(); removeNotification(n.id); }}>×</button>
                                 </li>
                             ))
-                        }
+                        )}
                     </ul>
                 </div>
             )}
