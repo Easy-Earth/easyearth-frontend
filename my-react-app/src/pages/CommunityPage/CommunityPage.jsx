@@ -99,7 +99,7 @@ const CommunityPage = () => {
   const handleWriteSuccess = (message) => {
     setAlertConfig({
       isOpen: true,
-      type: "confirm",
+      type: "alert",
       message: message || "게시글이 등록되었습니다.",
       onConfirm: () => {
         setAlertConfig((prev) => ({ ...prev, isOpen: false }));
