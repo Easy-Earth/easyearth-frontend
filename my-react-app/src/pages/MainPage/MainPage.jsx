@@ -104,7 +104,7 @@ function MainPage() {
                     <div className={styles.speechBubble}>
                         {/* 비서 메시지 출력 */}
                         {loading ? (
-                            <p>에코봇이 메시지를 준비 중입니다... 🤖</p>
+                            <p>에코봇이 메시지를 준비 중입니다...</p>
                         ) : (
                             secretaryMsg.split('\n').map((line, i) => (
                                 <p key={i}>{line}</p>

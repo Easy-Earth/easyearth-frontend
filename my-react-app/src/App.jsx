@@ -75,7 +75,7 @@ function App() {
         <ChatProvider>
           <Router>
             <ModalManager openLoginModal={openLoginModal} />
-            
+
             <div className="app-container">
               <Header openLoginModal={openLoginModal} />
               <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} />
@@ -103,7 +103,7 @@ function App() {
                   <Route path="/shop" element={<ShopPage />} />
                   <Route path="/find-password" element={<PasswordFindPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
-                  
+
                   <Route path="/join" element={
                     <PublicRoute>
                       <SignupPage />

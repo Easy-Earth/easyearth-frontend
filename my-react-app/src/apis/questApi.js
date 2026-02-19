@@ -1,7 +1,7 @@
 import api from "./axios";
 
-export const getDailyQuests = async () => {
-    const response = await api.get('/api/quest/daily');
+export const getDailyQuests = async (userId = 0) => {
+    const response = await api.get(`/api/quest/daily?userId=${userId}`);
     return response.data;
 };
 

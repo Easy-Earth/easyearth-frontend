@@ -89,10 +89,14 @@ const EcoTreeModal = ({ isOpen, onClose, memberId: propMemberId }) => {
             <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
                 <button className={styles.closeBtn} onClick={onClose}>&times;</button>
 
-                <h2 className={styles.title}>� 나의 에코 트리</h2>
+                <h2 className={styles.title}>🌳 나의 에코 트리</h2>
 
                 {loading ? (
                     <div className={styles.loading}>정보를 불러오는 중...</div>
+                ) : !user ? (
+                    <div className={styles.error} style={{ color: "#999", padding: "40px 0" }}>
+                        로그인이 필요한 서비스입니다.
+                    </div>
                 ) : treeData ? (
                     <>
                         <div className={styles.treeDisplay}>
