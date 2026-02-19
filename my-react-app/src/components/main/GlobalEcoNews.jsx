@@ -26,7 +26,7 @@ const GlobalEcoNews = () => {
         }
       }
       
-      // 데이터가 없을 경우 대비
+      // 데이터가 없을 경우 처리
       if (!data || Object.keys(data).length === 0) {
           setNewsData({});
       } else {
