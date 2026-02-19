@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { inquiriesApi } from "../../apis/inquiriesApi.js";
-import { useAuth } from "../../context/AuthContext";
 import Button from "../../components/common/Button.jsx";
-import Input from "../../components/common/Input.jsx";
-import Pagination from "../../components/pagination/Pagination.jsx";
-import InquiriesWriteModal from "../../components/inquiries/InquiriesWriteModal.jsx";
-import InquiriesStatusModal from "../../components/inquiries/InquiriesStatusModal.jsx";
 import CustomModal from "../../components/common/CustomModal.jsx";
+import Input from "../../components/common/Input.jsx";
+import InquiriesStatusModal from "../../components/inquiries/InquiriesStatusModal.jsx";
+import InquiriesWriteModal from "../../components/inquiries/InquiriesWriteModal.jsx";
+import Pagination from "../../components/pagination/Pagination.jsx";
+import { useAuth } from "../../context/AuthContext";
 
 import styles from "./InquiriesPage.module.css";
 
@@ -111,6 +111,24 @@ const InquiriesPage = () => {
     });
   };
 
+  // 비공개글 클릭 권한 체크 로직 추가
+  const handleDetailClick = (inquiry) => {
+    const isOwner = user && Number(user.memberId) === Number(inquiry.memberId);
+    const isAdmin = user && Number(user.memberId) === 1;
+
+    if (inquiry.isPublic === "N" && !isOwner && !isAdmin) {
+      setAlertConfig({
+        isOpen: true,
+        type: "alert",
+        message: "비공개 건의글은 작성자와 관리자만 확인할 수 있습니다.",
+        onConfirm: () => setAlertConfig((prev) => ({ ...prev, isOpen: false })),
+      });
+      return;
+    }
+
+    navigate(`/inquiries/detail/${inquiry.inquiriesId}`);
+  };
+
   return (
     <div className={styles.page}>
       <div className={styles.frame}>
@@ -140,7 +158,7 @@ const InquiriesPage = () => {
             type="button"
             onClick={handleWriteClick}
           >
-            <span style={{ fontWeight: 900 }}>✏️ 글쓰기</span>
+            <span style={{ fontWeight: 900 ,color: "#fff"}}>✏️ 글쓰기</span>
           </Button>
         </div>
 
@@ -160,7 +178,7 @@ const InquiriesPage = () => {
               <div
                 key={inquiry.inquiriesId}
                 className={`${styles.card} ${inquiry.isFaq === "Y" ? styles.cardFaq : ""}`}
-                onClick={() => navigate(`/inquiries/detail/${inquiry.inquiriesId}`)}
+                onClick={() => handleDetailClick(inquiry)}
               >
                 {inquiry.isPublic === "N" && <span className={styles.badgePrivate}>🔒</span>}
                 
