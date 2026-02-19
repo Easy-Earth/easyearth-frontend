@@ -150,7 +150,7 @@ const handleWriteClick = () => {
             type="button"
             onClick={handleWriteClick}
           >
-            <span style={{ fontWeight: 900 }}>✏️ 글 쓰기</span>
+            <span style={{ fontWeight: 900, color: "#fff" }}>✏️ 글 쓰기</span>
           </Button>
         </div>
 

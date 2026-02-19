@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { inquiriesApi } from "../../apis/inquiriesApi";
-import Button from "../../components/common/Button";
+import CustomModal from "../../components/common/CustomModal";
 import Profile from "../../components/common/Profile";
 import UserDetailModal from "../../components/common/UserDatailModal";
 import InquiriesWriteModal from "../../components/inquiries/InquiriesWriteModal";
-import CustomModal from "../../components/common/CustomModal";
+import { useAuth } from "../../context/AuthContext";
 import styles from "./InquiriesDetailPage.module.css";
 
 const InquiriesDetailPage = () => {
@@ -67,14 +66,14 @@ const InquiriesDetailPage = () => {
   const handleDelete = () => {
     setAlertConfig({
       isOpen: true,
-      type: "confirm",
+      type: "confirm", // 삭제 의사를 묻는 것이므로 confirm 유지
       message: "정말 삭제하시겠습니까?",
       onConfirm: async () => {
         try {
           await inquiriesApi.inquiriesDelete(inquiriesId, user.memberId);
           setAlertConfig({
             isOpen: true,
-            type: "confirm",
+            type: "alert", // 완료 알림이므로 alert로 변경
             message: "건의글이 삭제되었습니다.",
             onConfirm: () => {
               setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} });
@@ -85,7 +84,7 @@ const InquiriesDetailPage = () => {
           console.error(error);
           setAlertConfig({
             isOpen: true,
-            type: "confirm",
+            type: "alert", // 에러 알림이므로 alert로 변경
             message: "삭제 중 오류가 발생했습니다.",
             onConfirm: () => setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} }),
           });
@@ -97,7 +96,7 @@ const InquiriesDetailPage = () => {
   const handleEditSuccess = (message) => {
     setAlertConfig({
       isOpen: true,
-      type: "confirm",
+      type: "alert", // 수정 완료 알림이므로 alert로 변경
       message: message || "건의글이 수정되었습니다.",
       onConfirm: () => {
         setAlertConfig((prev) => ({ ...prev, isOpen: false }));
@@ -110,7 +109,7 @@ const InquiriesDetailPage = () => {
     if (!adminReplyContent.trim()) {
       setAlertConfig({
         isOpen: true,
-        type: "confirm",
+        type: "alert", // 경고 알림이므로 alert로 변경
         message: "답변 내용을 입력하세요.",
         onConfirm: () => setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} }),
       });
@@ -121,7 +120,7 @@ const InquiriesDetailPage = () => {
       await inquiriesApi.inquiriesAdminReply(inquiriesId, user.memberId, adminReplyContent);
       setAlertConfig({
         isOpen: true,
-        type: "confirm",
+        type: "alert", // 등록 완료 알림이므로 alert로 변경
         message: inquiry.adminReply ? "답변이 수정되었습니다." : "답변이 등록되었습니다.",
         onConfirm: () => {
           setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} });
@@ -132,7 +131,7 @@ const InquiriesDetailPage = () => {
       console.error(error);
       setAlertConfig({
         isOpen: true,
-        type: "confirm",
+        type: "alert", // 에러 알림이므로 alert로 변경
         message: "답변 처리 중 오류가 발생했습니다.",
         onConfirm: () => setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} }),
       });
@@ -142,14 +141,14 @@ const InquiriesDetailPage = () => {
   const handleAdminReplyDelete = () => {
     setAlertConfig({
       isOpen: true,
-      type: "confirm",
+      type: "confirm", // 삭제 의사를 묻는 것이므로 confirm 유지
       message: "정말 답변을 삭제하시겠습니까?",
       onConfirm: async () => {
         try {
           await inquiriesApi.inquiriesAdminReply(inquiriesId, user.memberId, "");
           setAlertConfig({
             isOpen: true,
-            type: "confirm",
+            type: "alert", // 삭제 완료 알림이므로 alert로 변경
             message: "답변이 삭제되었습니다.",
             onConfirm: () => {
               setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} });
@@ -160,7 +159,7 @@ const InquiriesDetailPage = () => {
           console.error(error);
           setAlertConfig({
             isOpen: true,
-            type: "confirm",
+            type: "alert", // 에러 알림이므로 alert로 변경
             message: "답변 삭제 중 오류가 발생했습니다.",
             onConfirm: () => setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} }),
           });
