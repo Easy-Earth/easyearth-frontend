@@ -526,7 +526,12 @@ const ChatRoomDetail = ({ roomId }) => {
             createdAt: new Date().toISOString(),
             isOptimistic: true, // ✨ 낙관적 메시지 표시 플래그
             reactions: [],
-            unreadCount: 0
+            unreadCount: 0,
+            
+            // ✨ [Fix] 답장 정보 추가 (낙관적 업데이트용)
+            parentMessageId: replyTo ? replyTo.messageId : null,
+            parentMessageContent: replyTo ? replyTo.content : null,
+            parentMessageSenderName: replyTo ? replyTo.senderName : null
         };
 
         setMessages(prev => [...prev, optimisticMsg]);
@@ -535,7 +540,7 @@ const ChatRoomDetail = ({ roomId }) => {
         try {
             client.publish({ destination: '/app/chat/message', body: JSON.stringify(msgDto) });
             setInput('');
-            setReplyTo(null);
+            setReplyTo(null); // ✨ 여기서 초기화
         } catch (error) {
             console.error("메시지 전송 실패", error);
             showAlert("메시지 전송에 실패했습니다.");
@@ -973,8 +978,10 @@ const ChatRoomDetail = ({ roomId }) => {
                 {replyTo && (
                     <div className={styles.replyBanner}>
                         <div className={styles.replyInfo}>
-                            <span className={styles.replyToName}>To. {replyTo.senderName}</span>
-                            <span className={styles.replyToContent}>{extractOriginalFileName(replyTo.content)}</span>
+                            <span className={styles.replyToName}>To. {replyTo.senderName || "알 수 없음"}</span>
+                            <span className={styles.replyToContent}>
+                                {replyTo.content ? extractOriginalFileName(replyTo.content) : "내용 없음"}
+                            </span>
                         </div>
                         <button onClick={() => setReplyTo(null)} className={styles.replyCloseBtn}>✖</button>
                     </div>

@@ -160,6 +160,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                                         target="_blank" 
                                         rel="noopener noreferrer"
                                         className={styles.imageLink} 
+                                        onClick={() => console.log("Image URL:", getFullUrl(message.content), "Original:", message.content)}
                                     >
                                         <img 
                                             src={getFullUrl(message.content)} 
