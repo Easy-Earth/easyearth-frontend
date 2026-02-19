@@ -3,7 +3,7 @@ import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext';
 import { getMessages, markAsRead, leaveChatRoom, updateRole, kickMember, getChatRoomUsers, setNotice, clearNotice, getChatRoomDetail, searchMessages } from '../../apis/chatApi'; // searchMessages 추가
-import { getFullUrl } from '../../utils/imageUtil';
+import { getFullUrl } from '../../utils/chatImageUtil';
 import { extractOriginalFileName } from './chatFileUtil';
 import MessageBubble from './MessageBubble';
 import FileUploadButton from './FileUploadButton';

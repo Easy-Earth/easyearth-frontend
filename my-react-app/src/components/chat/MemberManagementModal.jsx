@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { searchMember, inviteUser, kickMember, updateRole, updateChatRoomTitle, updateRoomImage, uploadFile, getInvitedUsers, cancelInvitation } from '../../apis/chatApi'; // ✨ import 추가
-import { getFullUrl } from '../../utils/imageUtil'; // ✨ import 추가
+import { getFullUrl } from '../../utils/chatImageUtil'; // ✨ import 추가
 import Modal from '../common/Modal'; 
 import styles from './MemberManagementModal.module.css';
 

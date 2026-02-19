@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { communityApi } from "../../apis/communityApi";
 import { useAuth } from "../../context/AuthContext";
-import { getFullUrl } from "../../utils/imageUtil";
+import { getFullUrl2 } from "../../utils/communityImageUtil";
 import CustomModal from "../common/CustomModal";
 import Input from "../common/Input";
 import Modal from "../common/Modal";
@@ -295,14 +295,15 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
             <label className={styles.formLabel}>
               <span className={styles.required}>*</span> 제목
             </label>
-            <Input
-              placeholder="제목을 입력하세요 (최대 200자)"
-              maxLength={200}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              fullWidth
-              style={{ color: "var(--gray-400)" }}
-            />
+            <div className={styles.titleInput}>
+              <Input
+                placeholder="제목을 입력하세요 (최대 200자)"
+                maxLength={200}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                fullWidth
+              />
+            </div>
           </div>
 
           {/* 내용 */}
@@ -334,7 +335,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
                     onClick={() => toggleDeleteExisting(file.filesId)}
                   >
                     <img
-                      src={getFullUrl(`/community/file/${file.changeName}`)}
+                      src={getFullUrl2(`/community/file/${file.changeName}`)}
                       alt={file.originName}
                       className={styles.existingFileImg}
                     />

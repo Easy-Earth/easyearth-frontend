@@ -4,7 +4,7 @@ import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
 import { useNotification } from '../../context/NotificationContext'; // ✨ Import
 import { createChatRoom, toggleFavorite, acceptInvitation, rejectInvitation, uploadFile, updateProfile } from '../../apis/chatApi';
-import { getFullUrl } from '../../utils/imageUtil'; // Import utility
+import { getFullUrl } from '../../utils/chatImageUtil'; // Import utility
 import ChatRoomTypeModal from './ChatRoomTypeModal';
 import CustomModal from '../common/CustomModal'; // Use Common CustomModal
 import styles from './ChatRoomList.module.css';

@@ -12,7 +12,6 @@ import MapPage from "./pages/MapPage/MapPage";
 import MyPage from "./pages/MyPage/MyPage";
 import ShopPage from "./pages/ShopPage/ShopPage";
 import SignupPage from "./pages/SignupPage/SignupPage";
-import SuggestionPage from "./pages/SuggestionPage/SuggestionPage";
 
 import PasswordFindPage from "./components/member/PasswordFindPage";
 import KakaoCallback from "./pages/Auth/KakaoCallback";
@@ -24,6 +23,8 @@ import { NotificationProvider } from "./context/NotificationContext";
 import ChatJoinPage from "./pages/ChatPage/ChatJoinPage";
 import ChatPage from "./pages/ChatPage/ChatPage";
 import CommunityDetailPage from "./pages/CommunityPage/CommunityDetailPage";
+import InquiriesPage from "./pages/InquiriesPage/InquiriesPage";
+import InquiriesDetailPage from "./pages/InquiriesPage/InquiriesDetailPage";
 
 // 🚀 수정된 모달 관리자: 네비게이션 state를 감시하고 즉시 비웁니다.
 const ModalManager = ({ openLoginModal }) => {
@@ -72,7 +73,8 @@ function App() {
                   <Route path="/map" element={<MapPage />} />
                   <Route path="/community" element={<CommunityPage />} />
                   <Route path="/community/detail/:postId" element={<CommunityDetailPage />} />
-                  <Route path="/suggestions" element={<SuggestionPage />} />
+                  <Route path="/inquiries" element={<InquiriesPage />} />
+                  <Route path="/inquiries/detail/:inquiriesId" element={<InquiriesDetailPage />} />
                   <Route path="/shop" element={<ShopPage />} />
                   <Route path="/find-password" element={<PasswordFindPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
