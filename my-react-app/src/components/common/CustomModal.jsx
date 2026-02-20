@@ -4,13 +4,18 @@ import styles from './CustomModal.module.css';
 function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'alert', zIndex }) {
   const overlayStyle = zIndex ? { zIndex } : {};
 
-  // ✨ 사용자 경험을 위헤 엔터 키 입력시 확인 버튼 동작 추가/ESC도 동작(기본)
+  // ✨ 사용자 경험을 위해 엔터 키 입력시 확인 버튼 동작 추가 및 ESC 닫기 처리
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // isOpen일 때만 동작하도록 가드 추가 (이중 안전장치)
-      if (isOpen && e.key === 'Enter') {
-        e.preventDefault();
-        onConfirm();
+      // isOpen일 때만 동작
+      if (isOpen) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            onConfirm();
+        } else if (e.key === 'Escape') { // ✨ ESC 키 처리 추가
+            e.preventDefault();
+            if (onCancel) onCancel();
+        }
       }
     };
 
@@ -21,7 +26,7 @@ function CustomModal({ isOpen, title, message, onConfirm, onCancel, type = 'aler
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onConfirm]);
+  }, [isOpen, onConfirm, onCancel]);
 
   if (!isOpen) return null;
 

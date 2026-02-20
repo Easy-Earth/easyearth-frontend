@@ -45,9 +45,11 @@ export const createChatRoom = async (roomData) => {
 };
 
 // 3. 채팅방 상세 정보 조회
-export const getChatRoomDetail = async (roomId) => {
+export const getChatRoomDetail = async (roomId, memberId) => {
   try {
-    const response = await api.get(`/chat/room/${roomId}`);
+    const response = await api.get(`/chat/room/${roomId}`, {
+        params: { memberId }
+    });
     return response.data;
   } catch (error) {
     console.error("채팅방 상세 조회 실패", error);
@@ -58,7 +60,7 @@ export const getChatRoomDetail = async (roomId) => {
 // 채팅방 멤버 목록 조회
 export const getChatRoomUsers = async (roomId) => {
     try {
-      const response = await api.get(`/chat/room/${roomId}/members`); // Backend endpoint needs verification
+      const response = await api.get(`/chat/room/${roomId}/members`);
       return response.data;
     } catch (error) {
       console.error("채팅방 멤버 조회 실패", error);
@@ -89,15 +91,6 @@ export const leaveChatRoom = async (roomId, memberId) => {
     throw error;
   }
 };
-// export const leaveChatRoom = async (roomId, memberId) => {
-//   try {
-//     // URL 뒤에 직접 쿼리 스트링을 붙여서 전달
-//     await api.delete(`/chat/room/${roomId}/leave?memberId=${memberId}`);
-//   } catch (error) {
-//     console.error("채팅방 나가기 실패", error);
-//     throw error;
-//   }
-// };
 // ============================================
 // 메시지 관련
 // ============================================

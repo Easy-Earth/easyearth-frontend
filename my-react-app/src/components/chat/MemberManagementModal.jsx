@@ -1,23 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { searchMember, inviteUser, kickMember, updateRole, updateChatRoomTitle, updateRoomImage, uploadFile, getInvitedUsers, cancelInvitation } from '../../apis/chatApi'; // ✨ import 추가
-import { getFullUrl } from '../../utils/chatImageUtil'; // ✨ import 추가
+import { searchMember, inviteUser, kickMember, updateRole, updateChatRoomTitle, updateRoomImage, uploadFile, getInvitedUsers, cancelInvitation } from '../../apis/chatApi';
+import { getFullUrl } from '../../utils/chatImageUtil';
 import Modal from '../common/Modal'; 
 import styles from './MemberManagementModal.module.css';
 
-const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomImage, currentMembers, currentUserId, isOwner, roomType, showAlert, showConfirm, onMemberUpdate }) => {
-    const [activeTab, setActiveTab] = useState('MANAGE'); 
+// 채팅방 멤버 관리 모달 (초대, 강퇴, 권한 위임, 방 설정)
+const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomImage, currentMembers, currentUserId, isOwner, roomType, showAlert, showConfirm, onMemberUpdate, isAlertOpen }) => { //isAlertOpen 추가
+    const [activeTab, setActiveTab] = useState('MANAGE');
     const [searchValue, setSearchValue] = useState('');
     const [searchResult, setSearchResult] = useState(null);
-    const [newTitle, setNewTitle] = useState(currentRoomTitle || ''); 
-    
-    // ✨ 이미지 관련 State
+    const [newTitle, setNewTitle] = useState(currentRoomTitle || '');
     const [previewImage, setPreviewImage] = useState(currentRoomImage || null);
     const fileInputRef = useRef(null);
-
-    // ✨ 초대 대기 멤버 State
     const [invitedMembers, setInvitedMembers] = useState([]);
+    const searchInputRef = useRef(null);
 
-    // ✨ 초대 대기 멤버 조회
+    // 초대 대기 멤버 조회
     const fetchInvitedMembers = async () => {
         try {
             const data = await getInvitedUsers(roomId);
@@ -26,26 +24,29 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
             console.error("초대 대기 멤버 조회 실패", error);
         }
     };
-    
-    // ✨ 포커스용 Ref
-    const searchInputRef = useRef(null);
 
     useEffect(() => {
         if (activeTab === 'MANAGE' && roomType !== 'SINGLE') {
             fetchInvitedMembers();
-            // ✨ 탭 변경 시 자동 포커스
             if (searchInputRef.current) {
                 searchInputRef.current.focus();
             }
         }
     }, [activeTab, roomId, roomType]);
 
-    // ✨ currentRoomImage 변경 시 previewImage 업데이트
+    // currentRoomImage 변경 시 previewImage 동기화
     useEffect(() => {
         setPreviewImage(currentRoomImage);
     }, [currentRoomImage]);
 
-    // ✨ currentMembers 변경 시 검색 결과 업데이트 (실시간 반영)
+    //Alert 닫힘 시 검색창 포커스 복원
+    useEffect(() => {
+        if (!isAlertOpen && activeTab === 'MANAGE' && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [isAlertOpen, activeTab]);
+
+    // currentMembers 변경 시 검색 결과 내 멤버 여부 업데이트
     useEffect(() => {
         if (searchResult) {
             setSearchResult(prev => prev.map(member => ({
@@ -55,16 +56,14 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         }
     }, [currentMembers]);
 
-    // Filter members for management list (exclude self)
     const otherMembers = currentMembers.filter(m => String(m.memberId) !== String(currentUserId));
 
-    // ... (search logic) ...
+    // 닉네임으로 멤버 검색
     const handleSearch = async () => {
         if (!searchValue.trim()) return;
         try {
-            const members = await searchMember(searchValue); // Returns Array
+            const members = await searchMember(searchValue);
             if (members && members.length > 0) {
-                // 각 검색된 멤버가 현재 방에 있는지 체크
                 const resultsWithStatus = members.map(member => ({
                     ...member,
                     exists: currentMembers.some(m => String(m.memberId) === String(member.memberId))
@@ -72,7 +71,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                 setSearchResult(resultsWithStatus);
             } else {
                 setSearchResult([]);
-                showAlert("검색 결과가 없습니다.");
+                showAlert("검색 결과가 없습니다. (정확한 닉네임을 입력해주세요)");
             }
         } catch (error) {
             console.error(error);
@@ -80,29 +79,27 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         }
     };
 
+    // 멤버 초대
     const handleInvite = async (targetMember) => {
         if (!targetMember) return;
         try {
             await inviteUser(roomId, targetMember.memberId, currentUserId);
             showAlert(`${targetMember.name || targetMember.loginId}님을 초대했습니다!`);
-            // setSearchValue(''); // ✨ 검색 값 유지
-            // setSearchResult(null); // ✨ 검색 결과 유지
-            onMemberUpdate(); // ✨ 멤버 목록 갱신 트리거
-            fetchInvitedMembers(); // ✨ [Fix] 초대 대기 목록 즉시 갱신
-            // onClose(); // ✨ 계속 초대할 수 있도록 닫지 않음
+            onMemberUpdate();
+            fetchInvitedMembers();
         } catch (error) {
             console.error(error);
             showAlert("초대에 실패했습니다.");
         }
     };
 
-    // ... (kick/delegate logic) ...
+    // 멤버 강퇴
     const handleKick = (targetId, targetName) => {
         showConfirm(`${targetName}님을 강퇴하시겠습니까?`, async () => {
              try {
                 await kickMember(roomId, targetId, currentUserId);
                 showAlert(`${targetName}님을 강퇴했습니다.`);
-                onMemberUpdate(); // ✨ 멤버 목록 갱신 트리거
+                onMemberUpdate();
             } catch (error) {
                 console.error(error);
                 showAlert("강퇴 실패.");
@@ -110,9 +107,8 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         });
     };
 
+    // 방장 권한 위임
     const handleDelegate = (targetId, targetName, invitationStatus) => {
-        // 초대 수락한 사용자만 위임 가능
-        // 초대 대기중인 사용자에게는 위임 불가
         if (invitationStatus === 'PENDING') {
             showAlert("초대 수락 대기중인 사용자에게는 위임할 수 없습니다.");
             return;
@@ -123,8 +119,6 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                 await updateRole(roomId, targetId, currentUserId, "OWNER");
                 showAlert(`${targetName}님에게 방장 권한을 위임했습니다.`);
                 onClose(); 
-                // ✨ [Fix] 페이지 새로고침 제거 (MEMBER_UPDATE 이벤트가 처리함)
-                // window.location.reload();
             } catch (error) {
                 console.error(error);
                 showAlert("권한 위임 실패.");
@@ -132,7 +126,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         }, "권한 위임");
     };
 
-    // ✨ 방 제목 변경 핸들러
+    // 채팅방 제목 변경
     const handleUpdateTitle = async () => {
         if (!newTitle.trim()) return;
         try {
@@ -145,23 +139,16 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         }
     };
 
-    // ✨ 이미지 선택 핸들러
+    // 채팅방 이미지 변경
     const handleImageChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         try {
-            // 1. 파일 업로드
             const fileUrl = await uploadFile(file);
-            
-            // 2. 미리보기 업데이트
             setPreviewImage(fileUrl);
-            
-            // 3. 서버에 이미지 업데이트 요청
             await updateRoomImage(roomId, currentUserId, fileUrl);
-            
             showAlert("채팅방 이미지가 변경되었습니다.");
-            // onClose(); // 이미지는 바꾸고 계속 설정할 수 있으므로 닫지 않음 (선택 사항)
         } catch (error) {
             console.error("이미지 변경 실패", error);
             showAlert("이미지 변경에 실패했습니다.");
@@ -174,13 +161,13 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
         }
     };
 
-    // ✨ 초대 취소 핸들러
+    // 초대 취소
     const handleCancelInvitation = async (targetId, targetName) => {
         showConfirm(`${targetName}님의 초대를 취소하시겠습니까?`, async () => {
             try {
                 await cancelInvitation(roomId, targetId, currentUserId);
                 showAlert(`${targetName}님의 초대를 취소했습니다.`);
-                fetchInvitedMembers(); // 목록 갱신
+                fetchInvitedMembers();
             } catch (error) {
                 console.error("초대 취소 실패", error);
                 showAlert("초대 취소에 실패했습니다.");
@@ -214,17 +201,17 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
             <div className={styles.content}>
                 {activeTab === 'MANAGE' && (
                     <>
-                        {/* ✨ 1대1 채팅이 아닐 때만 초대 섹션 표시 */}
                         {roomType !== 'SINGLE' && (
                             <div className={styles.inviteSection}>
                                 <div className={styles.searchBox}>
                                     <input 
                                         type="text"
-                                        ref={searchInputRef} // ✨ Ref 연결
+                                        ref={searchInputRef}
                                         value={searchValue}
                                         onChange={(e) => setSearchValue(e.target.value)}
                                         placeholder="초대할 닉네임 검색"
                                         className={styles.input}
+                                        disabled={isAlertOpen}
                                         onKeyDown={(e) => {
                                             if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSearch();
                                         }}
@@ -250,7 +237,6 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                             </div>
                         )}
 
-                        {/* ✨ 초대 대기 멤버 목록 (New Section) */}
                         {invitedMembers.length > 0 && (
                             <div className={styles.sectionHeader}>
                                 <span>초대 대기 ({invitedMembers.length})</span>
@@ -269,7 +255,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                             onClick={() => handleCancelInvitation(member.memberId, member.name)}
                                             title="초대 취소"
                                         >
-                                            ✖
+                                            X
                                         </button>
                                     )}
                                 </li>
@@ -280,7 +266,6 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                             <span>참여 멤버 ({currentMembers.length})</span>
                         </div>
                         <ul className={styles.memberList}>
-                            {/* Me first */}
                             <li className={styles.memberItem}>
                                 <div className={styles.memberInfo}>
                                     <span className={styles.memberName}>{currentMembers.find(m => String(m.memberId) === String(currentUserId))?.name} (나)</span>
@@ -288,12 +273,10 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                 </div>
                             </li>
                             
-                            {/* Others */}
                             {otherMembers.map(member => (
                                 <li key={member.memberId} className={styles.memberItem}>
                                     <div className={styles.memberInfo}>
                                         <span className={styles.memberName}>{member.name}</span>
-                                        {/* PENDING Status already filtered out from currentMembers by ChatServiceImpl changes, but safe to keep check */}
                                         {member.invitationStatus === 'PENDING' && (
                                             <span className={styles.pendingBadge}>초대 대기중</span>
                                         )}
@@ -321,12 +304,11 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                     </>
                 )}
 
-                {/* 설정 탭 */}
+                {/* 방 설정 탭 */}
                 {activeTab === 'SETTINGS' && (
                     <div className={styles.settingsSection}>
                         {isOwner ? (
                             <>
-                                {/* ✨ 방 이미지 설정 */}
                                 <div className={styles.settingItem}>
                                     <label className={styles.settingLabel}>채팅방 이미지</label>
                                     <div className={styles.imageSetting}>
@@ -340,7 +322,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                             className={styles.roomImg}
                                             onError={(e) => { e.target.src = "/default-room.svg"; }}
                                         />
-                                            <div className={styles.cameraOverlay}>📷</div>
+                                            <div className={styles.cameraOverlay}>사진</div>
                                         </div>
                                         <input 
                                             type="file" 
@@ -352,7 +334,6 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                     </div>
                                 </div>
 
-                                {/* 방 이름 설정 */}
                                 <div className={styles.settingItem}>
                                     <label className={styles.settingLabel}>채팅방 이름</label>
                                     <div className={styles.settingRow}>
@@ -362,7 +343,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                                             value={newTitle}
                                             onChange={(e) => setNewTitle(e.target.value)}
                                             placeholder="채팅방 이름을 입력하세요(최대 15글자)"
-                                            maxLength={15} // ✨ 10글자 제한
+                                            maxLength={15}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleUpdateTitle();
                                             }}
@@ -379,7 +360,7 @@ const MemberManagementModal = ({ onClose, roomId, currentRoomTitle, currentRoomI
                             </>
                         ) : (
                             <div className={styles.noPermission}>
-                                ⚠️ 방장만 채팅방 설정을 변경할 수 있습니다.
+                                방장만 채팅방 설정을 변경할 수 있습니다.
                             </div>
                         )}
                     </div>

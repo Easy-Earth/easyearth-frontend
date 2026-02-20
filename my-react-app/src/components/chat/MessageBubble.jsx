@@ -5,8 +5,9 @@ import { getFullUrl } from '../../utils/chatImageUtil';
 import MessageContextMenu from './MessageContextMenu';
 import { toggleReaction, deleteMessage } from '../../apis/chatApi';
 import UserDatailModal from '../common/UserDatailModal';
-import { extractOriginalFileName } from './chatFileUtil'; // Import local utility
+import { extractOriginalFileName } from './chatFileUtil';
 
+// 개별 메시지 버블 컴포넌트
 const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh, onImageLoad, isHighlighted, showAlert, onReplyClick }) => {
     const { user } = useAuth();
     const [showMenu, setShowMenu] = useState(false);
@@ -14,7 +15,6 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
     const [showProfileModal, setShowProfileModal] = useState(false);
     const longPressTimer = useRef(null);
 
-    // 메시지가 없거나 시스템 메시지인 경우 처리
     if (!message) return null;
     
     const isMine = message.senderId === user?.memberId;
@@ -26,7 +26,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                      message.senderName === '시스템' || 
                      message.senderName === '관리자';
 
-    // 시간 포맷팅
+    // 시간 포맷 (HH:MM)
     const formatTime = (isoString) => {
         if (!isoString) return "";
         try {
@@ -38,13 +38,14 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
         }
     };
 
-    // 컨텍스트 메뉴 핸들러
+    // 우클릭 컨텍스트 메뉴 표시
     const handleContextMenu = (e) => {
         e.preventDefault();
         setMenuPosition({ x: e.clientX, y: e.clientY });
         setShowMenu(true);
     };
 
+    // 모바일 롱프레스 메뉴 표시
     const handleTouchStart = (e) => {
         longPressTimer.current = setTimeout(() => {
             const touch = e.touches[0];
@@ -59,7 +60,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
         }
     };
 
-    // 메뉴 액션
+    // 이모지 리액션 토글
     const handleReaction = async (emoji) => {
         try {
             await toggleReaction(message.messageId, user.memberId, emoji);
@@ -71,6 +72,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
         }
     };
 
+    // 메시지 삭제 (소프트 삭제)
     const handleDelete = async () => {
         try {
             await deleteMessage(message.messageId, user.memberId);
@@ -83,9 +85,9 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
     };
 
     const menuOptions = [
-        { label: "답장", icon: "↩️", action: () => onReply(message) },
-        ...(isOwner ? [{ label: "공지 등록", icon: "📢", action: () => onSetNotice(message) }] : []),
-        ...(isMine ? [{ label: "삭제", icon: "🗑️", action: handleDelete }] : [])
+        { label: "답장", icon: "↩", action: () => onReply(message) },
+        ...(isOwner ? [{ label: "공지 등록", icon: "", action: () => onSetNotice(message) }] : []),
+        ...(isMine ? [{ label: "삭제", icon: "", action: handleDelete }] : [])
     ];
 
     if (isSystem) {
@@ -103,7 +105,6 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
         >
-            {/* 상대방일 경우에만 아바타 표시 */}
             {!isMine && (
                 <div className={styles.avatar} onClick={() => setShowProfileModal(true)}>
                     <img 
@@ -121,7 +122,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
             <div className={styles.content}>
                 {!isMine && <div className={styles.name}>{message.senderName || "알 수 없음"}</div>}
                 
-                {/* 답장 인용 표시 */}
+                {/* 답장 인용 */}
                 {message.parentMessageId && (
                      <div 
                         className={styles.replyPreview} 
@@ -144,12 +145,10 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
 
                 <div className={styles.bubbleRow} style={{ opacity: message.isOptimistic ? 0.7 : 1 }}>
                     <div className={`${styles.bubble} ${message.messageType === 'DELETED' ? styles.deletedBubble : ''}`}>
-                        {/* 삭제된 메시지 */}
                         {message.messageType === 'DELETED' ? (
                             <span className={styles.deletedText}>삭제된 메시지입니다.</span>
                         ) : (
                             <>
-                                {/* 텍스트 메시지 */}
                                 {(message.contentType === 'TEXT' || message.messageType === 'TEXT') && message.content}
                                 
                                 {/* 이미지 메시지 */}
@@ -221,7 +220,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                                             }
                                         }}
                                     >
-                                        📎 {extractOriginalFileName(message.content)}
+                                        [파일] {extractOriginalFileName(message.content)}
                                     </div>
                                 )}
                             </>
@@ -257,7 +256,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                     y={menuPosition.y} 
                     options={menuOptions} 
                     onClose={() => setShowMenu(false)} 
-                    onReaction={handleReaction} // ✨ Pass handler
+                    onReaction={handleReaction}
                 />
             )}
 

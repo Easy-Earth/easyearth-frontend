@@ -118,7 +118,9 @@ const NotificationCenter = ({ setModalConfig }) => {
 
     const handleNotificationClick = (notification) => {
         markAsRead(notification.id);
-        if (notification.type === 'INVITATION' || notification.type === 'CHAT') {
+        if (notification.type === 'INVITATION') {
+            navigate('/chat');
+        } else if (notification.type === 'CHAT') {
              navigate(`/chat/${notification.chatRoomId}`);
         } else if (notification.type === 'KICK') {
              setModalConfig({

@@ -27,12 +27,14 @@ import CommunityDetailPage from "./pages/CommunityPage/CommunityDetailPage";
 import InquiriesPage from "./pages/InquiriesPage/InquiriesPage";
 import InquiriesDetailPage from "./pages/InquiriesPage/InquiriesDetailPage";
 
-// 🚀 수정된 모달 관리자: 네비게이션 state를 감시하고 즉시 비웁니다.
 import NotFoundPage from "./pages/NotFound/NotFoundPage";
-// 모달 관리자
-const ModalManager = ({ openLoginModal }) => {
+const GlobalHandler = ({ openLoginModal }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const [securityModal, setSecurityModal] = useState({
+    isOpen: false,
+    message: ""
+  });
 
   useEffect(() => {
     if (location.state?.openLogin) {
@@ -41,22 +43,6 @@ const ModalManager = ({ openLoginModal }) => {
     }
   }, [location, openLoginModal, navigate]);
 
-  return null;
-};
-
-function App() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  
-  // 시큐리티 에러 모달 상태 추가
-  const [securityModal, setSecurityModal] = useState({
-    isOpen: false,
-    message: ""
-  });
-
-  const openLoginModal = () => setIsLoginOpen(true);
-  const closeLoginModal = () => setIsLoginOpen(false);
-
-  // 전역 시큐리티 에러 감시 (api.js에서 보낸 신호를 받음)
   useEffect(() => {
     const handleSecurityError = (e) => {
       setSecurityModal({
@@ -70,27 +56,35 @@ function App() {
   }, []);
 
   return (
+    <CustomModal
+      isOpen={securityModal.isOpen}
+      type="alert"
+      message={securityModal.message}
+      onConfirm={() => {
+        setSecurityModal({ isOpen: false, message: "" });
+        // 403 발생 시 안전하게 메인 페이지로 이동하여 무한 루프 방지
+        navigate("/", { replace: true });
+      }}
+    />
+  );
+};
+
+function App() {
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  
+  const openLoginModal = () => setIsLoginOpen(true);
+  const closeLoginModal = () => setIsLoginOpen(false);
+
+  return (
     <AuthProvider>
       <NotificationProvider>
         <ChatProvider>
           <Router>
-            <ModalManager openLoginModal={openLoginModal} />
+            <GlobalHandler openLoginModal={openLoginModal} />
             
             <div className="app-container">
               <Header openLoginModal={openLoginModal} />
               <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} />
-
-              {/* 시큐리티 차단 알림 모달 */}
-              <CustomModal
-                isOpen={securityModal.isOpen}
-                type="alert"
-                message={securityModal.message}
-                onConfirm={() => {
-                  setSecurityModal({ isOpen: false, message: "" });
-                  // 403 발생 시 이전 페이지로 강제 리다이렉트
-                  window.history.back();
-                }}
-              />
 
               <main className="main-content">
                 <Routes>
