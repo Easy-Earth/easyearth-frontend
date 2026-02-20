@@ -13,6 +13,8 @@ import InventoryPage from "../pages/InventoryPage/InventoryPage";
 import CommunityDetailPage from "../pages/CommunityPage/CommunityDetailPage";
 import InquiriesPage from "../pages/InquiriesPage/InquiriesPage";
 import InquiriesDetailPage from "../pages/InquiriesPage/InquiriesDetailPage";
+import ReportsDetailPage from "../pages/ReportsPage/ReportsDetailPage";
+import ReportsPage from "../pages/ReportsPage/ReportsPage";
 
 function AppRouter() {
   return (
@@ -56,7 +58,25 @@ function AppRouter() {
         }
       />
 
-      {/* 4. 404 페이지 (선택사항) */}
+      {/* 4. 관리자만 접근 가능 (신고 페이지) */}
+      <Route
+        path="/reports"
+        element={
+          <AdminRoute>
+            <ReportsPage />
+          </AdminRoute>
+        }
+      />
+      <Route
+        path="/reports/detail/:reportsId"
+        element={
+          <AdminRoute>
+            <ReportsDetailPage />
+          </AdminRoute>
+        }
+      />
+
+      {/* 5. 404 페이지 (선택사항) */}
       <Route path="*" element={<div>페이지를 찾을 수 없습니다.</div>} />
     </Routes>
   );

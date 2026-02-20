@@ -202,7 +202,7 @@ const InquiriesPage = () => {
                 </div>
 
                 <div className={styles.cardFooter}>
-                  <div className={styles.statItem}>👁️ {inquiry.viewCount}</div>
+                  <div className={styles.statItem}>👁️‍🗨️ {inquiry.viewCount}</div>
                   {user?.memberId === 1 && (
                     <button 
                       className={styles.statusManageBtn} 
