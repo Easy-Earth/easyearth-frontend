@@ -1,11 +1,11 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { getEnvironmentEffectGlobal, getEnvironmentEffectPersonal } from "../../apis/staticEffect";
 import { weatherApi } from "../../apis/weather";
 import AttendanceModal from "../../components/main/AttendanceModal";
 import EcoCalendar from "../../components/main/EcoCalendar";
+import GlobalEcoNews from "../../components/main/GlobalEcoNews";
 import QuestModal from "../../components/main/QuestModal";
 import QuizModal from "../../components/main/QuizModal";
-import GlobalEcoNews from "../../components/main/GlobalEcoNews";
-
 import styles from "./MainPage.module.css";
 
 function MainPage() {
@@ -14,31 +14,67 @@ function MainPage() {
     const [weatherList, setWeatherList] = useState([]);
     const [secretaryMsg, setSecretaryMsg] = useState("");
     const [loading, setLoading] = useState(true);
+    const [activeMemberId, setActiveMemberId] = useState(0);
+
+    const [globalEffect, setGlobalEffect] = useState({ co2: 0, tree: 0 });
+    const [personalEffect, setPersonalEffect] = useState({ 
+        memberId: 0, co2: 0, tree: 0, quizSuccessCount: 0, quizFailCount: 0, quizRate: 0 
+    });
+
+    // 500개를 기준으로 정답률 계산 (백분율)
+    const calculatedRate = Math.floor((personalEffect.quizSuccessCount / 500) * 100);
+    // 프로그레스 바는 최대 100%까지만 차도록 제한
+    const barWidth = Math.min(calculatedRate, 100);
 
     const openModal = (type) => setModalType(type);
     const closeModal = () => setModalType(null);
 
-    useEffect(() => {
-        const fetchAllData = async () => {
-            setLoading(true);
-            try {
-                const [summary, list, msg] = await Promise.all([
-                    weatherApi.getForecast(),
-                    weatherApi.getForecastList(),
-                    weatherApi.getSecretaryMessage()
-                ]);
+    const fetchAllData = useCallback(async (targetId) => {
+        setLoading(true);
+        try {
+            const [summary, list, msg, globalData, personalData] = await Promise.all([
+                weatherApi.getForecast(),
+                weatherApi.getForecastList(),
+                weatherApi.getSecretaryMessage(),
+                getEnvironmentEffectGlobal(),
+                targetId !== 0 ? getEnvironmentEffectPersonal(targetId) : Promise.resolve(null)
+            ]);
 
-                setWeather(summary);
-                setWeatherList(list);
-                setSecretaryMsg(msg);
-            } catch (err) {
-                console.error("데이터 로드 중 오류 발생:", err);
-            } finally {
-                setLoading(false);
+            setWeather(summary);
+            setWeatherList(list);
+            setSecretaryMsg(msg);
+            if (globalData) setGlobalEffect(globalData);
+            if (personalData) setPersonalEffect(personalData);
+        } catch (err) {
+            console.error("데이터 로드 중 오류 발생:", err);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        const getMemberIdFromLocalStorage = () => {
+            try {
+                const userData = window.localStorage.getItem("user");
+                if (userData) {
+                    const parsedUser = JSON.parse(userData);
+                    const id = parsedUser.memberId;
+                    if (id && Number(id) !== activeMemberId) {
+                        setActiveMemberId(Number(id));
+                    }
+                }
+            } catch (e) {
+                console.error("로컬 스토리지 파싱 에러:", e);
             }
         };
-        fetchAllData();
-    }, []);
+        getMemberIdFromLocalStorage();
+        const tracker = setInterval(getMemberIdFromLocalStorage, 500);
+        return () => clearInterval(tracker);
+    }, [activeMemberId]);
+
+    useEffect(() => {
+        fetchAllData(activeMemberId);
+    }, [activeMemberId, fetchAllData]);
 
     const getSkyStatus = (sky, pty) => {
         if (pty > 0) return "🌧️ 비/눈";
@@ -50,7 +86,6 @@ function MainPage() {
 
     return (
         <div className={styles.container}>
-            {/* 좌측 상단 날씨 섹션 */}
             <div className={styles.absoluteLeft}>
                 {weather && (
                     <div className={styles.weatherWidget}>
@@ -67,49 +102,73 @@ function MainPage() {
                 )}
             </div>
 
-            {/* 우측 상단 달력 섹션 - 위치 고정 */}
             <div className={styles.absoluteRight}>
                 <EcoCalendar />
+                
+                {!loading && globalEffect && (
+                    <div className={styles.reportCard}>
+                        <h4 className={styles.reportTitle}>🌏 지구 누적 통계</h4>
+                        <div className={styles.reportGrid}>
+                            <div className={styles.reportItem}>
+                                <span className={styles.reportLabel}>탄소 절감</span>
+                                <span className={styles.reportValue}>{globalEffect.co2.toLocaleString()}g</span>
+                            </div>
+                            <div className={styles.reportItem}>
+                                <span className={styles.reportLabel}>나무 효과</span>
+                                <span className={styles.reportValue}>{globalEffect.tree.toFixed(4)}그루</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeMemberId !== 0 && (
+                    <div className={styles.reportCard}>
+                        <h4 className={styles.reportTitle}>👤 나의 에코 리포트</h4>
+                        <div className={styles.reportGrid}>
+                            <div className={styles.reportItem}>
+                                <span className={styles.reportLabel}>나의 탄소</span>
+                                <span className={styles.reportValue}>{personalEffect.co2.toLocaleString()}g</span>
+                            </div>
+                            <div className={styles.reportItem}>
+                                <span className={styles.reportLabel}>나의 나무</span>
+                                <span className={styles.reportValue}>{personalEffect.tree.toFixed(4)}그루</span>
+                            </div>
+                        </div>
+                        
+                        <div className={styles.quizSection}>
+                            <div className={styles.quizHeader}>
+                                <span>🎯 퀴즈 달성도 (목표: 500개)</span>
+                                <span className={styles.rateHighlight}>{calculatedRate}%</span>
+                            </div>
+                            <div className={styles.progressBarBg}>
+                                <div className={styles.progressBarFill} style={{ width: `${barWidth}%` }}></div>
+                            </div>
+                            <div className={styles.quizCountRow}>
+                                <span className={styles.successText}>✅ 맞힘 {personalEffect.quizSuccessCount}</span>
+                                <span className={styles.failText}>❌ 틀림 {personalEffect.quizFailCount}</span>
+                                <span className={styles.rateText}>정답률 : {personalEffect.quizRate}%</span>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* 메인 콘텐츠 영역 */}
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
-
                 <div className={styles.secretaryContainer}>
                     <button 
+                        className={styles.refreshBtn}
                         onClick={async () => {
-                            if(window.confirm("날씨와 뉴스 정보를 최신으로 갱신하시겠습니까? (약 3~5초 소요)")) {
+                            if(window.confirm("데이터를 갱신하시겠습니까?")) {
                                 setLoading(true);
                                 await weatherApi.refreshCache();
                                 window.location.reload(); 
                             }
                         }}
-                        style={{
-                            position: 'absolute',
-                            top: '-30px',
-                            right: '0',
-                            padding: '5px 10px',
-                            backgroundColor: '#4CAF50',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '5px',
-                            cursor: 'pointer',
-                            fontSize: '0.8rem',
-                            zIndex: 10
-                        }}
-                    >
-                        🔄 데이터 갱신
-                    </button>
+                    >🔄 데이터 갱신</button>
                     <div className={styles.speechBubble}>
-                        {/* 비서 메시지 출력 */}
-                        {loading ? (
-                            <p>에코봇이 메시지를 준비 중입니다...</p>
-                        ) : (
-                            secretaryMsg.split('\n').map((line, i) => (
-                                <p key={i}>{line}</p>
-                            ))
-                        )}
+                        {loading ? <p>에코봇이 메시지를 준비 중입니다...</p> : 
+                            secretaryMsg.split('\n').map((line, i) => <p key={i}>{line}</p>)}
                     </div>
                 </div>
 
@@ -118,38 +177,24 @@ function MainPage() {
                         weatherList.map((w, idx) => (
                             <div key={idx} className={styles.largeCard}>
                                 <span className={styles.cardTime}>{w.displayTime}</span>
-                                <span className={styles.cardIcon}>
-                                    {getSkyStatus(w.sky, w.pty).split(' ')[0]}
-                                </span>
+                                <span className={styles.cardIcon}>{getSkyStatus(w.sky, w.pty).split(' ')[0]}</span>
                                 <span className={styles.cardTmp}>{w.tmp}°</span>
                                 <div className={styles.cardDetails}>
-                                    <span>💧 습도 {w.reh}%</span>
+                                    <span>💧 {w.reh}%</span>
                                     <span>💨 {w.wsd}m/s</span>
-                                    <span className={w.pm10 > 80 ? styles.badDust : ""}>
-                                        😷 미세 {w.pm10 ?? "-"}
-                                    </span>
+                                    <span className={w.pm10 > 80 ? styles.badDust : ""}>😷 {w.pm10 ?? "-"}</span>
                                 </div>
                             </div>
                         ))
-                    ) : !loading && (
-                        <p className={styles.loadingText}>표시할 날씨 정보가 없습니다.</p>
-                    )}
+                    ) : !loading && <p className={styles.loadingText}>데이터가 없습니다.</p>}
                 </div>
-
-                {/* 글로벌 환경 뉴스 섹션 */}
                 {!loading && <GlobalEcoNews />}
             </div>
 
             <aside className={styles.sidebar}>
-                <div className={styles.tab} onClick={() => openModal("quiz")}>
-                    <span className={styles.icon}>📝</span> 퀴즈
-                </div>
-                <div className={styles.tab} onClick={() => openModal("quest")}>
-                    <span className={styles.icon}>🌱</span> 퀘스트
-                </div>
-                <div className={styles.tab} onClick={() => openModal("attendance")}>
-                    <span className={styles.icon}>📅</span> 출석
-                </div>
+                <div className={styles.tab} onClick={() => openModal("quiz")}>📝 퀴즈</div>
+                <div className={styles.tab} onClick={() => openModal("quest")}>🌱 퀘스트</div>
+                <div className={styles.tab} onClick={() => openModal("attendance")}>📅 출석</div>
             </aside>
 
             <QuizModal isOpen={modalType === "quiz"} onClose={closeModal} />
