@@ -28,7 +28,7 @@ import InquiriesPage from "./pages/InquiriesPage/InquiriesPage";
 import InquiriesDetailPage from "./pages/InquiriesPage/InquiriesDetailPage";
 
 import NotFoundPage from "./pages/NotFound/NotFoundPage";
-const GlobalHandler = ({ openLoginModal }) => {
+const ModalManager = ({ openLoginModal }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [securityModal, setSecurityModal] = useState({
@@ -80,8 +80,8 @@ function App() {
       <NotificationProvider>
         <ChatProvider>
           <Router>
-            <GlobalHandler openLoginModal={openLoginModal} />
-            
+            <ModalManager openLoginModal={openLoginModal} />
+
             <div className="app-container">
               <Header openLoginModal={openLoginModal} />
               <LoginModal isOpen={isLoginOpen} onClose={closeLoginModal} />
@@ -97,7 +97,7 @@ function App() {
                   <Route path="/shop" element={<ShopPage />} />
                   <Route path="/find-password" element={<PasswordFindPage />} />
                   <Route path="/inventory" element={<InventoryPage />} />
-                  
+
                   <Route path="/join" element={
                     <PublicRoute>
                       <SignupPage />

@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
 import { inquiriesApi } from "../../apis/inquiriesApi";
-import Button from "../../components/common/Button";
+import CustomModal from "../../components/common/CustomModal";
 import Profile from "../../components/common/Profile";
 import UserDetailModal from "../../components/common/UserDatailModal";
 import InquiriesWriteModal from "../../components/inquiries/InquiriesWriteModal";
-import CustomModal from "../../components/common/CustomModal";
+import { useAuth } from "../../context/AuthContext";
 import styles from "./InquiriesDetailPage.module.css";
 
 const InquiriesDetailPage = () => {
