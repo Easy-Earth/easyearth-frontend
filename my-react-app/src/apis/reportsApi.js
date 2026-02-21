@@ -10,14 +10,6 @@ export const reportsApi = {
   // 신고 상세 조회
   reportsDetail: async (reportsId) => {
     const response = await api.get(`/reports/detail/${reportsId}`);
-    return response.data.reports;
-  },
-
-  // 신고 상태 변경 (관리자)
-  reportsStatusChange: async (memberId, reportsId, status) => {
-    const response = await api.put("/reports/changeStatus", null, {
-      params: { memberId, reportsId, status },
-    });
     return response.data;
   },
 
@@ -44,6 +36,21 @@ export const reportsApi = {
   //   });
   //   return response.data;
   // },
+
+  
+  // 신고 상태 변경 (관리자)
+  reportsStatusChange: async (memberId, reportsId, status) => {
+    const response = await api.put("/reports/changeStatus", null, {
+      params: { memberId, reportsId, status },
+    });
+    return response.data;
+  },
+
+   // 누적 신고 10회 블라인드 처리
+  reportsBlind: async (data) => {
+    const response = await api.put("/reports/blind", null, { params: data });
+    return response.data;
+  },
 
   // 신고 중복 체크
   reportsCheck: async (memberId, targetMemberId, postId = 0, replyId = 0, reviewId = 0) => {

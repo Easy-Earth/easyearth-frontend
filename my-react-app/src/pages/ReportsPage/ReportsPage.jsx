@@ -329,7 +329,7 @@ const ReportsPage = () => {
 
           <div className={styles.kanbanColumn}>
             <div className={`${styles.columnHeader} ${styles.resolved}`}>
-              <span className={styles.columnTitle}>☑️ 처리완료</span>
+              <span className={styles.columnTitle}>✅ 처리완료</span>
               <span className={styles.columnCount}>
                 ({resolvedList.length})
               </span>
@@ -376,6 +376,14 @@ const ReportsPage = () => {
                             <span className={styles.userName}>{report.targetMemberName || report.targetMemberId}</span>
                           </div>
                         </div>
+                        {user?.memberId === 1 && (
+                          <button 
+                            className={styles.statusManageBtn} 
+                            onClick={(e) => handleStatusClick(report, e)}
+                          >
+                            📋 상세 정보
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -434,6 +442,14 @@ const ReportsPage = () => {
                             <span className={styles.userName}>{report.targetMemberName || report.targetMemberId}</span>
                           </div>
                         </div>
+                        {user?.memberId === 1 && (
+                          <button 
+                            className={styles.statusManageBtn} 
+                            onClick={(e) => handleStatusClick(report, e)}
+                          >
+                            📋 상세 정보
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
