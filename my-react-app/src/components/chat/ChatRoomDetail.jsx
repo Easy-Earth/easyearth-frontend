@@ -25,7 +25,7 @@ import MemberManagementModal from './MemberManagementModal';
 import styles from './ChatRoomDetail.module.css';
 
 const ChatRoomDetail = ({ roomId }) => {
-    const { client, connected, loadChatRooms } = useChat();
+    const { client, connected, loadChatRooms, lastReadEvent } = useChat();
     const { user } = useAuth();
     const { markNotificationsAsReadForRoom } = useNotification();
     const navigate = useNavigate();
@@ -138,6 +138,7 @@ const ChatRoomDetail = ({ roomId }) => {
 
     // 채팅방 상세 정보 조회 (데이터 반환만 담당, 마커 설정은 호출부에서 처리)
     const fetchRoomInfo = useCallback(async () => {
+        if (isLeaving.current) return null;
         try {
             const data = await getChatRoomDetail(roomId, user?.memberId);
             setRoomInfo(data);
@@ -175,6 +176,7 @@ const ChatRoomDetail = ({ roomId }) => {
 
     // 메시지 목록 조회 (커서 기반 페이징)
     const fetchMessages = useCallback(async (cursorId) => {
+        if (isLeaving.current) return [];
         try {
             if (!hasMoreRef.current && cursorId !== 0) return;
             if (!user) return;
@@ -218,6 +220,7 @@ const ChatRoomDetail = ({ roomId }) => {
         setIsReady(false); // [Fix] 방 전환 시 즉시 숨김 (이전 방 잔상 방지)
 
         const initializeRoom = async () => {
+            if (isLeaving.current) return;
             try {
                 setMessages([]);
                 setHasMore(true);
@@ -225,7 +228,7 @@ const ChatRoomDetail = ({ roomId }) => {
                 setLastReadMarkerId(null);
                 isInitialScrollComplete.current = false;
 
-                // 1. 방 정보 로드 (lastReadId 획득)
+                // 1. 방 정보 로드
                 const roomData = await fetchRoomInfo();
 
                 if (!roomData) {
@@ -233,14 +236,26 @@ const ChatRoomDetail = ({ roomId }) => {
                     return;
                 }
 
-                // 2. 메시지 로드 (항상 30개)
+                // 2. [근본 해결] 메시지 로드 전에 먼저 읽음 처리를 수행하여
+                // 서버가 나를 '읽은 상태'로 반영한 뒤 메시지 목록을 가져오게 함.
+                await markAsRead(roomId, user.memberId, null);
+                await loadChatRooms();
+
+                // 3. 메시지 로드 (이제 나를 제외한 정확한 unreadCount를 포함하게 됨)
                 const messagesData = await fetchMessages(0);
 
-                // 3. 항상 하단으로 스크롤 후 화면 표시
+                // 4. 스크롤 위치 보정 및 화면 표시
                 const lastReadId = roomData.myLastReadMessageId;
-                if (lastReadId) {
-                    setLastReadMarkerId(lastReadId); // 마커 데이터는 구분선 표시용으로 유지
-                    setShowLastReadBtn(true);        // "최근 읽은 메시지로" 버튼 표시
+                if (lastReadId && messagesData && messagesData.length > 0) {
+                    const latestMsgId = messagesData[messagesData.length - 1].messageId;
+                    
+                    if (lastReadId < latestMsgId) {
+                        setLastReadMarkerId(lastReadId);
+                        setShowLastReadBtn(true);
+                    } else {
+                        setLastReadMarkerId(null);
+                        setShowLastReadBtn(false);
+                    }
                 } else {
                     setShowLastReadBtn(false);
                 }
@@ -253,9 +268,6 @@ const ChatRoomDetail = ({ roomId }) => {
                     setIsReady(true);
                 }, 80);
 
-                // 4. 읽음 처리 & 목록 갱신
-                await markAsRead(roomId, user.memberId, null);
-                await loadChatRooms();
                 isFirstLoad.current = false;
 
             } catch (error) {
@@ -277,6 +289,24 @@ const ChatRoomDetail = ({ roomId }) => {
         // isInitialScrollComplete가 true인 경우(무한스크롤 후)에만 동작하지 않도록 처리
     }, [lastReadMarkerId]);
 
+    // 개인 채널로 수신된 READ_UPDATE 감지 (발신자가 방 밖에 있을 때도 메시지 옆 1 갱신)
+    useEffect(() => {
+        if (!lastReadEvent) return;
+        if (String(lastReadEvent.chatRoomId) !== String(roomId)) return;
+
+        const { unreadCountMap } = lastReadEvent;
+        if (!unreadCountMap) return;
+
+        // unreadCountMap에 포함된 메시지만 정확히 업데이트 (나머지는 건드리지 않음)
+        setMessages(prev => prev.map(msg => {
+            const key = String(msg.messageId);
+            if (Object.prototype.hasOwnProperty.call(unreadCountMap, key)) {
+                return { ...msg, unreadCount: unreadCountMap[key] };
+            }
+            return msg;
+        }));
+    }, [lastReadEvent, roomId]);
+
 
 
 
@@ -293,6 +323,7 @@ const ChatRoomDetail = ({ roomId }) => {
                     title: receivedMsg.title !== undefined ? receivedMsg.title : prev.title,
                     roomImage: receivedMsg.roomImage !== undefined ? receivedMsg.roomImage : prev.roomImage
                 }));
+                loadChatRooms(); // 목록 사이드바 정보 동시 갱신
                 return;
             }
 
@@ -543,16 +574,17 @@ const ChatRoomDetail = ({ roomId }) => {
         }
     }, [messages]);
 
-    // 무한 스크롤 시 스크롤 위치 유지
+    // 무한 스크롤 시 스크롤 위치 유지 (상단에 메시지 추가 후 위치 보정)
     useLayoutEffect(() => {
         if (prevScrollHeight.current > 0 && messagesContainerRef.current) {
             const container = messagesContainerRef.current;
-            const currentScrollHeight = container.scrollHeight;
-            const diff = currentScrollHeight - prevScrollHeight.current;
+            const newScrollHeight = container.scrollHeight;
+            const diff = newScrollHeight - prevScrollHeight.current;
 
             if (diff > 0) {
-                console.log(`📜 스크롤 보정: +${diff}px (과거 메시지 로드)`);
-                container.scrollTop = diff; // 기존 스크롤 위치(0 근처) + 늘어난 높이
+                // 절대값(=diff)이 아닌 상대값(+=diff)으로 보정
+                // → 현재 스크롤 위치에서 늘어난 높이만큼 아래로 이동하여 화면이 튀지 않음
+                container.scrollTop += diff;
             }
             prevScrollHeight.current = 0; // Reset
         }
@@ -622,15 +654,20 @@ const ChatRoomDetail = ({ roomId }) => {
         setReplyTo(null);
     };
 
+    // [추가] 퇴장 중인지 여부 (퇴장 직후 추가 API 호출 방지 가드)
+    const isLeaving = useRef(false);
+
     // 채팅방 나가기
     const handleLeave = () => {
         showConfirm("정말 채팅방을 나가시겠습니까?", async () => {
             try {
+                isLeaving.current = true; // 가드 활성화
                 await leaveChatRoom(roomId, user.memberId);
                 // 목록 갱신 후 이동
                 await loadChatRooms();
-                navigate('/chat');
+                navigate('/chat', { replace: true });
             } catch (error) {
+                isLeaving.current = false; // 에러 시 가드 해제
                 console.error("채팅방 나가기 실패", error);
                 showAlert(error.response?.data || "나가기에 실패했습니다.");
             }
@@ -647,7 +684,7 @@ const ChatRoomDetail = ({ roomId }) => {
     };
 
     useEffect(() => {
-        if (showMemberModal && roomId) {
+        if (showMemberModal && roomId && !isLeaving.current) {
             getChatRoomUsers(roomId).then(data => setRoomMembers(data)).catch(err => console.error("멤버 조회 실패", err));
         }
     }, [showMemberModal, roomId]);
@@ -724,7 +761,54 @@ const ChatRoomDetail = ({ roomId }) => {
         }
     };
 
-    const scrollToSearchResult = (messageId) => { scrollToMessage(messageId); };
+    // 검색 결과로 스크롤 — DOM에 없으면 fetchMessages로 로드 후 이동 (방법 2)
+    const scrollToSearchResult = useCallback(async (messageId) => {
+        // 1. 먼저 DOM에서 탐색
+        let element = document.querySelector(`[data-message-id="${messageId}"]`);
+
+        if (!element && hasMoreRef.current) {
+            // 2. DOM에 없으면 fetchMessages를 반복 호출하여 위로 로드
+            let found = false;
+            const MAX_FETCH = 10; // 최대 10번(300개) 로드 시도
+            for (let i = 0; i < MAX_FETCH; i++) {
+                const firstMsgId = messagesRef.current[0]?.messageId;
+                if (!firstMsgId || !hasMoreRef.current) break;
+
+                // 현재 스크롤 높이 저장 (무한스크롤 보정용)
+                if (messagesContainerRef.current) {
+                    prevScrollHeight.current = messagesContainerRef.current.scrollHeight;
+                }
+                await fetchMessages(firstMsgId);
+                // 렌더 대기
+                await new Promise(r => setTimeout(r, 120));
+
+                element = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (element) { found = true; break; }
+            }
+
+            if (!found) {
+                showAlert("해당 메시지를 찾을 수 없습니다.");
+                return;
+            }
+        } else if (!element) {
+            showAlert("해당 메시지를 찾을 수 없습니다.");
+            return;
+        }
+
+        // 3. 하이라이트 + 스크롤
+        setHighlightedMessageId(null);
+        setTimeout(() => {
+            setHighlightedMessageId(messageId);
+            const el = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+            highlightTimeoutRef.current = setTimeout(() => {
+                setHighlightedMessageId(null);
+                highlightTimeoutRef.current = null;
+            }, 3000);
+        }, 50);
+    }, [fetchMessages, showAlert]);
 
     // 이전 검색 결과로 이동 (더 오래된 방향)
     const handlePrevSearchResult = async () => {
@@ -747,22 +831,17 @@ const ChatRoomDetail = ({ roomId }) => {
                     setSearchOffset(prev => prev + nextResults.length);
                     setHasMoreSearchResults(nextResults.length === 10);
 
-                    // 새로 추가된 첫 번째 메시지로 이동
                     setCurrentSearchIndex(newIndex);
                     // updatedResults 배열에서 newIndex 위치의 messageId 사용
-                    setTimeout(() => {
-                        console.log('◀ Scrolling to newly loaded message at index:', newIndex);
-                        scrollToMessage(updatedResults[newIndex].messageId);
-                    }, 100);
+                    scrollToSearchResult(updatedResults[newIndex].messageId);
                 }
             } catch (error) {
                 console.error("추가 검색 실패", error);
             }
         } else if (newIndex < searchResults.length) {
-            // 인덱스가 범위 내에 있으면 이동
             console.log('◀ Navigating to existing result at index:', newIndex);
             setCurrentSearchIndex(newIndex);
-            scrollToMessage(searchResults[newIndex].messageId);
+            scrollToSearchResult(searchResults[newIndex].messageId);
         }
     };
 
@@ -809,7 +888,7 @@ const ChatRoomDetail = ({ roomId }) => {
             const newIndex = currentSearchIndex - 1;
             console.log('▶ Navigating to index:', newIndex);
             setCurrentSearchIndex(newIndex);
-            scrollToMessage(searchResults[newIndex].messageId); // ✨ 공통 함수 사용
+            scrollToSearchResult(searchResults[newIndex].messageId);
         } else {
             console.log('▶ Already at most recent result (index 0)');
         }
@@ -966,11 +1045,11 @@ const ChatRoomDetail = ({ roomId }) => {
                     <button onClick={handleSearch} className={styles.searchButton}>검색</button>
                     {searchResults.length > 0 && (
                         <>
-                            <button onClick={handlePrevSearchResult} className={styles.navButton} title="이전">◀</button>
+                            <button onClick={handleNextSearchResult} className={styles.navButton} title="최신으로">◀</button>
                             <span className={styles.searchCount}>
-                                {searchResults.length - currentSearchIndex} / {searchOffset > searchResults.length ? searchOffset : searchResults.length}
+                                {currentSearchIndex + 1} / {hasMoreSearchResults ? `${searchResults.length}+` : searchResults.length}
                             </span>
-                            <button onClick={handleNextSearchResult} className={styles.navButton} title="다음">▶</button>
+                            <button onClick={handlePrevSearchResult} className={styles.navButton} title="과거로">▶</button>
                         </>
                     )}
                     <button onClick={handleCloseSearch} className={styles.closeSearchButton} title="닫기">✖</button>
@@ -997,7 +1076,8 @@ const ChatRoomDetail = ({ roomId }) => {
 
             {/* Message List */}
             <div className={styles.messageList} style={{ visibility: isReady ? 'visible' : 'hidden' }}>
-                <div ref={observerTarget} style={{ height: '10px' }} />
+                {/* overflow-anchor:none → 브라우저 스크롤 앵커가 이 div에 걸리지 않도록 */}
+                <div ref={observerTarget} style={{ height: '10px', overflowAnchor: 'none' }} />
                 {messages.map((msg, index) => {
                     const currentDate = new Date(msg.createdAt).toDateString();
                     const prevDate = index > 0 ? new Date(messages[index - 1].createdAt).toDateString() : null;

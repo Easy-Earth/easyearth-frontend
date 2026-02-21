@@ -4,6 +4,7 @@ import logo from "../../assets/images/easyearthLOGO.png";
 import kakaoBtnImg from "../../assets/images/kakaoBtn.png";
 import { useAuth } from "../../context/AuthContext";
 import { useNotification } from "../../context/NotificationContext";
+import { useChat } from "../../context/ChatContext";
 import CustomModal from "../common/CustomModal";
 import styles from "./Header.module.css";
 
@@ -102,6 +103,7 @@ const Header = ({ openLoginModal }) => {
 
 const NotificationCenter = ({ setModalConfig }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead, removeNotification } = useNotification();
+    const { loadChatRooms } = useChat();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
@@ -122,6 +124,7 @@ const NotificationCenter = ({ setModalConfig }) => {
             navigate('/chat');
         } else if (notification.type === 'CHAT') {
              navigate(`/chat/${notification.chatRoomId}`);
+             loadChatRooms(); // 채팅 목록 unreadCount 즉시 갱신
         } else if (notification.type === 'KICK') {
              setModalConfig({
                  isOpen: true,
@@ -155,7 +158,9 @@ const NotificationCenter = ({ setModalConfig }) => {
                         {notifications.length === 0 ? (
                             <li className={styles.emptyItem}>새로운 알림이 없습니다.</li>
                         ) : (
-                            notifications.map(n => (
+                            [...notifications]
+                                .sort((a, b) => (a.read === b.read ? 0 : a.read ? 1 : -1))
+                                .map(n => (
                                 <li 
                                     key={n.id} 
                                     className={`${styles.notificationItem} ${n.read ? styles.read : ''}`}

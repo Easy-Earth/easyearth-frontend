@@ -28,9 +28,7 @@
     width: fit-content;
 }
 
-.systemText {
-    /* systemMessage 내부 텍스트 스타일 */
-}
+
 
 .avatar {
     width: 36px;
@@ -53,6 +51,7 @@
 .content {
     display: flex;
     flex-direction: column;
+    align-items: flex-start; /* 상대방 메시지 기본: 왼쪽 정렬 */
     max-width: 70%;
     position: relative;
     /* 내 메시지일 때 오른쪽 정렬은 myMessage .content에서 처리 */
@@ -212,9 +211,7 @@
     font-weight: 700;
 }
 
-.time {
-    /* formatTime handles visual */
-}
+
 
 /* 리액션 */
 .reactions {

@@ -72,10 +72,12 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
         }
     };
 
-    // 메시지 삭제 (소프트 삭제)
+    // 메시지 삭제 (소프트 삭제) — 방장이 타인 메시지 삭제 시 requesterId 전달
     const handleDelete = async () => {
         try {
-            await deleteMessage(message.messageId, user.memberId);
+            // isMine: 본인 삭제, isOwner && !isMine: 방장이 타인 메시지 삭제
+            const requesterId = !isMine && isOwner ? user.memberId : undefined;
+            await deleteMessage(message.messageId, user.memberId, requesterId);
         } catch (error) {
             console.error("삭제 실패", error);
             if (showAlert) {
@@ -86,8 +88,8 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
 
     const menuOptions = [
         { label: "답장", icon: "↩", action: () => onReply(message) },
-        ...(isOwner ? [{ label: "공지 등록", icon: "", action: () => onSetNotice(message) }] : []),
-        ...(isMine ? [{ label: "삭제", icon: "", action: handleDelete }] : [])
+        ...(isOwner ? [{ label: "공지 등록", icon: "📌", action: () => onSetNotice(message) }] : []),
+        ...(isMine || isOwner ? [{ label: "삭제", icon: "🗑", action: handleDelete }] : [])
     ];
 
     if (isSystem) {
@@ -220,7 +222,7 @@ const MessageBubble = memo(({ message, onReply, onSetNotice, isOwner, onRefresh,
                                             }
                                         }}
                                     >
-                                        [파일] {extractOriginalFileName(message.content)}
+                                        💾 {extractOriginalFileName(message.content)}
                                     </div>
                                 )}
                             </>

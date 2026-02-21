@@ -16,6 +16,7 @@ export const ChatProvider = ({ children }) => {
   const [connected, setConnected] = useState(false);
   const [chatRooms, setChatRooms] = useState([]);
   const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [lastReadEvent, setLastReadEvent] = useState(null); // 개인 채널 READ_UPDATE 공유용
 
   const stompClientRef = useRef(null);
 
@@ -59,6 +60,11 @@ export const ChatProvider = ({ children }) => {
           if (notification.type === 'LEAVE_ROOM_SUCCESS' || notification.type === 'CHAT_LIST_REFRESH') {
               loadChatRooms();
               return; 
+          }
+          
+          if (notification.type === 'READ_UPDATE') {
+              setLastReadEvent(notification); // ChatRoomDetail에서 useEffect로 감지
+              return;
           }
 
           if (notification.type === 'PROFILE_UPDATE') {
@@ -128,7 +134,8 @@ export const ChatProvider = ({ children }) => {
       connected, 
       chatRooms, 
       loadChatRooms, 
-      totalUnreadCount 
+      totalUnreadCount,
+      lastReadEvent
     }}>
       {children}
     </ChatContext.Provider>

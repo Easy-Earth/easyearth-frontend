@@ -133,11 +133,11 @@ export const searchMessages = async (roomId, memberId, keyword, limit = 10, offs
   }
 };
 
-// 메시지 삭제 (Soft Delete)
-export const deleteMessage = async (messageId, memberId) => {
+// 메시지 삭제 (Soft Delete) — requesterId: 방장 권한 삭제 시 전달
+export const deleteMessage = async (messageId, memberId, requesterId) => {
   try {
     await api.put(`/chat/message/${messageId}/delete`, null, {
-      params: { memberId }
+      params: { memberId, ...(requesterId ? { requesterId } : {}) }
     });
   } catch (error) {
     console.error("메시지 삭제 실패", error);
