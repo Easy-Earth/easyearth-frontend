@@ -80,19 +80,25 @@
   margin-bottom: 16px;
 }
 
-.statusGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.statusOptions {
+  display: flex;
   gap: 12px;
+  width: 100%;
+  justify-content: space-between;
 }
 
 .statusCard {
+  flex: 1;  
   padding: 20px 16px;
   border: 2px solid;
   border-radius: 12px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .statusCard:hover {
@@ -106,7 +112,7 @@
 
 .statusCard.disabled {
   opacity: 0.5;
-  cursor: not-allowed !important;
+  cursor: not-allowed;
 }
 
 .statusIcon {

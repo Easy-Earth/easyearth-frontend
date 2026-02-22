@@ -40,7 +40,7 @@
 .tab:hover        { background-color: var(--green-50); color: var(--green-700); }
 .tab:focus,
 .tab:focus-visible { outline: none; box-shadow: none; }
-.tabActive        { background-color: var(--green-500) !important; color: #fff !important; }
+.tabActive        { background-color: var(--green-500); color: #fff; }
 
 /* ── 게시글 수 ── */
 .listMeta    { font-size: 15px; color: var(--gray-400); margin-left: 15px; margin-bottom: 10px; text-align: left; }
@@ -68,7 +68,7 @@
 
 /* ── 카드 ── */
 .card {
-  width: calc(50% - 6px);  /* 2열로 배치 */
+  width: calc(50% - 6px); 
   background-color: #fff;
   border: 1px solid var(--gray-200);
   border-radius: 14px;

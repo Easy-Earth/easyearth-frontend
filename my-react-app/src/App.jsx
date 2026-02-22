@@ -17,7 +17,7 @@ import SignupPage from "./pages/SignupPage/SignupPage";
 import PasswordFindPage from "./components/member/PasswordFindPage";
 import KakaoCallback from "./pages/Auth/KakaoCallback";
 import InventoryPage from "./pages/InventoryPage/InventoryPage";
-import { PrivateRoute, PublicRoute } from "./router/PrivateRouter";
+import { AdminRoute, PrivateRoute, PublicRoute } from "./router/PrivateRouter";
 
 import { ChatProvider } from "./context/ChatContext";
 import { NotificationProvider } from "./context/NotificationContext";
@@ -28,6 +28,9 @@ import InquiriesPage from "./pages/InquiriesPage/InquiriesPage";
 import InquiriesDetailPage from "./pages/InquiriesPage/InquiriesDetailPage";
 
 import NotFoundPage from "./pages/NotFound/NotFoundPage";
+import ReportsPage from "./pages/ReportsPage/ReportsPage";
+import ReportsDetailPage from "./pages/ReportsPage/ReportsDetailPage";
+// 모달 관리자
 const ModalManager = ({ openLoginModal }) => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -127,6 +130,20 @@ function App() {
                   } />
                   <Route path="/kakao/callback" element={<KakaoCallback />} />
                   <Route path="*" element={<NotFoundPage />} />
+
+                  <Route
+                    path="/reports" element={
+                      <AdminRoute>
+                        <ReportsPage />
+                      </AdminRoute>
+                    } />
+                  <Route
+                    path="/reports/detail/:reportsId" element={
+                      <AdminRoute>
+                        <ReportsDetailPage />
+                      </AdminRoute>
+                    } />
+
                 </Routes>
               </main>
             </div>

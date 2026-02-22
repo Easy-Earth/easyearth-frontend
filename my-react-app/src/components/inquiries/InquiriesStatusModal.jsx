@@ -69,7 +69,7 @@ const InquiriesStatusModal = ({ isOpen, onClose, inquiry, onSuccess }) => {
 
           <div className={styles.statusSection}>
             <div className={styles.sectionLabel}>상태 변경</div>
-            <div className={styles.statusGrid}>
+            <div className={styles.statusOptions}>
               {statusOptions.map((option) => (
                 <div
                   key={option.value}

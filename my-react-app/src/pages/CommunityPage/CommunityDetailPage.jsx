@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom"; // useLocation 추가
 import { communityApi } from "../../apis/communityApi";
 import { reviewApi } from "../../apis/reviewApi";
 import CustomModal from "../../components/common/CustomModal";
@@ -16,7 +16,12 @@ import styles from "./CommunityDetailPage.module.css";
 function CommunityDetailPage() {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // 주소창 정보를 가져오기 위해 추가
   const { user, isAuthenticated } = useAuth();
+
+  // URL 쿼리 스트링에서 targetReply 값을 가져옴 (예: ?targetReply=123)
+  const queryParams = new URLSearchParams(location.search);
+  const targetReplyId = queryParams.get("targetReply");
 
   const [post, setPost] = useState(null);
   const [files, setFiles] = useState([]);
@@ -124,6 +129,11 @@ function CommunityDetailPage() {
         setReplies(replyData || []);
       } catch (error) {
         console.error("데이터 로드 실패:", error);
+
+        if(error.response?.status === 403) {
+          alert("누적 신고로 인해 블라인드 처리된 게시글입니다.");
+          navigate("/community");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -309,8 +319,9 @@ function CommunityDetailPage() {
     if (children.length === 0) return null;
 
     return children.map((child) => (
-      <div key={child.replyId}>
-        <div className={styles.replyItemChild} style={{ '--reply-depth': child.depth }}>
+      <div key={child.replyId} id={`reply-${child.replyId}`}>
+        {/* targetReplyId와 일치하면 highlight 클래스 추가 */}
+        <div className={`${styles.replyItemChild} ${String(child.replyId) === targetReplyId ? styles.highlight : ""}`} style={{ '--reply-depth': child.depth }}>
           <div className={styles.replyTop}>
             <div className={styles.replyProfileWrapper}>
               <Profile size="small" memberId={child.memberId} userName={child.name || String(child.memberId)} onClick={handleProfileClick} />
@@ -329,7 +340,7 @@ function CommunityDetailPage() {
                 {likedReplies[child.replyId] ? "❤️" : "🩶"} {child.likeCount || 0}
               </button>
               {isAuthenticated && user?.memberId !== child.memberId && (
-                <button className={styles.reportBtn} onClick={() => onReport(child.memberId, child.name, 'reply', child.replyId)}>🚨 신고</button>
+                <button className={styles.replyReportBtn} onClick={() => onReport(child.memberId, child.name, 'reply', child.replyId)}>🚨 신고</button>
               )}
               <button className={`${styles.replyReplyBtn} ${openReplyBoxId === child.replyId ? styles.active : ""}`} onClick={() => toggleReplyBox(child.replyId)}>💬 답글</button>
               {isAuthenticated && user?.memberId === child.memberId && (
@@ -452,8 +463,9 @@ function CommunityDetailPage() {
 
           <div className={styles.replyList}>
             {rootReplies.map((r) => (
-              <div key={r.replyId}>
-                <div className={styles.replyItem}>
+              <div key={r.replyId} id={`reply-${r.replyId}`}>
+                {/* targetReplyId와 일치하면 highlight 클래스 추가 */}
+                <div className={`${styles.replyItem} ${String(r.replyId) === targetReplyId ? styles.highlight : ""}`}>
                   <div className={styles.replyTop}>
                     <div className={styles.replyProfileWrapper}>
                       <Profile size="small" memberId={r.memberId} userName={r.name || String(r.memberId)} onClick={handleProfileClick} />
