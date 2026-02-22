@@ -4,7 +4,7 @@ import { getFullUrl } from '../../utils/chatImageUtil'; // ✨ import added
 import styles from './ChatRoomTypeModal.module.css';
 import Modal from '../common/Modal'; 
 
-const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
+const ChatRoomTypeModal = ({ onClose, onCreate, showAlert, isAlertOpen }) => { //isAlertOpen 추가
     const [roomType, setRoomType] = useState('SINGLE'); 
     const [searchValue, setSearchValue] = useState('');
     const [roomTitle, setRoomTitle] = useState('');
@@ -21,6 +21,13 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
             inputRef.current.focus();
         }
     }, [roomType]);
+
+    // ✨ Alert 닫힘 시 입력창 포커스 복원
+    React.useEffect(() => {
+        if (!isAlertOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isAlertOpen]);
 
     // ✨ 이미지 변경 핸들러
     const handleImageChange = async (e) => {
@@ -58,6 +65,7 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
             isOpen={true} 
             onClose={onClose}
             title="새 채팅방 만들기"
+            closeOnEsc={!isAlertOpen} //Alert가 떠있으면 ESC 닫기 비활성화
         >
             <div className={styles.content}>
                 <div className={styles.typeSelector}>
@@ -81,11 +89,12 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                             <label>상대방 닉네임</label>
                             <input 
                                 type="text" 
-                                ref={inputRef} // ✨ Ref 연결
+                                ref={inputRef} // Ref 연결
                                 value={searchValue}
                                 onChange={(e) => setSearchValue(e.target.value)}
                                 placeholder="상대방 닉네임을 입력하세요"
                                 className={styles.input}
+                                disabled={isAlertOpen} //Alert 떠있으면 입력 방지 (엔터 중복 방지)
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSubmit();
                                 }}
@@ -93,7 +102,7 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                         </div>
                     ) : (
                         <>
-                            {/* ✨ 그룹 채팅 이미지 업로드 */}
+                            {/*그룹 채팅 이미지 업로드 */}
                             <div className={styles.inputGroup}>
                                 <label>대표 이미지</label>
                                 <div className={styles.imageUpload}>
@@ -123,12 +132,13 @@ const ChatRoomTypeModal = ({ onClose, onCreate, showAlert }) => {
                                 <label>채팅방 제목</label>
                                 <input 
                                     type="text" 
-                                    ref={inputRef} // ✨ Ref 연결
+                                    ref={inputRef} //Ref 연결
                                     value={roomTitle}
                                     onChange={(e) => setRoomTitle(e.target.value)}
                                     placeholder="채팅방 제목을 입력하세요(최대 15자)"
                                     className={styles.input}
-                                    maxLength={15} // ✨ 10글자 제한
+                                    maxLength={15} //10글자 제한
+                                    disabled={isAlertOpen} //Alert 떠있으면 입력 방지
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.nativeEvent.isComposing) handleSubmit();
                                     }}

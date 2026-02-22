@@ -12,6 +12,7 @@ const GlobalEcoNews = () => {
     fetchGlobalNews();
   }, []);
 
+  // 글로벌 환경 뉴스 조회
   const fetchGlobalNews = async () => {
     try {
       setLoading(true);
@@ -26,7 +27,6 @@ const GlobalEcoNews = () => {
         }
       }
       
-      // 데이터가 없을 경우 처리
       if (!data || Object.keys(data).length === 0) {
           setNewsData({});
       } else {
@@ -43,14 +43,14 @@ const GlobalEcoNews = () => {
 
   const currentList = newsData[selectedCategory] || [];
 
-  if (loading) return <div className={styles.loadingText}>🌍 전 세계의 환경 소식을 모으는 중...</div>;
+  if (loading) return <div className={styles.loadingText}>전 세계의 환경 소식을 모으는 중...</div>;
   if (error) return null;
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.titleGroup}>
-            <h2 className={styles.title}>🌍 Global Eco News</h2>
+            <h2 className={styles.title}>Global Eco News</h2>
             <span className={styles.subtitle}>New York Times × Gemini AI</span>
         </div>
         <div className={styles.tabs}>
