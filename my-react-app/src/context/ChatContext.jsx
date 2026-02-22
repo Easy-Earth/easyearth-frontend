@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState, useRef, useCallback } from 'react';
-import SockJS from 'sockjs-client';
+
 import { Client } from '@stomp/stompjs';
 import { useAuth } from './AuthContext';
 import { useNotification } from './NotificationContext';
@@ -41,7 +41,7 @@ export const ChatProvider = ({ children }) => {
 
     const token = localStorage.getItem('token');
     const stompClient = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/spring/ws-chat'),
+      brokerURL: 'ws://localhost:8080/spring/ws-chat',
       connectHeaders: {
         Authorization: token ? `Bearer ${token}` : '',
       },
