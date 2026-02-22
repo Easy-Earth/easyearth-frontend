@@ -512,6 +512,23 @@
   color: var(--gray-400);
 }
 
+.replyEditModal {
+  width: 100%;
+  min-height: 60px; 
+  padding: 16px;
+  resize: none; 
+  color: var(--gray-700); 
+}
+
+.replyEditModal:focus {
+  border-color: var(--green-400);
+}
+
+.replyEditModal::placeholder {
+  color: var(--gray-700);
+  font-weight: 800;
+}
+
 /* ── 신고된 댓글 표시 ── */
 .highlight {
   background-color: #fff1f0; 

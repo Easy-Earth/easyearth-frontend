@@ -182,7 +182,7 @@ const handleWriteClick = () => {
                   <span className={styles.writer}>{post.name}</span>
                   <span className={styles.dot}>•</span>
                   <span className={styles.date}>
-                    {String(post.createdAt ?? "").slice(0, 10)}
+                    {String(post.updatedAt ?? "").slice(0, 10)}
                   </span>
                 </div>
 
