@@ -44,3 +44,16 @@ export function PublicRoute({ children }) {
   // 이미 로그인했다면 메인으로 튕겨냄 (회원가입 페이지 방지)
   return isAuthenticated ? <Navigate to="/" replace /> : children;
 }
+
+export function AdminRoute({ children }) {
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+
+  if (isLoading) return <div>데이터 로딩 중...</div>;
+
+  if (!isAuthenticated || user?.memberId !== 1) {
+    return <Navigate to="/" replace /> 
+  }
+
+  return children;
+}

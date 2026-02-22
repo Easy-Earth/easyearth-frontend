@@ -511,3 +511,35 @@
   font-size: 18px;
   color: var(--gray-400);
 }
+
+.replyEditModal {
+  width: 100%;
+  min-height: 60px; 
+  padding: 16px;
+  resize: none; 
+  color: var(--gray-700); 
+}
+
+.replyEditModal:focus {
+  border-color: var(--green-400);
+}
+
+.replyEditModal::placeholder {
+  color: var(--gray-700);
+  font-weight: 800;
+}
+
+/* ── 신고된 댓글 표시 ── */
+.highlight {
+  background-color: #fff1f0; 
+  border: 2px solid #ffa39e; 
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 0 10px rgba(255, 163, 158, 0.4); 
+  transition: none;
+}
+
+.highlight p {
+  color: #cf1322; 
+  font-weight: 700;
+}

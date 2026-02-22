@@ -69,6 +69,9 @@ const Header = ({ openLoginModal }) => {
           {isAuthenticated && (
             <li className={styles.menuItem}><Link to="/mypage">마이페이지</Link></li>
           )}
+          {isAuthenticated && user?.memberId === 1 && (
+            <li className={styles.menuItem}><Link to="/reports">신고 관리</Link></li>
+          )}
         </ul>
       </nav>
 

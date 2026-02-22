@@ -75,6 +75,7 @@ const CommunityPage = () => {
     }
   };
 
+
   useEffect(() => {
     loadCommunityList(1);
   }, [category]);
@@ -125,7 +126,7 @@ const handleWriteClick = () => {
 
         {/* 타이틀 */}
         <div className={styles.titleArea}>
-          <h1 className={styles.title}>👨🏻‍👩🏻‍👧🏻‍👦🏻 에코 커뮤니티</h1>
+          <h1 className={styles.title}>🌍 에코 커뮤니티</h1>
         </div>
 
         {/* 탭 + 글쓰기 버튼 */}
@@ -181,7 +182,7 @@ const handleWriteClick = () => {
                   <span className={styles.writer}>{post.name}</span>
                   <span className={styles.dot}>•</span>
                   <span className={styles.date}>
-                    {String(post.createdAt ?? "").slice(0, 10)}
+                    {String(post.updatedAt ?? "").slice(0, 10)}
                   </span>
                 </div>
 
@@ -195,7 +196,7 @@ const handleWriteClick = () => {
                       )}
                     </h2>
                     <p className={styles.postPreview}>
-                      {post.content?.length > 100 ? post.content.slice(0, 80) + "..." : post.content}
+                      {post.content?.length > 100 ? post.content.slice(0, 100) + "..." : post.content}
                     </p>
                   </div>
                 </div>

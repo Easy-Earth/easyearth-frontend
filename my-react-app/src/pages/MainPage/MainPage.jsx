@@ -21,9 +21,7 @@ function MainPage() {
         memberId: 0, co2: 0, tree: 0, quizSuccessCount: 0, quizFailCount: 0, quizRate: 0 
     });
 
-    // 500개를 기준으로 정답률 계산 (백분율)
     const calculatedRate = Math.floor((personalEffect.quizSuccessCount / 500) * 100);
-    // 프로그레스 바는 최대 100%까지만 차도록 제한
     const barWidth = Math.min(calculatedRate, 100);
 
     const openModal = (type) => setModalType(type);
@@ -156,7 +154,7 @@ function MainPage() {
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
                 <div className={styles.secretaryContainer}>
-                    <button 
+                    {/* <button 
                         className={styles.refreshBtn}
                         onClick={async () => {
                             if(window.confirm("데이터를 갱신하시겠습니까?")) {
@@ -165,7 +163,7 @@ function MainPage() {
                                 window.location.reload(); 
                             }
                         }}
-                    >🔄 데이터 갱신</button>
+                    >🔄 데이터 갱신</button> */}
                     <div className={styles.speechBubble}>
                         {loading ? <p>에코봇이 메시지를 준비 중입니다...</p> : 
                             secretaryMsg.split('\n').map((line, i) => <p key={i}>{line}</p>)}
@@ -180,9 +178,18 @@ function MainPage() {
                                 <span className={styles.cardIcon}>{getSkyStatus(w.sky, w.pty).split(' ')[0]}</span>
                                 <span className={styles.cardTmp}>{w.tmp}°</span>
                                 <div className={styles.cardDetails}>
-                                    <span>💧 {w.reh}%</span>
-                                    <span>💨 {w.wsd}m/s</span>
-                                    <span className={w.pm10 > 80 ? styles.badDust : ""}>😷 {w.pm10 ?? "-"}</span>
+                                    <div className={styles.detailItem}>
+                                        <span className={styles.detailLabel}>습도</span>
+                                        <span className={styles.detailValue}>💧 {w.reh}%</span>
+                                    </div>
+                                    <div className={styles.detailItem}>
+                                        <span className={styles.detailLabel}>풍속</span>
+                                        <span className={styles.detailValue}>💨 {w.wsd}</span>
+                                    </div>
+                                    <div className={styles.detailItem}>
+                                        <span className={styles.detailLabel}>미세먼지</span>
+                                        <span className={`${styles.detailValue} ${w.pm10 > 80 ? styles.badDust : ""}`}>😷 {w.pm10 ?? "-"}</span>
+                                    </div>
                                 </div>
                             </div>
                         ))

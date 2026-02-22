@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom"; // useLocation 추가
 import { communityApi } from "../../apis/communityApi";
 import { reviewApi } from "../../apis/reviewApi";
 import CustomModal from "../../components/common/CustomModal";
@@ -8,15 +8,20 @@ import ReportModal from "../../components/common/ReportModal";
 import UserDetailModal from "../../components/common/UserDatailModal";
 import CommunityWriteModal from "../../components/community/CommunityWriteModal";
 
-import { getFullUrl2 } from "../../utils/communityImageUtil";
 import { useAuth } from "../../context/AuthContext";
+import { getFullUrl2 } from "../../utils/communityImageUtil";
 
 import styles from "./CommunityDetailPage.module.css";
 
 function CommunityDetailPage() {
   const { postId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation(); // 주소창 정보를 가져오기 위해 추가
   const { user, isAuthenticated } = useAuth();
+
+  // URL 쿼리 스트링에서 targetReply 값을 가져옴 (예: ?targetReply=123)
+  const queryParams = new URLSearchParams(location.search);
+  const targetReplyId = queryParams.get("targetReply");
 
   const [post, setPost] = useState(null);
   const [files, setFiles] = useState([]);
@@ -124,6 +129,11 @@ function CommunityDetailPage() {
         setReplies(replyData || []);
       } catch (error) {
         console.error("데이터 로드 실패:", error);
+
+        if(error.response?.status === 403) {
+          alert("누적 신고로 인해 블라인드 처리된 게시글입니다.");
+          navigate("/community");
+        }
       } finally {
         setIsLoading(false);
       }
@@ -309,8 +319,9 @@ function CommunityDetailPage() {
     if (children.length === 0) return null;
 
     return children.map((child) => (
-      <div key={child.replyId}>
-        <div className={styles.replyItemChild} style={{ '--reply-depth': child.depth }}>
+      <div key={child.replyId} id={`reply-${child.replyId}`}>
+        {/* targetReplyId와 일치하면 highlight 클래스 추가 */}
+        <div className={`${styles.replyItemChild} ${String(child.replyId) === targetReplyId ? styles.highlight : ""}`} style={{ '--reply-depth': child.depth }}>
           <div className={styles.replyTop}>
             <div className={styles.replyProfileWrapper}>
               <Profile size="small" memberId={child.memberId} userName={child.name || String(child.memberId)} onClick={handleProfileClick} />
@@ -329,7 +340,7 @@ function CommunityDetailPage() {
                 {likedReplies[child.replyId] ? "❤️" : "🩶"} {child.likeCount || 0}
               </button>
               {isAuthenticated && user?.memberId !== child.memberId && (
-                <button className={styles.reportBtn} onClick={() => onReport(child.memberId, child.name, 'reply', child.replyId)}>🚨 신고</button>
+                <button className={styles.replyReportBtn} onClick={() => onReport(child.memberId, child.name, 'reply', child.replyId)}>🚨 신고</button>
               )}
               <button className={`${styles.replyReplyBtn} ${openReplyBoxId === child.replyId ? styles.active : ""}`} onClick={() => toggleReplyBox(child.replyId)}>💬 답글</button>
               {isAuthenticated && user?.memberId === child.memberId && (
@@ -349,7 +360,10 @@ function CommunityDetailPage() {
               placeholder="답글을 입력하세요..."
               value={replyBoxContent[child.replyId] || ""}
               onChange={(e) => setReplyBoxContent((prev) => ({ ...prev, [child.replyId]: e.target.value }))}
-              onKeyDown={(e) => e.key === "Enter" && handleChildReplySubmit(child.replyId)}
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 중복 방지
+                if (e.key === "Enter") handleChildReplySubmit(child.replyId);
+              }}
               autoFocus
             />
             <button className={styles.inlineSubmitBtn} onClick={() => handleChildReplySubmit(child.replyId)}>등록</button>
@@ -394,7 +408,7 @@ function CommunityDetailPage() {
           </div>
         </div>
 
-        <article className={styles.postCard}>
+        <div className={styles.postCard}>
           <header className={styles.postHeader}>
             <div className={styles.headerMeta}>
               <div className={styles.headerTop}>
@@ -433,7 +447,7 @@ function CommunityDetailPage() {
               ))}
             </div>
           )}
-        </article>
+        </div>
 
         <section className={styles.commentSection}>
           <h3 className={styles.commentTitle}>댓글 <span className={styles.commentCountBadge}>{replies.length}</span></h3>
@@ -444,7 +458,10 @@ function CommunityDetailPage() {
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               onFocus={() => !isAuthenticated && checkAuth()}
-              onKeyDown={(e) => e.key === "Enter" && handleReplySubmit()}
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 중복 방지
+                if (e.key === "Enter") handleReplySubmit();
+              }}
               disabled={!isAuthenticated}
             />
             <button className={styles.replySubmitBtn} onClick={handleReplySubmit}>등록</button>
@@ -452,8 +469,9 @@ function CommunityDetailPage() {
 
           <div className={styles.replyList}>
             {rootReplies.map((r) => (
-              <div key={r.replyId}>
-                <div className={styles.replyItem}>
+              <div key={r.replyId} id={`reply-${r.replyId}`}>
+                {/* targetReplyId와 일치하면 highlight 클래스 추가 */}
+                <div className={`${styles.replyItem} ${String(r.replyId) === targetReplyId ? styles.highlight : ""}`}>
                   <div className={styles.replyTop}>
                     <div className={styles.replyProfileWrapper}>
                       <Profile size="small" memberId={r.memberId} userName={r.name || String(r.memberId)} onClick={handleProfileClick} />
@@ -492,7 +510,10 @@ function CommunityDetailPage() {
                       placeholder="답글을 입력하세요..."
                       value={replyBoxContent[r.replyId] || ""}
                       onChange={(e) => setReplyBoxContent((prev) => ({ ...prev, [r.replyId]: e.target.value }))}
-                      onKeyDown={(e) => e.key === "Enter" && handleChildReplySubmit(r.replyId)}
+                      onKeyDown={(e) => {
+                        if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 중복 방지
+                        if (e.key === "Enter") handleChildReplySubmit(r.replyId);
+                      }}
                       autoFocus
                     />
                     <button className={styles.inlineSubmitBtn} onClick={() => handleChildReplySubmit(r.replyId)}>등록</button>
@@ -516,19 +537,24 @@ function CommunityDetailPage() {
         )}
         <CommunityWriteModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} postId={postId} onSuccess={(msg) => window.location.reload()} />
         
-        {/* 댓글 수정 간이 모달 */}
-        {editModalConfig.isOpen && (
-          <div className={styles.replyEditModalOverlay}>
-            <div className={styles.replyEditModalContent}>
-              <h3>댓글 수정</h3>
-              <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className={styles.replyEditTextarea} />
-              <div className={styles.replyEditBtns}>
-                <button onClick={() => setEditModalConfig({ isOpen: false, replyId: null, currentContent: "" })}>취소</button>
-                <button onClick={handleReplyEditSubmit} className={styles.replyEditSubmitBtn}>수정</button>
-              </div>
+        {/* 댓글 수정 모달 */}
+        <CustomModal 
+          isOpen={editModalConfig.isOpen} 
+          type="confirm" 
+          message={
+            <div className={styles.editWrapper}>
+              <h3 className={styles.editTitle}>댓글 수정</h3>
+              <textarea 
+                value={editContent} 
+                onChange={(e) => setEditContent(e.target.value)} 
+                className={styles.replyEditModal}
+                placeholder="수정할 내용을 입력하세요."
+              />
             </div>
-          </div>
-        )}
+          } 
+          onConfirm={handleReplyEditSubmit} 
+          onCancel={() => setEditModalConfig({ isOpen: false, replyId: null, currentContent: "" })} 
+        />
       </div>
     </div>
   );

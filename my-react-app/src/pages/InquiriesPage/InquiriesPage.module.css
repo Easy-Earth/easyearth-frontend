@@ -40,7 +40,7 @@
 .tab:hover        { background-color: var(--green-50); color: var(--green-700); }
 .tab:focus,
 .tab:focus-visible { outline: none; box-shadow: none; }
-.tabActive        { background-color: var(--green-500) !important; color: #fff !important; }
+.tabActive        { background-color: var(--green-500); color: #fff; }
 
 /* ── 게시글 수 ── */
 .listMeta    { font-size: 15px; color: var(--gray-400); margin-left: 15px; margin-bottom: 10px; text-align: left; }
@@ -63,7 +63,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 4px;
 }
 
 /* ── 카드 ── */
@@ -77,8 +77,6 @@
   cursor: pointer;
   transition: all 0.18s ease;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
 }
 .card:hover {
   border-color: var(--green-400);
@@ -95,8 +93,8 @@
 .cardHeader {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 9px;
+  margin-bottom: 8px;
 }
 
 /* 배지 */
@@ -184,6 +182,24 @@
   border: 1px solid var(--gray-100);
   padding: 4px 10px;
   border-radius: 8px;
+}
+
+.statusManageBtn {
+  margin-left: auto;
+  padding: 4px 12px;
+  background: #fff;
+  border: 1px solid var(--gray-300);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gray-700);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.statusManageBtn:hover {
+  background: var(--green-50);
+  border-color: var(--green-500);
+  color: var(--green-700);
 }
 
 /* ── 빈 상태 / 로딩 ── */

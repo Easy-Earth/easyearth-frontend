@@ -1,0 +1,220 @@
+/* ── 레이아웃 ── */
+.page {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8fafc;
+}
+
+.frame {
+  width: 80%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 48px 0 64px;
+}
+
+/* ── 로딩/에러 ── */
+.loading,
+.errorPage {
+  text-align: center;
+  padding: 100px 20px;
+  font-size: 16px;
+  color: var(--gray-500);
+}
+
+.errorPage {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* ── 상단 액션 버튼 ── */
+.topActions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.leftActions {
+  display: flex;
+  gap: 10px;
+}
+
+.viewOriginalBtn,
+.statusBtn,
+.backBtn {
+  height: 42px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.viewOriginalBtn {
+  background: var(--blue-400);
+  color: #fff;
+}
+.viewOriginalBtn:hover { background: var(--blue-500); }
+
+.statusBtn {
+  background: #fff;
+  color: var(--gray-700);
+}
+.statusBtn:hover { background: var(--green-100); }
+
+.backBtn {
+  background: var(--green-500);
+  color: #fff;
+}
+.backBtn:hover { background: var(--green-600); }
+
+/* ── 메인 카드 ── */
+.detailCard {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 32px;
+}
+
+/* ── 헤더 ── */
+.detailHeader {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 2px solid #f3f4f6;
+}
+
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.badgeGroup {
+  display: flex;
+  gap: 8px;
+}
+
+.badge {
+  padding: 6px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.badgePost {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badgeReply {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badgeReview {
+  background-color: #fce7f3;
+  color: #9f1239;
+}
+
+.badgeReceived {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.badgeResolved {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badgeRejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.date {
+  font-size: 14px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.detailTitle {
+  font-size: 24px;
+  font-weight: 900;
+  color: #1f2937;
+}
+
+/* ── 정보 섹션 ── */
+.infoSection {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.infoRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.infoLabel {
+  min-width: 120px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.infoValue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.userIcon {
+  font-size: 16px;
+}
+
+/* ── 신고 내용 ── */
+.contentSection {
+  margin-bottom: 0;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1f2937;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contentBox {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #374151;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
