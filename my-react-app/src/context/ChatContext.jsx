@@ -39,7 +39,7 @@ export const ChatProvider = ({ children }) => {
 
     loadChatRooms();
 
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('token');
     const stompClient = new Client({
       webSocketFactory: () => new SockJS('http://localhost:8080/spring/ws-chat'),
       connectHeaders: {
