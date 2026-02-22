@@ -154,7 +154,7 @@ function MainPage() {
             <div className={styles.hero}>
                 <h1>🌍 EasyEarth</h1>
                 <div className={styles.secretaryContainer}>
-                    <button 
+                    {/* <button 
                         className={styles.refreshBtn}
                         onClick={async () => {
                             if(window.confirm("데이터를 갱신하시겠습니까?")) {
@@ -163,7 +163,7 @@ function MainPage() {
                                 window.location.reload(); 
                             }
                         }}
-                    >🔄 데이터 갱신</button>
+                    >🔄 데이터 갱신</button> */}
                     <div className={styles.speechBubble}>
                         {loading ? <p>에코봇이 메시지를 준비 중입니다...</p> : 
                             secretaryMsg.split('\n').map((line, i) => <p key={i}>{line}</p>)}
