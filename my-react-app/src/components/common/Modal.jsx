@@ -12,15 +12,16 @@ function Modal({
     size = 'md',
     children,
     showCloseButton = true,
-    zIndex, // ✨ zIndex prop 추가
+    zIndex, // zIndex prop 추가
+    closeOnEsc = true, // ESC 키로 닫기 여부 (기본값 true)
 }){
 
     //모달창 ESC키로 닫기 
     const handleKeyDown = useCallback(
         (e)=>{
-            if(e.key==='Escape')
+            if(e.key==='Escape' && closeOnEsc) // closeOnEsc가 true일 때만 닫기 동작
                 onClose();
-        },[onClose]
+        },[onClose, closeOnEsc]
     );
 
 
@@ -46,7 +47,7 @@ function Modal({
 
     if(!isOpen) return null;
 
-    // ✨ zIndex 스타일 적용
+    // zIndex 스타일 적용
     const overlayStyle = zIndex ? { zIndex: zIndex } : {};
 
     return createPortal(

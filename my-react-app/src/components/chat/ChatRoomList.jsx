@@ -2,28 +2,28 @@ import React, { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useChat } from '../../context/ChatContext';
 import { useAuth } from '../../context/AuthContext';
-import { useNotification } from '../../context/NotificationContext'; // ✨ Import
+import { useNotification } from '../../context/NotificationContext';
 import { createChatRoom, toggleFavorite, acceptInvitation, rejectInvitation, uploadFile, updateProfile } from '../../apis/chatApi';
-import { getFullUrl } from '../../utils/chatImageUtil'; // Import utility
+import { getFullUrl } from '../../utils/chatImageUtil';
 import ChatRoomTypeModal from './ChatRoomTypeModal';
-import CustomModal from '../common/CustomModal'; // Use Common CustomModal
+import CustomModal from '../common/CustomModal';
 import styles from './ChatRoomList.module.css';
 
 const ChatRoomList = () => {
     const { chatRooms, loadChatRooms, connected } = useChat();
     const { user, updateUser } = useAuth();
-    const { markNotificationsAsReadForRoom } = useNotification(); // ✨ Destructure
+    const { markNotificationsAsReadForRoom } = useNotification();
     const navigate = useNavigate();
     const { roomId } = useParams();
     const [showTypeModal, setShowTypeModal] = useState(false);
     const fileInputRef = useRef(null);
 
-    // 모달 설정 State (CustomModal)
+    // 모달 상태
     const [modalConfig, setModalConfig] = useState({
         isOpen: false,
         title: "",
         message: "",
-        type: "alert", // 'alert' | 'confirm'
+        type: "alert",
         onConfirm: null,
         onCancel: null
     });
@@ -60,15 +60,13 @@ const ChatRoomList = () => {
         });
     };
 
-    // 프로필 이미지 변경 핸들러
+    // 프로필 이미지 변경
     const handleProfileChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         try {
-            // 파일 업로드
             const fileUrl = await uploadFile(file);
-            // 프로필 업데이트
             await updateProfile(user.memberId, fileUrl);
             
             showAlert("프로필 이미지가 변경되었습니다.", "알림", () => {
@@ -89,10 +87,10 @@ const ChatRoomList = () => {
 
     // 즐겨찾기 토글
     const handleToggleFavorite = async (chatRoomId, e) => {
-        e.stopPropagation(); // 채팅방 열리는 것 방지
+        e.stopPropagation();
         try {
             await toggleFavorite(chatRoomId, user.memberId);
-            loadChatRooms(); // 목록 새로고침
+            loadChatRooms();
         } catch (error) {
             console.error("즐겨찾기 토글 실패", error);
             showAlert("즐겨찾기 설정에 실패했습니다.");
@@ -126,9 +124,9 @@ const ChatRoomList = () => {
         }
     };
 
-    const handleCreateRoom = async ({ roomType, value, invitedMemberIds, roomImage }) => { // ✨ roomImage 추가
+    // 채팅방 생성 (그룹 / 1:1)
+    const handleCreateRoom = async ({ roomType, value, invitedMemberIds, roomImage }) => {
         if (roomType === 'GROUP') {
-            // 그룹 채팅 생성
             try {
                 const newRoom = await createChatRoom({
                     title: value,
@@ -145,17 +143,15 @@ const ChatRoomList = () => {
                 showAlert("채팅방 생성에 실패했습니다.");
             }
         } else if (roomType === 'SINGLE') {
-            // 1:1 채팅 생성
             try {
                 const { searchMember } = await import('../../apis/chatApi');
-                const members = await searchMember(value); // ✨ [Fix] 이제 배열 반환
+                const members = await searchMember(value);
 
                 if (!members || members.length === 0) {
-                    showAlert("해당 사용자를 찾을 수 없습니다.");
+                    showAlert("해당 사용자를 찾을 수 없습니다. (정확한 닉네임을 입력해주세요)");
                     return;
                 }
 
-                // 첫 번째 검색 결과 사용
                 const targetMember = members[0];
 
                 const newRoom = await createChatRoom({
@@ -205,44 +201,33 @@ const ChatRoomList = () => {
     const pendingRooms = sortedRooms.filter(room => room.invitationStatus === 'PENDING');
     const acceptedRooms = sortedRooms.filter(room => room.invitationStatus !== 'PENDING');
 
-    // ✨ 메시지 미리보기 텍스트 변환
+    // 마지막 메시지 미리보기 텍스트 생성
     const getLastMessagePreview = (room) => {
         if (!room.lastMessageContent) return "대화가 없습니다.";
-
-        // 메시지 타입에 따른 미리보기 텍스트
         if (room.lastMessageType === 'IMAGE') return "사진을 보냈습니다.";
         if (room.lastMessageType === 'FILE') return "파일을 보냈습니다.";
         if (room.lastMessageType === 'DELETED') return "삭제된 메시지입니다.";
-
-        // 타입이 없더라도(구 데이터) content가 URL 형식이면 처리 (보완책)
-        // 하지만 백엔드에서 이제 타입을 주므로 우선순위는 낮음.
-        
         return room.lastMessageContent;
     };
 
     return (
         <div className={styles.container}>
-            {/* 연결 상태 배너 */}
+            {/* 네트워크 연결 끊김 배너 */}
             {!connected && (
                 <div className={styles.connectionBanner}>
-                    ⚠️ 네트워크 연결이 끊어졌습니다. 재연결 중...
+                    네트워크 연결이 끊어졌습니다. 재연결 중...
                 </div>
             )}
             <div className={styles.header}>
-                {/* 1. 타이틀 (왼쪽 끝) */}
                 <div className={styles.headerTitle}>
                     <h2 className={styles.title}>채팅</h2>
                     {chatRooms.length > 0 && <span className={styles.count}>{chatRooms.length}</span>}
                 </div>
 
-                {/* 2. 닉네임 + 프로필 + 버튼 (오른쪽 끝) */}
                 <div className={styles.headerRight}>
-                    {/* 닉네임 표시 */}
                     <span className={styles.myNickname}>{user?.name}</span>
-                    {/* Debugging User Object */}
-                    {console.log("Current User in ChatRoomList:", user)}
 
-                    {/* 내 프로필 */}
+                    {/* 내 프로필 이미지 */}
                     <div className={styles.myProfile} onClick={handleProfileClick} title="내 프로필 이미지 변경">
                          <img 
                             src={getFullUrl(user?.profileImageUrl || user?.profileImage) || "/default-profile.png"} 
@@ -264,7 +249,6 @@ const ChatRoomList = () => {
                     </div>
                     
                     <button className={styles.iconBtn} onClick={() => setShowTypeModal(true)} title="새 채팅방 생성">
-                        {/* ✨ 배경 없는 + 버튼 스타일 */}
                         <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
                             <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
                         </svg>
@@ -332,7 +316,7 @@ const ChatRoomList = () => {
                         onClick={() => navigate(`/chat/${room.chatRoomId}`)}
                     >
                         <div className={styles.avatar}>
-                            {/* 1:1은 상대방 프로필, 그룹은 방 이미지 표시 */}
+                            {/* 1:1 채팅: 상대방 프로필, 그룹: 방 이미지 */}
                             <img 
                                 src={
                                     room.roomType === 'SINGLE' 
@@ -365,13 +349,12 @@ const ChatRoomList = () => {
                                 )}
                             </div>
                         </div>
-                        {/* 즐겨찾기 아이콘 */}
                         <button
                             className={styles.favoriteBtn}
                             onClick={(e) => handleToggleFavorite(room.chatRoomId, e)}
                             title={room.favorite ? "즐겨찾기 해제" : "즐겨찾기"}
                         >
-                            {room.favorite ? "⭐" : "☆"}
+                            {room.favorite ? "★" : "☆"}
                         </button>
                     </li>
                 ))}
@@ -382,14 +365,15 @@ const ChatRoomList = () => {
                 <ChatRoomTypeModal
                     onClose={() => setShowTypeModal(false)}
                     onCreate={handleCreateRoom}
-                    showAlert={showAlert} // Pass internal showAlert which proxies to CustomModal
+                    showAlert={showAlert}
+                    isAlertOpen={modalConfig.isOpen}
                 />
             )}
             
-            {/* 공통 알림/확인 모달 - CustomModal 사용 */}
+            {/* 공통 알림/확인 모달 */}
             <CustomModal
                 isOpen={modalConfig.isOpen}
-                onClose={modalConfig.onCancel} // Close maps to Cancel for basic modal logic
+                onClose={modalConfig.onCancel}
                 title={modalConfig.title}
                 message={modalConfig.message}
                 type={modalConfig.type}
