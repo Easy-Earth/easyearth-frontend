@@ -96,7 +96,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
   const resetToOriginal = () => {
     setConfirmModal({
       isOpen: true,
-      message: "원본 상태로 되돌렸습니다.", // 메시지만 살짝 수정 (확인용)
+      message: "원본 상태로 되돌리시겠습니까?", 
       onConfirm: () => {
         setCategory(originalData.category);
         setTitle(originalData.title);
@@ -117,7 +117,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
       if (title || content || selectedFiles.length > 0) {
         setConfirmModal({
           isOpen: true,
-          message: "내용이 초기화되었습니다.", // 알림 메시지 형태로 변경
+          message: "작성 중인 내용을 모두 지우시겠습니까?", // 알림 메시지 형태로 변경
           onConfirm: () => {
             resetForm();
             setConfirmModal({ isOpen: false, message: "", onConfirm: () => {} })
@@ -214,7 +214,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
     if (postId && hasChanges()) {
       setConfirmModal({
         isOpen: true,
-        message: "작성을 취소하고 닫습니다.", // 알림 문구
+        message: "변경된 내용이 있습니다. 정말 닫으시겠습니까?", 
         onConfirm: () => {
           resetForm();
           onClose();
@@ -227,7 +227,7 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
     if (!postId && (title || content || selectedFiles.length > 0)) {
       setConfirmModal({
         isOpen: true,
-        message: "작성을 취소하고 닫습니다.", // 알림 문구
+        message: "작성 중인 내용이 있습니다. 정말 닫으시겠습니까?", 
         onConfirm: () => {
           resetForm();
           onClose();
@@ -269,14 +269,15 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
 
           <div className={styles.formRow}>
             <label className={styles.formLabel}><span className={styles.required}>*</span> 제목</label>
-            <Input
-              placeholder="제목을 입력하세요 (최대 200자)"
-              maxLength={200}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              fullWidth
-              style={{ color: "var(--gray-400)" }}
-            />
+            <div className={styles.titleInput}>  
+              <Input
+                placeholder="제목을 입력하세요 (최대 200자)"
+                maxLength={200}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                fullWidth
+              />
+            </div>
           </div>
 
           <div className={styles.formRow}>
@@ -358,9 +359,10 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
     {/* ── [기존 유지] 확인 모달 (type="alert" 적용하여 확인 버튼만 노출) ── */}
     <CustomModal
       isOpen={confirmModal.isOpen}
-      type="alert" 
+      type="confirm" 
       message={confirmModal.message}
       onConfirm={confirmModal.onConfirm}
+      onCancel={() => setConfirmModal({ isOpen: false, message: "", onConfirm: () => {} })}
       zIndex={15000}
     />
   </>

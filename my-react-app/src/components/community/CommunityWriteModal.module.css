@@ -65,15 +65,6 @@
 
 .required { color: #ef4444; }
 
-.titleInput :global(input) {
-  color: var(--gray-700); /* 실제 입력되는 글자 색상 */
-}
-
-.titleInput :global(input::placeholder) {
-  color: var(--gray-400); /* placeholder 글자 색상 */
-  opacity: 1; 
-}
-
 /* 카테고리 버튼 */
 .categoryGroup {
   display: flex;
@@ -117,7 +108,15 @@
   transition: border-color 0.15s;
 }
 .inputTitle:focus { border-color: var(--green-400); }
-.inputTitle::placeholder { color: var(--gray-400); }
+
+.titleInput :global(input) {
+  color: var(--gray-700); 
+}
+
+.titleInput :global(input::placeholder) {
+  color: var(--gray-400);
+  opacity: 1; 
+}
 
 /* 내용 입력 */
 .textareaContent {

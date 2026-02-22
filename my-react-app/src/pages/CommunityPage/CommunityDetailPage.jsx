@@ -405,7 +405,7 @@ function CommunityDetailPage() {
           </div>
         </div>
 
-        <article className={styles.postCard}>
+        <div className={styles.postCard}>
           <header className={styles.postHeader}>
             <div className={styles.headerMeta}>
               <div className={styles.headerTop}>
@@ -444,7 +444,7 @@ function CommunityDetailPage() {
               ))}
             </div>
           )}
-        </article>
+        </div>
 
         <section className={styles.commentSection}>
           <h3 className={styles.commentTitle}>댓글 <span className={styles.commentCountBadge}>{replies.length}</span></h3>
@@ -528,19 +528,24 @@ function CommunityDetailPage() {
         )}
         <CommunityWriteModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} postId={postId} onSuccess={(msg) => window.location.reload()} />
         
-        {/* 댓글 수정 간이 모달 */}
-        {editModalConfig.isOpen && (
-          <div className={styles.replyEditModalOverlay}>
-            <div className={styles.replyEditModalContent}>
-              <h3>댓글 수정</h3>
-              <textarea value={editContent} onChange={(e) => setEditContent(e.target.value)} className={styles.replyEditTextarea} />
-              <div className={styles.replyEditBtns}>
-                <button onClick={() => setEditModalConfig({ isOpen: false, replyId: null, currentContent: "" })}>취소</button>
-                <button onClick={handleReplyEditSubmit} className={styles.replyEditSubmitBtn}>수정</button>
-              </div>
+        {/* 댓글 수정 모달 */}
+        <CustomModal 
+          isOpen={editModalConfig.isOpen} 
+          type="confirm" 
+          message={
+            <div className={styles.editWrapper}>
+              <h3 className={styles.editTitle}>댓글 수정</h3>
+              <textarea 
+                value={editContent} 
+                onChange={(e) => setEditContent(e.target.value)} 
+                className={styles.replyEditModal}
+                placeholder="수정할 내용을 입력하세요."
+              />
             </div>
-          </div>
-        )}
+          } 
+          onConfirm={handleReplyEditSubmit} 
+          onCancel={() => setEditModalConfig({ isOpen: false, replyId: null, currentContent: "" })} 
+        />
       </div>
     </div>
   );
