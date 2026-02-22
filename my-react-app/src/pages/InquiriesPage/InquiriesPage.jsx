@@ -13,7 +13,7 @@ import styles from "./InquiriesPage.module.css";
 
 const InquiriesPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, isLoading } = useAuth();
   
   const [list, setList] = useState([]);
   const [pageInfo, setPageInfo] = useState({});
@@ -113,10 +113,24 @@ const InquiriesPage = () => {
 
   // 비공개글 클릭 권한 체크 로직 추가
   const handleDetailClick = (inquiry) => {
+
+    console.log("user:", user);
+    console.log("inquiry:", inquiry);
+    if (inquiry.isPublic !== "N") {
+      navigate(`/inquiries/detail/${inquiry.inquiriesId}`);
+      return;
+    }
+
+    // 아직 로딩 중이면 일단 이동 (detail에서 403 처리)
+    if (isLoading) {
+      navigate(`/inquiries/detail/${inquiry.inquiriesId}`);
+      return;
+    }
+
     const isOwner = user && Number(user.memberId) === Number(inquiry.memberId);
     const isAdmin = user && Number(user.memberId) === 1;
 
-    if (inquiry.isPublic === "N" && !isOwner && !isAdmin) {
+    if (!isOwner && !isAdmin) {
       setAlertConfig({
         isOpen: true,
         type: "alert",
@@ -196,9 +210,15 @@ const InquiriesPage = () => {
 
                 <div className={styles.cardBody}>
                   <h3 className={styles.cardTitle}>{inquiry.title}</h3>
-                  <p className={styles.cardContent}>
-                    {inquiry.content?.length > 100 ? inquiry.content.slice(0, 100) + "..." : inquiry.content}
-                  </p>
+                  {inquiry.isPublic === "N" ? (
+                    <p className={styles.cardContent} style={{ color: "var(--gray-400)", fontStyle: "italic" }}>
+                      🔒 비공개 게시글입니다.
+                    </p>
+                  ) : (
+                    <p className={styles.cardContent}>
+                      {inquiry.content?.length > 100 ? inquiry.content.slice(0, 100) + "..." : inquiry.content}
+                    </p>
+                  )}
                 </div>
 
                 <div className={styles.cardFooter}>

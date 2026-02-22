@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom"; // useLocation 추가
 import { communityApi } from "../../apis/communityApi";
 import { reviewApi } from "../../apis/reviewApi";
@@ -115,6 +115,8 @@ function CommunityDetailPage() {
     }
     setIsReportModalOpen(false);
   };
+
+  const viewCounted = useRef(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -535,9 +537,15 @@ function CommunityDetailPage() {
             <button className={styles.imageOverlayClose} onClick={() => setSelectedImage(null)}>x</button>
           </div>
         )}
-        <CommunityWriteModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} postId={postId} onSuccess={(msg) => window.location.reload()} />
+
+        <CommunityWriteModal 
+          isOpen={isEditModalOpen} 
+          onClose={() => setIsEditModalOpen(false)} 
+          postId={postId} 
+          postData={{post, files}} 
+          onSuccess={(msg) => window.location.reload()} 
+        />
         
-        {/* 댓글 수정 모달 */}
         <CustomModal 
           isOpen={editModalConfig.isOpen} 
           type="confirm" 

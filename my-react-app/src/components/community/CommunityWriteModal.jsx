@@ -7,7 +7,7 @@ import Input from "../common/Input";
 import Modal from "../common/Modal";
 import styles from "./CommunityWriteModal.module.css";
 
-function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
+function CommunityWriteModal({ isOpen, onClose, postId, postData, onSuccess }) {
   const { user } = useAuth();
 
   const [category, setCategory] = useState("");
@@ -43,7 +43,24 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
 
   useEffect(() => {
     if (isOpen && postId) {
-      loadPostData();
+      if (postData) {
+        const post = postData.post;
+        const fileList = postData.files;
+        setCategory(post.category || "");
+        setTitle(post.title || "");
+        setContent(post.content || "");
+        setExistingFiles(fileList);
+        setFilesToDelete([]);
+        setSelectedFiles([]);
+        setOriginalData({
+          category: post.category || "",
+          title: post.title || "",
+          content: post.content || "",
+          existingFiles: fileList,
+        });
+      } else {
+        loadPostData(); // postData 없을 때만 API 호출
+      }
     } else if (isOpen && !postId) {
       resetForm();
     }
@@ -347,7 +364,6 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
       </form>
     </Modal>
 
-    {/* ── [기존 유지] 유효성 검사 모달 (type="alert" 적용) ── */}
     <CustomModal
       isOpen={validationModal.isOpen}
       type="alert" 
@@ -356,7 +372,6 @@ function CommunityWriteModal({ isOpen, onClose, postId, onSuccess }) {
       zIndex={15000}
     />
 
-    {/* ── [기존 유지] 확인 모달 (type="alert" 적용하여 확인 버튼만 노출) ── */}
     <CustomModal
       isOpen={confirmModal.isOpen}
       type="confirm" 
