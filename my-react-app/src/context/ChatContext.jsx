@@ -41,7 +41,7 @@ export const ChatProvider = ({ children }) => {
 
     const token = localStorage.getItem('token');
     const stompClient = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/spring/ws-chat'),
+      webSocketFactory: () => new SockJS(`${window.location.protocol}//${window.location.hostname}:8080/spring/ws-chat`),
       connectHeaders: {
         Authorization: token ? `Bearer ${token}` : '',
       },
@@ -93,6 +93,11 @@ export const ChatProvider = ({ children }) => {
               });
               return;
            }
+
+          if (notification.type === 'INVITATION') {
+              console.log('Invitation received:', notification);
+              loadChatRooms();
+          }
 
           const currentPath = window.location.pathname;
           const targetRoomId = notification.chatRoomId;
