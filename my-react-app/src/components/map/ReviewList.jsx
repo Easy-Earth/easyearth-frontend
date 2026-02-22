@@ -14,7 +14,6 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
   const [selectedEsrId, setSelectedEsrId] = useState(null);
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [selectedReportReviewId, setSelectedReportReviewId] = useState(null); 
-  const [reportTargetId, setReportTargetId] = useState(null);
   const [reportTargetInfo, setReportTargetInfo] = useState({ id: null, name: "" });
  
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -29,6 +28,24 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
     message: '',
     onConfirm: () => {}
   });
+
+  // ===================== [디버깅 로그 시작] =====================
+  console.log("1. 부모로부터 전달받은 reviews 배열:", reviews);
+  
+  const visibleReviews = reviews ? reviews.filter((rev, index) => {
+    // 서버에서 넘어오는 필드명이 status인지 STATUS인지 혹은 다른 것인지 확인
+    const s = rev.status || rev.STATUS;
+    
+    console.log(`2. [리뷰 ${index}] ID: ${rev.esrId || rev.ESR_ID}, 상태값(s):`, s);
+    
+    // 만약 STATUS를 매퍼에서 추가했는데도 안 나온다면 필드명이 대문자인지 확인이 필요함
+    // 일단 'B'가 아닌 건 전부 통과시켜 봅니다.
+    const isVisible = s?.toUpperCase() !== 'B';
+    return isVisible;
+  }) : [];
+
+  console.log("3. 필터링 후 노출될 리뷰 개수:", visibleReviews.length);
+  // ===================== [디버깅 로그 끝] =====================
 
   const formatDate = (dateString) => {
     if (!dateString) return "";
@@ -57,6 +74,7 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
     setRating(5);
     setIsReviewModalOpen(true);
   };
+
   const onReport = async (currentMemberId, currentMemberName, targetMemberId, targetName, esrId) => {
       try {
       const data = {
@@ -69,24 +87,17 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
       setReportTargetInfo({ id: targetMemberId, name: targetName });
       setIsReportModalOpen(true);
     } catch (err) {
-      // setModalConfig({
-      //   isOpen: true,
-      //   type: 'alert',
-      //   message: "신고 내역이 존재합니다.",
-      //   onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-      // });
-      const serverErrorMessage = err.response?.data || "서버 오류가 발생했습니다.";
-
-        setModalConfig({
-          isOpen: true,
-          type: 'alert',
-          message: serverErrorMessage,
-          onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-        });
+      const serverErrorMessage = err.response?.data || "이미 신고한 내역이 있습니다.";
+      setModalConfig({
+        isOpen: true,
+        type: 'alert',
+        message: serverErrorMessage,
+        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+      });
       setIsReportModalOpen(false);
     }
-    
   };
+
   const handleReportSubmit = async (reportData) => {
     try {
       const data = {
@@ -101,22 +112,25 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
       };
       
       await reviewApi.reviewReport(data);
-      
+
+      const blindResult = await reviewApi.reviewBlind(selectedReportReviewId);
+      const isBlinded = blindResult === "누적 신고 10회 : 블라인트 처리 완료";
+
       setModalConfig({
         isOpen: true,
         type: 'alert',
-        message: '신고가 정상적으로 접수되었습니다.',
-        onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
+        message: isBlinded ? "누적 신고 10회 : 블라인트 처리 완료" : '신고가 정상적으로 접수되었습니다.',
+        onConfirm: () => {
+          setModalConfig(prev => ({ ...prev, isOpen: false }));
+          if (refreshReviews) refreshReviews();
+        }
       });
       
     } catch (error) {
       console.error("신고 실패:", error);
-      alert(error.response?.data || "신고 처리 중 오류가 발생했습니다.");
     }
-    
     setIsReportModalOpen(false);
-};
-  
+  };
 
   const handleReviewSubmit = async () => {
     if (!content.trim()) {
@@ -157,13 +171,7 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
             }
         });
     } catch (error) {
-        console.error("실패:", error);
-        setModalConfig({
-            isOpen: true,
-            type: 'alert',
-            message: '처리에 실패했습니다.',
-            onConfirm: () => setModalConfig(prev => ({ ...prev, isOpen: false }))
-        });
+        console.error(error);
     }
   };
 
@@ -195,7 +203,7 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
   const renderHeader = (
     <h3 className={styles.sectionTitle}>
       <div className={styles.titleGroup}>
-        방문자 리뷰 <span className={styles.count}>{reviews?.length || 0}</span>
+        방문자 리뷰 <span className={styles.count}>{visibleReviews.length}</span>
       </div>
       {currentMemberId && (
         <Button 
@@ -204,7 +212,6 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
           color="var(--eco-teal)" 
           onClick={handleOpenWriteModal} 
         >
-          {/* ✅ 수직/수평 중앙 정렬을 위한 스타일 추가 */}
           <span style={{ 
             color: "white", 
             fontSize: "13px", 
@@ -212,8 +219,8 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            height: "100%", // 버튼 높이를 꽉 채워 수직 중앙 정렬 보장
-            lineHeight: "1" // 텍스트 줄높이로 인한 미세한 쏠림 방지
+            height: "100%", 
+            lineHeight: "1" 
           }}>
             리뷰 작성
           </span>
@@ -226,40 +233,40 @@ function ReviewList({ reviews, currentMemberId, currentMemberName, shopId, shopN
     <div className={styles.reviewSection}>
       {renderHeader}
       <div className={styles.list}>
-        {reviews && reviews.length > 0 ? (
-          reviews.map((rev) => (
-            <div key={rev.esrId} className={styles.reviewCard}>
+        {visibleReviews.length > 0 ? (
+          visibleReviews.map((rev) => (
+            <div key={rev.esrId || rev.ESR_ID} className={styles.reviewCard}>
               <div className={styles.header}>
                 <div className={styles.profileArea}>
                   <Profile 
                     size="small" 
-                    memberId={rev.memberId} 
-                    userName={rev.name} 
+                    memberId={rev.memberId || rev.MEMBER_ID} 
+                    userName={rev.name || rev.NAME} 
                     onClick={handleProfileClick} 
                   />
                   
                   <div className={styles.ratingAndActions}>
                     <div className={styles.ratingWrapper}>
-                      <span className={styles.rating}>{"★".repeat(Number(rev.rating))}</span>
+                      <span className={styles.rating}>{"★".repeat(Number(rev.rating || rev.RATING))}</span>
                     </div>
 
-                    {currentMemberId && Number(rev.memberId) === Number(currentMemberId) && (
+                    {currentMemberId && Number(rev.memberId || rev.MEMBER_ID) === Number(currentMemberId) && (
                       <div className={styles.authButtons}>
                         <button className={styles.editBtn} onClick={() => onReviewEdit(rev)}>수정</button>
-                        <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId)}>삭제</button>
+                        <button className={styles.deleteBtn} onClick={() => onReviewDelete(rev.esrId || rev.ESR_ID)}>삭제</button>
                       </div>
                     )}
-                    {currentMemberId && Number(rev.memberId)!=Number(currentMemberId) && (
-                      <div onClick={() => onReport(currentMemberId, currentMemberName, rev.memberId, rev.name, rev.esrId)} style={{ cursor: 'pointer' }}>🚨</div>
+                    {currentMemberId && Number(rev.memberId || rev.MEMBER_ID) !== Number(currentMemberId) && (
+                      <div onClick={() => onReport(currentMemberId, currentMemberName, rev.memberId || rev.MEMBER_ID, rev.name || rev.NAME, rev.esrId || rev.ESR_ID)} style={{ cursor: 'pointer' }}>🚨</div>
                     )}
                   </div>
                 </div>
               </div>
               
-              <p className={styles.content}>{rev.content}</p>
+              <p className={styles.content}>{rev.content || rev.CONTENT}</p>
               
               <div className={styles.reviewFooter}>
-                <span className={styles.date}>{formatDate(rev.createdAt || rev.createAt)}</span>
+                <span className={styles.date}>{formatDate(rev.createdAt || rev.CREATED_AT || rev.createAt)}</span>
               </div>
             </div>
           ))

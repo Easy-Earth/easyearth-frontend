@@ -32,5 +32,16 @@ export const reviewApi = {
         params: reportCheckData 
     });
     return response.data;
-}
+    },
+    reviewBlind: async (reviewId) => {
+        const response = await api.put('/reports/blind', null, {
+            params: {
+                type: 'REVIEW',
+                postId: 0,
+                replyId: 0,
+                reviewId: reviewId
+            }
+        });
+        return response.data;
+    }
 }

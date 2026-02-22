@@ -8,8 +8,8 @@ import ReportModal from "../../components/common/ReportModal";
 import UserDetailModal from "../../components/common/UserDatailModal";
 import CommunityWriteModal from "../../components/community/CommunityWriteModal";
 
-import { getFullUrl2 } from "../../utils/communityImageUtil";
 import { useAuth } from "../../context/AuthContext";
+import { getFullUrl2 } from "../../utils/communityImageUtil";
 
 import styles from "./CommunityDetailPage.module.css";
 
@@ -360,7 +360,10 @@ function CommunityDetailPage() {
               placeholder="답글을 입력하세요..."
               value={replyBoxContent[child.replyId] || ""}
               onChange={(e) => setReplyBoxContent((prev) => ({ ...prev, [child.replyId]: e.target.value }))}
-              onKeyDown={(e) => e.key === "Enter" && handleChildReplySubmit(child.replyId)}
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 중복 방지
+                if (e.key === "Enter") handleChildReplySubmit(child.replyId);
+              }}
               autoFocus
             />
             <button className={styles.inlineSubmitBtn} onClick={() => handleChildReplySubmit(child.replyId)}>등록</button>
@@ -455,7 +458,10 @@ function CommunityDetailPage() {
               value={replyContent}
               onChange={(e) => setReplyContent(e.target.value)}
               onFocus={() => !isAuthenticated && checkAuth()}
-              onKeyDown={(e) => e.key === "Enter" && handleReplySubmit()}
+              onKeyDown={(e) => {
+                if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 중복 방지
+                if (e.key === "Enter") handleReplySubmit();
+              }}
               disabled={!isAuthenticated}
             />
             <button className={styles.replySubmitBtn} onClick={handleReplySubmit}>등록</button>
@@ -504,7 +510,10 @@ function CommunityDetailPage() {
                       placeholder="답글을 입력하세요..."
                       value={replyBoxContent[r.replyId] || ""}
                       onChange={(e) => setReplyBoxContent((prev) => ({ ...prev, [r.replyId]: e.target.value }))}
-                      onKeyDown={(e) => e.key === "Enter" && handleChildReplySubmit(r.replyId)}
+                      onKeyDown={(e) => {
+                        if (e.nativeEvent.isComposing) return; // 한글 조합 중 엔터 중복 방지
+                        if (e.key === "Enter") handleChildReplySubmit(r.replyId);
+                      }}
                       autoFocus
                     />
                     <button className={styles.inlineSubmitBtn} onClick={() => handleChildReplySubmit(r.replyId)}>등록</button>
