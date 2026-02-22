@@ -82,6 +82,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
+      localStorage.removeItem("notifications");
       setUser(null);
       // 로그아웃 시 메인이나 로그인 페이지로 강제 이동이 필요할 수 있습니다.
       window.location.href = "/"; 
