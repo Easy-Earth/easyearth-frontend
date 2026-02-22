@@ -11,7 +11,7 @@ import styles from "./InquiriesDetailPage.module.css";
 const InquiriesDetailPage = () => {
   const { inquiriesId } = useParams();
   const navigate = useNavigate();
-  const { isAuthenticated, user } = useAuth();
+  const { user, isLoading } = useAuth();
 
   const [inquiry, setInquiry] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,12 +30,11 @@ const InquiriesDetailPage = () => {
     onConfirm: () => {},
   });
 
-  const loadInquiry = async () => {
+  const loadInquiry = async (currentMemberId) => {
     setLoading(true);
     setError("");
-
     try {
-      const data = await inquiriesApi.inquiriesDetail(inquiriesId, user?.memberId || 0);
+      const data = await inquiriesApi.inquiriesDetail(inquiriesId, currentMemberId || 0);
       setInquiry(data);
       setAdminReplyContent(data.adminReply || "");
     } catch (err) {
@@ -53,10 +52,10 @@ const InquiriesDetailPage = () => {
   };
 
   useEffect(() => {
-    if (user || isAuthenticated === false) {
-      loadInquiry();
+    if (!isLoading) {
+      loadInquiry(user?.memberId);
     }
-  }, [inquiriesId, user, isAuthenticated]);
+  }, [inquiriesId, isLoading, user]);
 
   const handleProfileClick = (memberId) => {
     setSelectedMemberId(memberId);
@@ -100,7 +99,7 @@ const InquiriesDetailPage = () => {
       message: message || "건의글이 수정되었습니다.",
       onConfirm: () => {
         setAlertConfig((prev) => ({ ...prev, isOpen: false }));
-        loadInquiry();
+        loadInquiry(user?.memberId);
       },
     });
   };
@@ -115,7 +114,6 @@ const InquiriesDetailPage = () => {
       });
       return;
     }
-
     try {
       await inquiriesApi.inquiriesAdminReply(inquiriesId, user.memberId, adminReplyContent);
       setAlertConfig({
@@ -124,7 +122,7 @@ const InquiriesDetailPage = () => {
         message: inquiry.adminReply ? "답변이 수정되었습니다." : "답변이 등록되었습니다.",
         onConfirm: () => {
           setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} });
-          loadInquiry();
+          loadInquiry(user?.memberId);
         },
       });
     } catch (error) {
@@ -152,7 +150,7 @@ const InquiriesDetailPage = () => {
             message: "답변이 삭제되었습니다.",
             onConfirm: () => {
               setAlertConfig({ isOpen: false, type: "alert", message: "", onConfirm: () => {} });
-              loadInquiry();
+              loadInquiry(user?.memberId);
             },
           });
         } catch (error) {
@@ -238,15 +236,14 @@ const InquiriesDetailPage = () => {
           <div className={styles.detailContent}>{inquiry.content}</div>
         </article>
 
-        {/* 관리자 답변 섹션 */}
         <section className={styles.adminReplySection}>
           <div className={styles.adminReplyHeader}>
             ✅ 관리자 답변
           </div>
-          
+
           {user?.memberId === 1 ? (
             <div>
-              <textarea 
+              <textarea
                 className={styles.adminReplyInput}
                 placeholder="답변을 입력하세요"
                 value={adminReplyContent}
@@ -262,7 +259,7 @@ const InquiriesDetailPage = () => {
                   </button>
                 )}
               </div>
-              
+
               {inquiry.adminReply && (
                 <div className={styles.adminReplyPreview}>
                   <div className={styles.previewLabel}>현재 답변:</div>

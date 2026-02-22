@@ -253,8 +253,7 @@ const handleWriteClick = () => {
           onClose={() => setIsWriteModalOpen(false)}
           onSuccess={handleWriteSuccess}
         />
-
-        {/* 3. 통합된 CustomModal (Alert/Confirm 겸용) */}
+        
         <CustomModal
           isOpen={modalConfig.isOpen}
           type={modalConfig.type}

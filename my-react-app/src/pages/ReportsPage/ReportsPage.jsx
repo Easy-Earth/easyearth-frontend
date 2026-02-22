@@ -18,7 +18,7 @@ const ReportsPage = () => {
 
   const [type, setType] = useState("");
   const [reason, setReason] = useState("");
-  const [condition, setCondition] = useState("title");
+  const [condition, setCondition] = useState("memberId");
   const [keyword, setKeyword] = useState("");
 
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
@@ -70,8 +70,9 @@ const ReportsPage = () => {
       const params = { 
         page, 
         size: ITEMS_PER_PAGE,
-        status 
+        status,
       };
+
       if (type) params.type = type;
       if (reason) params.reason = reason;
       if (keyword.trim()) {
@@ -157,7 +158,7 @@ const ReportsPage = () => {
   const handleStatusSuccess = (message) => {
     setAlertConfig({
       isOpen: true,
-      type: "confirm",
+      type: "alert",
       message: message || "상태가 변경되었습니다.",
       onConfirm: () => {
         setAlertConfig((prev) => ({ ...prev, isOpen: false }));
